@@ -362,6 +362,13 @@ public partial class VisitListView : UserControl
         ApplyFilter();
     }
 
+    private void AddMedicineDetail_Click(object s, RoutedEventArgs e)
+    {
+        // Khi nhấn Thêm thuốc ở bảng chi tiết, ta mở Form Edit chuyên sâu
+        // vì Form đó đã có sẵn giao diện chọn thuốc chuyên nghiệp.
+        Edit_Click(s, e);
+    }
+
     private void Add_Click(object s, RoutedEventArgs e) { if (_vm == null) return; var form = new VisitFormDialog(_vm); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadVisitsAsync(); }, () => form.HasData()); }
     private void Edit_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var form = new VisitFormDialog(_vm, _selectedVisit); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadVisitsAsync(); }, () => form.HasData()); }
     private void Delete_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var confirm = new ConfirmDialog("Xóa hồ sơ khám này?", "Thao tác không thể hoàn tác.", _vm); _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.DeleteVisitAsync(_selectedVisit); }); }

@@ -104,6 +104,18 @@ public class DatabaseService
         return await db.Patients.CountAsync();
     }
 
+    public async Task<List<string>> GetAllPatientNamesAsync()
+    {
+        await using var db = Ctx();
+        return await db.Patients.Select(p => p.FullName ?? "").Where(n => n != "").OrderBy(n => n).ToListAsync();
+    }
+
+    public async Task<List<string>> GetAllDoctorNamesAsync()
+    {
+        await using var db = Ctx();
+        return await db.Doctors.Select(d => d.FullName ?? "").Where(n => n != "").OrderBy(n => n).ToListAsync();
+    }
+
     public async Task<List<Patient>> GetPatientsWithContactsAsync(int offset = 0, int limit = 1000)
     {
         await using var db = Ctx();
@@ -132,8 +144,53 @@ public class DatabaseService
         return list;
     }
 
-    public async Task<List<Patient>> GetPatientsWithContactsAsync() 
-        => await GetPatientsWithContactsAsync(0, 50000); // Backwards compatibility
+    public async Task<List<Patient>> SearchPatientsAsync(string searchTerm, int limit = 50)
+    {
+        await using var db = Ctx();
+        var query = from p in db.Patients
+                    join pc in db.PatientContacts.Where(x => x.IsPrimary == 1) on p.PatientId equals pc.PatientId into contacts
+                    from subPc in contacts.DefaultIfEmpty()
+                    join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
+                    from subC in finalContacts.DefaultIfEmpty()
+                    where string.IsNullOrEmpty(searchTerm) || p.FullName.ToLower().Contains(searchTerm.ToLower())
+                    orderby p.FullName
+                    select new { p, subC };
+
+        var results = await query.Take(limit).ToListAsync();
+        var list = new List<Patient>();
+        foreach (var item in results)
+        {
+            var p = item.p;
+            if (item.subC != null) { p.Phone = item.subC.Phone; p.Email = item.subC.Email; p.Address = item.subC.Address; }
+            list.Add(p);
+        }
+        return list;
+    }
+
+    public async Task<Patient?> GetPatientByNameAsync(string name)
+    {
+        await using var db = Ctx();
+        return await db.Patients.FirstOrDefaultAsync(p => p.FullName == name);
+    }
+
+    public async Task<List<Doctor>> SearchDoctorsAsync(string searchTerm, int limit = 50)
+    {
+        await using var db = Ctx();
+        var term = (searchTerm ?? "").ToLower();
+        return await db.Doctors
+            .Where(d => string.IsNullOrEmpty(term) || 
+                       (d.FullName != null && d.FullName.ToLower().Contains(term)) ||
+                       (d.Phone != null && d.Phone.ToLower().Contains(term)))
+            .OrderBy(d => d.FullName)
+            .Take(limit)
+            .ToListAsync();
+    }
+
+    public async Task<Doctor?> GetDoctorByNameAsync(string name)
+    {
+        await using var db = Ctx();
+        return await db.Doctors.FirstOrDefaultAsync(d => d.FullName == name);
+    }
 
     public async Task<List<Patient>> GetPatientsAsync()
     {

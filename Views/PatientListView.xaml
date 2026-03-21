@@ -377,7 +377,7 @@
                               Background="Transparent" FontFamily="Segoe UI" FontSize="13"
                               HeadersVisibility="Column" RowHeight="54"
                               AlternationCount="999999"
-                              VerticalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Hidden"
                               HorizontalScrollBarVisibility="Hidden"
                               SelectionChanged="DataGrid_SelectionChanged"
                               VirtualizingStackPanel.IsVirtualizing="True"

@@ -18,20 +18,11 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
     public DoctorListView()
     {
         InitializeComponent();
-        
         this.DataContextChanged += (s, e) => {
             if (e.NewValue is MainViewModel vm) {
                 _vm = vm;
-                _vm.Doctors.CollectionChanged += (s2, e2) => ApplyFilter();
                 ApplyFilter();
             }
-        };
-
-        TableCard.SizeChanged += (s, e) =>
-        {
-            TableCard.Clip = new System.Windows.Media.RectangleGeometry(
-                new Rect(0, 0, TableCard.ActualWidth, TableCard.ActualHeight),
-                18, 18);
         };
     }
 
@@ -40,7 +31,7 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
 
     private void Search_TextChanged(object s, TextChangedEventArgs e)
     {
-        _search = ((TextBox)s).Text.Trim().ToLower();
+        _search = ((TextBox)s).Text.Trim();
         ApplyFilter();
     }
 
@@ -63,23 +54,24 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void ApplyFilter()
+    private async void ApplyFilter()
     {
         if (_vm == null) return;
 
-        if (!Dispatcher.CheckAccess())
+        var search = _search?.Trim() ?? "";
+
+        // Nếu có từ khóa, gọi hàm search từ Database
+        if (!string.IsNullOrEmpty(search))
         {
-            Dispatcher.Invoke(ApplyFilter);
-            return;
+            await _vm.SearchDoctorsAsync(search);
+        }
+        else
+        {
+            // Nếu không tìm kiếm, nạp lại toàn bộ bác sĩ
+            await _vm.LoadDoctorsAsync();
         }
 
-        var search = _search?.Trim().ToLower() ?? "";
-        
-        var q = _vm.Doctors.Where(d =>
-            (string.IsNullOrEmpty(search) ||
-            (d.FullName != null && d.FullName.ToLower().Contains(search)) ||
-            (d.Specialty != null && d.Specialty.ToLower().Contains(search)) ||
-            (d.DoctorId.ToString().Contains(search))) &&
+        var q = _vm.Doctors.Where(d => 
             (string.IsNullOrEmpty(_specialtyFilter) || d.Specialty == _specialtyFilter)
         ).ToList();
         

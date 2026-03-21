@@ -106,23 +106,27 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         if (_vm == null) return;
         
         int currentRequest = ++_filterRequestCount;
-        // Debounce: Chờ một chút nếu có nhiều yêu cầu dồn dập (ví dụ khi nạp 500 bản ghi)
-        await Task.Delay(50);
+        // Debounce: Chờ một chút để người dùng gõ xong
+        await Task.Delay(200);
         if (currentRequest != _filterRequestCount) return;
 
-        var search = _search?.Trim().ToLower() ?? "";
-        var gender = _genderFilter;
+        var search = _search?.Trim() ?? "";
         
-        // Tạo bản sao của danh sách trên UI thread để tránh lỗi "Destination array was not long enough"
-        var source = _vm.Patients.ToList();
+        // Nếu có từ khóa, ta gọi hàm search chuyên sâu từ Database
+        if (!string.IsNullOrEmpty(search))
+        {
+            await _vm.SearchPatientsAsync(search);
+        }
+        else
+        {
+            // Nếu không có từ khóa (xóa trắng search), ta luôn nạp lại 50 người đầu tiên
+            await _vm.LoadPatientsAsync();
+        }
 
-        // Chạy việc lọc ở background thread để không làm khựng UI
+        // Tạo bản sao và áp dụng lọc giới tính (gender) nếu có
+        var gender = _genderFilter;
         var filteredList = await Task.Run(() => {
-            return source.Where(p => 
-                (string.IsNullOrEmpty(search) ||
-                 (p.FullName != null && p.FullName.ToLower().Contains(search)) ||
-                 (p.Phone != null && p.Phone.ToLower().Contains(search)) ||
-                 (p.PatientId.ToString().Contains(search))) &&
+            return _vm.Patients.Where(p => 
                 (string.IsNullOrEmpty(gender) || p.Gender == gender)
             ).ToList();
         });

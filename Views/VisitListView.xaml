@@ -667,7 +667,17 @@
                                     <TextBlock x:Name="DetailAvatar" Text="?" FontSize="24" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock x:Name="DetailPatientName" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="DetailPatientName" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                                        <Button Grid.Column="1" Style="{StaticResource IconBtn}" Width="32" Height="32" 
+                                                Margin="10,0,0,0" ToolTip="Chỉnh sửa chuyên sâu" Click="Edit_Click">
+                                            <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#16A34A"/>
+                                        </Button>
+                                    </Grid>
                                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                         <TextBlock x:Name="DetailPatientGender" FontSize="14" Foreground="#6B7280" Margin="0,0,12,0"/>
                                         <TextBlock x:Name="DetailPatientAge" FontSize="14" Foreground="#6B7280" Margin="0,0,12,0"/>
@@ -764,7 +774,7 @@
                                             <TextBlock Text="ĐƠN THUỐC" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C.Gray600}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Button Grid.Column="1" Style="{StaticResource OutlineBtn}" Height="34" Padding="14,0"
-                                                IsEnabled="False" ToolTip="Tính năng đang phát triển">
+                                                Click="AddMedicineDetail_Click">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <TextBlock Text="+" FontSize="16" FontWeight="SemiBold" Foreground="#16A34A" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                                 <TextBlock Text="Thêm thuốc" FontSize="12" FontWeight="SemiBold" Foreground="#16A34A" VerticalAlignment="Center"/>

@@ -73,6 +73,13 @@ public class MainViewModel : BaseViewModel
     public ObservableCollection<Medicine> Medicines { get; } = new();
     public ObservableCollection<Invoice>  Invoices  { get; } = new();
 
+    // Cache cho gợi ý tìm kiếm (Suggestion)
+    private List<string> _fullPatientNames = new();
+    public List<string> FullPatientNames { get => _fullPatientNames; set => SetProperty(ref _fullPatientNames, value); }
+    
+    private List<string> _fullDoctorNames = new();
+    public List<string> FullDoctorNames { get => _fullDoctorNames; set => SetProperty(ref _fullDoctorNames, value); }
+
     private bool _loadingPatients;  public bool LoadingPatients  { get => _loadingPatients;  set => SetProperty(ref _loadingPatients,  value); }
     private bool _loadingDoctors;   public bool LoadingDoctors   { get => _loadingDoctors;   set => SetProperty(ref _loadingDoctors,   value); }
     private bool _loadingVisits;    public bool LoadingVisits    { get => _loadingVisits;    set => SetProperty(ref _loadingVisits,    value); }
@@ -108,9 +115,14 @@ public class MainViewModel : BaseViewModel
             await Task.Run(() => DatabaseService.Initialize());
             await LoadSettingsAsync();
             await LoadDashboardDataAsync();
+            
+            // Nạp cache tên đầy đủ trước để dùng cho tìm kiếm (Suggestion)
+            FullPatientNames = await _db.GetAllPatientNamesAsync();
+            FullDoctorNames = await _db.GetAllDoctorNamesAsync();
+            
             await Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
 
-            // Chỉ nạp 50 người đầu tiên
+            // Chỉ nạp 50 người đầu tiên cho danh sách hiển thị
             _patientOffset = 0;
             _isAllPatientsLoaded = false;
             Patients.Clear();
@@ -126,8 +138,49 @@ public class MainViewModel : BaseViewModel
 
     public async Task LoadMorePatientsAsync()
     {
+        // Nếu đang tìm kiếm thì không thực hiện LoadMore theo phân trang bình thường
+        if (!string.IsNullOrEmpty(_lastSearchTerm)) return;
+        
         if (LoadingPatients || _isAllPatientsLoaded) return;
         await LoadMorePatientsInternalAsync();
+    }
+
+    private string _lastSearchTerm = "";
+
+    public async Task SearchPatientsAsync(string term)
+    {
+        _lastSearchTerm = term;
+        _patientOffset = 0;
+        _isAllPatientsLoaded = false;
+        
+        LoadingPatients = true;
+        try
+        {
+            var results = await _db.SearchPatientsAsync(term);
+            Patients.Clear();
+            foreach (var p in results) Patients.Add(p);
+            
+            // Nếu không tìm kiếm, ta coi như đã nạp xong trang đầu
+            if (string.IsNullOrEmpty(term)) _patientOffset = Patients.Count;
+        }
+        finally
+        {
+            LoadingPatients = false;
+        }
+    }
+
+    private string _lastDoctorSearch = "";
+    public async Task SearchDoctorsAsync(string term)
+    {
+        _lastDoctorSearch = term;
+        LoadingDoctors = true;
+        try
+        {
+            var results = await _db.SearchDoctorsAsync(term);
+            Doctors.Clear();
+            foreach (var d in results) Doctors.Add(d);
+        }
+        finally { LoadingDoctors = false; }
     }
 
     private async Task LoadMorePatientsInternalAsync()

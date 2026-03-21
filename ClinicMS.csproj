@@ -31,9 +31,6 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="clinic_database.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Resources\favicon.ico" />
   </ItemGroup>
 </Project>

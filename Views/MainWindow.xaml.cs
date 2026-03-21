@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using ClinicMS.ViewModels;
 
-namespace ClinicMS;
+namespace ClinicMS.Views;
 
 public partial class MainWindow : Window
 {

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Markup;
 using ClinicMS.Services;
+using ClinicMS.Views;
 using System.Threading.Tasks;
 
 namespace ClinicMS;

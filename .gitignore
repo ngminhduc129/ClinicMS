@@ -1,0 +1,42 @@
+## [Visual Studio]
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## [Build Output]
+bin/
+obj/
+Generated Files/
+[Xx]64/
+[Xx]86/
+
+## [NuGet]
+packages/
+*.nuget.props
+*.nuget.targets
+
+## [Temporary/Log Files - Specific to this project]
+*.log
+*.txt
+*.err
+*.out
+*.tmp
+*.db
+!README.md
+!DOCUMENTATION_INDEX.md
+!BUGS_REPORT.md
+!CODE_REVIEW.md
+!MODERN_DESIGN_QUICK_REF.md
+!MODERN_SAAS_DESIGN.md
+!PERFORMANCE_ANALYSIS.md
+!REDESIGN_COMPLETION_SUMMARY.md
+!REFACTORING_ROADMAP.md
+!THEME_IMPLEMENTATION_SUMMARY.md
+!THEME_MIGRATION_CHECKLIST.md
+
+## [Tools]
+.gemini/
+.dotnet_home/
+.nuget/

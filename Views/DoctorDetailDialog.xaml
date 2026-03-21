@@ -1,0 +1,104 @@
+<UserControl x:Class="ClinicMS.Views.DoctorDetailDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClinicMS.Views"
+             Width="520">
+    <UserControl.Resources></UserControl.Resources>
+    <Border CornerRadius="10" ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="30" ShadowDepth="0"/>
+        </Border.Effect>
+        <Grid Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Padding="24,28">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#166534" Offset="0"/>
+                        <GradientStop Color="#15803D" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="56" Height="56" CornerRadius="10" Margin="0,0,16,0">
+                            <Border.Background><SolidColorBrush Color="#FFFFFF" Opacity="0.2"/></Border.Background>
+                            <TextBlock x:Name="InitialsText" FontSize="20" FontWeight="Bold"
+                                       Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="NameText" FontSize="20" FontWeight="ExtraBold" Foreground="White"/>
+                            <TextBlock x:Name="SpecialtyText" FontSize="13" Foreground="#BBF7D0" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="S Sửa" Background="#FFFFFF26" Foreground="White"
+                                BorderThickness="0" Padding="12,7" FontSize="13" FontWeight="SemiBold"
+                                Cursor="Hand" Margin="0,0,8,0" Click="Edit_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Content="✕" Background="Transparent" Foreground="White"
+                                BorderThickness="0" Padding="8" FontSize="16"
+                                Cursor="Hand" Click="Close_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Body -->
+            <ScrollViewer Grid.Row="1" Padding="24,20" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Contact -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="T  LIÊN HỆ &amp; CHUYÊN MÔN" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#6B7280" Margin="0,0,0,10"/>
+                        <Border Background="#F9FAFB" BorderBrush="#F3F4F6" BorderThickness="1"
+                                CornerRadius="10" Padding="20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/><ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/><RowDefinition Height="12"/><RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <local:InfoRow Grid.Column="0" Grid.Row="0" Label="Mã Bác Sĩ"     x:Name="IdRow"/>
+                                <local:InfoRow Grid.Column="1" Grid.Row="0" Label="Số Điện Thoại" x:Name="PhoneRow"/>
+                                <local:InfoRow Grid.Column="0" Grid.Row="2" Label="Email"          x:Name="EmailRow"/>
+                                <local:InfoRow Grid.Column="1" Grid.Row="2" Label="Chuyên Khoa"    x:Name="SpecRow"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Notes -->
+                    <StackPanel x:Name="NoteSection">
+                        <TextBlock Text="G  GHI CHÚ" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#6B7280" Margin="0,0,0,10"/>
+                        <Border Background="#EFF6FF" BorderBrush="#DBEAFE" BorderThickness="1"
+                                CornerRadius="10" Padding="16">
+                            <TextBlock x:Name="NoteText" FontSize="13" Foreground="#1F2937"
+                                       TextWrapping="Wrap" LineHeight="22"/>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>
+
+

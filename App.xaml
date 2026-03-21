@@ -1,0 +1,133 @@
+<Application x:Class="ClinicMS.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ClinicMS.Converters"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ClinicTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibility"/>
+            <conv:NotNullToVisibilityConverter x:Key="NotNullToVisibility"/>
+            <conv:StatusToBrushConverter x:Key="StatusToBrush"/>
+            <conv:StatusToBackgroundConverter x:Key="StatusToBackground"/>
+            <conv:ToastTypeToBrushConverter x:Key="ToastTypeToBrush"/>
+            <conv:ToastTypeToForegroundConverter x:Key="ToastTypeToForeground"/>
+            <conv:ZeroToVisibilityConverter x:Key="ZeroToVisibility"/>
+            <conv:PageToBoldConverter x:Key="PageToBold"/>
+            <conv:IndexConverter x:Key="IndexConverter"/>
+
+            <sys:Double x:Key="FontScale">1.0</sys:Double>
+
+            <!-- Base Window Style -->
+            <Style TargetType="Window">
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+                <Setter Property="UseLayoutRounding" Value="True"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+            </Style>
+
+            <SolidColorBrush x:Key="GreenDark" Color="#15803D"/>
+            <SolidColorBrush x:Key="GreenMedium" Color="#16A34A"/>
+            <SolidColorBrush x:Key="GreenLight" Color="#DCFCE7"/>
+            <SolidColorBrush x:Key="GreenBg" Color="#F4F8F6"/>
+            <SolidColorBrush x:Key="SidebarBg" Color="#166534"/>
+            <SolidColorBrush x:Key="SidebarBg2" Color="#14532D"/>
+            <SolidColorBrush x:Key="TextPrimary" Color="#1F2937"/>
+            <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
+
+            <Style TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            </Style>
+
+            <Style x:Key="BaseButton" TargetType="Button">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="GreenButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+                <Setter Property="Background" Value="{StaticResource GreenMedium}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSizeButton}"/>
+                <Setter Property="Padding" Value="16,8"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource GreenDark}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Foreground" Value="{StaticResource GreenDark}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource GreenLight}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSizeButton}"/>
+                <Setter Property="Padding" Value="12,6"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource GreenLight}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="FormLabel" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource FontSizeLabel}"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Foreground" Value="#374151"/>
+                <Setter Property="Margin" Value="0,0,0,6"/>
+            </Style>
+
+            <Style x:Key="FormTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}">
+                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+                <Setter Property="Height" Value="40"/>
+            </Style>
+
+            <Style x:Key="FormComboBox" TargetType="ComboBox" BasedOn="{StaticResource ModernComboBoxStyle}">
+                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+                <Setter Property="Height" Value="40"/>
+            </Style>
+
+            <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource DangerButtonStyle}"/>
+
+            <Style x:Key="ClinicDataGrid" TargetType="DataGrid">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+                <Setter Property="HeadersVisibility" Value="Column"/>
+                <Setter Property="AutoGenerateColumns" Value="False"/>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

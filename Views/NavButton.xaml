@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="ClinicMS.Views.NavButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Button x:Name="Btn" Click="Btn_Click"
+        Background="Transparent"
+        BorderThickness="0"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        Cursor="Hand"
+        HorizontalContentAlignment="Stretch">
+        <Button.Template>
+            <ControlTemplate TargetType="Button">
+                <Border x:Name="Bg"
+                        CornerRadius="10"
+                        Margin="10,3"
+                        Padding="14,10"
+                        ClipToBounds="True"
+                        BorderThickness="0"
+                        BorderBrush="Transparent">
+                    <Grid>
+                        <!-- Hover overlay -->
+                        <Border x:Name="HoverBg"
+                                Background="White"
+                                Opacity="0"
+                                CornerRadius="10"
+                                Margin="-14,-10"/>
+
+                        <!-- Active indicator: ghim vào cạnh trái trong Bg -->
+                        <Border x:Name="ActiveIndicator"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Width="4"
+                                Height="4"
+                                Margin="-10,0,0,0"
+                                CornerRadius="10"
+                                Visibility="Collapsed"
+                                Opacity="0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#FFFFFF" Offset="0"/>
+                                    <GradientStop Color="#6EE7B7" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FFFFFF" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/>
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- Nội dung -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="IconText"
+                                       Text="{Binding Icon, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       FontSize="18"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Width="24"/>
+                            <TextBlock x:Name="LabelText"
+                                       Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       FontSize="{StaticResource FontSizeBody}"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Segoe UI"
+                                       Foreground="White"
+                                       Opacity="0.55"
+                                       Margin="10,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <ControlTemplate.Triggers>
+                    <EventTrigger RoutedEvent="Border.MouseEnter" SourceName="Bg">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="HoverBg"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0.09" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="LabelText"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0.85" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="IconText"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0.85" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="Border.MouseLeave" SourceName="Bg">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="HoverBg"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="LabelText"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0.55" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="IconText"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0.55" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+</UserControl>
+
+

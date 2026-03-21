@@ -1,0 +1,312 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--=========================================-->
+    <!-- SIDEBAR / NAVIGATION CONTAINER -->
+    <!--=========================================-->
+    <Style x:Key="SidebarContainerStyle" TargetType="StackPanel">
+        <Setter Property="Background" Value="{StaticResource PrimaryGreenDarkBrush}"/>
+        <Setter Property="Width" Value="220"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Orientation" Value="Vertical"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- SIDEBAR HEADER / LOGO -->
+    <!--=========================================-->
+    <Style x:Key="SidebarHeaderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PrimaryGreenDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="16,16"/>
+        <Setter Property="Height" Value="70"/>
+    </Style>
+
+    <Style x:Key="SidebarLogoStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushWhite}"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- SIDEBAR NAVIGATION ITEMS - Modern hover animations -->
+    <!--=========================================-->
+    <Style x:Key="SidebarItemButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#B8E6C9"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="MainBg" 
+                            Background="Transparent"
+                            CornerRadius="10"
+                            Margin="8,4"
+                            Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <!-- Background animation for hover -->
+                            <Border x:Name="HoverBkg" 
+                                    Background="#1F7C4A"
+                                    Opacity="0"
+                                    CornerRadius="10"
+                                    Margin="-16,-14"
+                                    Padding="16,14"/>
+                            <!-- Active indicator bar with smooth animation -->
+                            <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="ActiveIndicator" 
+                                    Width="4" 
+                                    Background="{StaticResource PrimaryGreenLightBrush}"
+                                    HorizontalAlignment="Left" 
+                                    CornerRadius="10"
+                                    Visibility="Hidden"
+                                    Margin="-8,0,0,0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#4ADE80" BlurRadius="8" ShadowDepth="1" Opacity="0.4" Direction="270"/>
+                                </Border.Effect>
+                            </Border>
+                            <!-- Content -->
+                            <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Grid>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource TextBrushWhite}"/>
+                            <Setter TargetName="MainBg" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="1" Opacity="0.15" Direction="270"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <EventTrigger RoutedEvent="Border.MouseEnter" SourceName="MainBg">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="HoverBkg" 
+                                                   Storyboard.TargetProperty="Opacity" 
+                                                   To="1" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="Border.MouseLeave" SourceName="MainBg">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="HoverBkg" 
+                                                   Storyboard.TargetProperty="Opacity" 
+                                                   To="0" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <!-- Use Tag property to track active state: Tag="active" -->
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="active">
+                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="HoverBkg" Property="Opacity" Value="1"/>
+                            <Setter TargetName="HoverBkg" Property="Background" Value="#1F7C4A"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextBrushWhite}"/>
+                            <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--=========================================-->
+    <!-- SIDEBAR SECTION DIVIDER -->
+    <!--=========================================-->
+    <Style x:Key="SidebarDividerStyle" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="#1F7C4A"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Margin" Value="0,8"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- SIDEBAR SECTION LABEL -->
+    <!--=========================================-->
+    <Style x:Key="SidebarSectionLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
+        <Setter Property="Foreground" Value="#6EAE81"/>
+        <Setter Property="Margin" Value="16,12,16,6"/>
+        <Setter Property="Text" Value="SECTION"/>
+        <!-- Note: TextTransform in CSS would be uppercase, but WPF doesn't support this. Use uppercase text directly. -->
+    </Style>
+
+    <!--=========================================-->
+    <!-- CARD / CONTENT CONTAINER - Modern SaaS style -->
+    <!--=========================================-->
+    <Style x:Key="CardContainerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="24"/>
+        <Setter Property="Effect" Value="{StaticResource StandardShadow}"/>
+    </Style>
+
+    <!-- Compact card (smaller padding) -->
+    <Style x:Key="CardContainerCompactStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="20"/>
+        <Setter Property="Effect" Value="{StaticResource StandardShadow}"/>
+    </Style>
+
+    <!-- Elevated card (larger shadow) -->
+    <Style x:Key="CardContainerElevatedStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="24"/>
+        <Setter Property="Effect" Value="{StaticResource ElevatedShadow}"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- STAT CARD (for dashboard) - Modern KPI style -->
+    <!--=========================================-->
+    <Style x:Key="StatCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="Padding" Value="24"/>
+        <Setter Property="Effect" Value="{StaticResource StandardShadow}"/>
+        <Setter Property="Height" Value="160"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- PAGE CONTAINER (main content area) -->
+    <!--=========================================-->
+    <Style x:Key="PageContainerStyle" TargetType="ScrollViewer">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrushLight}"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <Style x:Key="PageInnerContainerStyle" TargetType="StackPanel">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="Margin" Value="24"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- PAGE HEADER (title + actions) -->
+    <!--=========================================-->
+    <Style x:Key="PageHeaderStyle" TargetType="Grid">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- FORM CONTAINER -->
+    <!--=========================================-->
+    <Style x:Key="FormContainerStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="Margin" Value="0"/>
+    </Style>
+
+    <!-- Form field wrapper (label + input) -->
+    <Style x:Key="FormFieldStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <!-- Form row (multiple fields side-by-side) -->
+    <Style x:Key="FormRowStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- MODAL / DIALOG OVERLAY -->
+    <!--=========================================-->
+    <Style x:Key="ModalOverlayStyle" TargetType="Border">
+        <Setter Property="Background" Value="#000000"/>
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- DIALOG CONTAINER - Modern modal style -->
+    <!--=========================================-->
+    <Style x:Key="DialogContainerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="Effect" Value="{StaticResource ElevatedShadow}"/>
+    </Style>
+
+    <!-- Dialog Header -->
+    <Style x:Key="DialogHeaderStyle" TargetType="Grid">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrushDark}"/>
+        <Setter Property="Margin" Value="20"/>
+        <Setter Property="Height" Value="60"/>
+    </Style>
+
+    <!-- Dialog Title within header -->
+    <Style x:Key="DialogTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSectionTitle}"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Dialog Content -->
+    <Style x:Key="DialogContentStyle" TargetType="ScrollViewer">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Padding" Value="20"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+    </Style>
+
+    <!-- Dialog Footer -->
+    <Style x:Key="DialogFooterStyle" TargetType="Grid">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrushDark}"/>
+        <Setter Property="Margin" Value="20"/>
+        <Setter Property="Height" Value="60"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- Dialog Footer Button Container -->
+    <Style x:Key="DialogFooterButtonsStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- SEPARATOR / DIVIDER -->
+    <!--=========================================-->
+    <Style x:Key="HorizontalDividerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="0,12"/>
+    </Style>
+
+    <Style x:Key="VerticalDividerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Width" Value="1"/>
+        <Setter Property="Margin" Value="12,0"/>
+    </Style>
+
+</ResourceDictionary>
+
+

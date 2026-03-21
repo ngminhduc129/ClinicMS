@@ -1,0 +1,152 @@
+<Window x:Class="ClinicMS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ClinicMS.ViewModels"
+        xmlns:views="clr-namespace:ClinicMS.Views"
+        Icon="/Resources/favicon.ico"
+        Title="ClinicMS - Quản Lý Phòng Khám"
+        Height="768" Width="1280"
+        MinHeight="600" MinWidth="900"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        Background="#F6F9FC">
+    <Border UseLayoutRounding="True" SnapsToDevicePixels="True">
+        <Border.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding FontScale}" ScaleY="{Binding FontScale}"/>
+        </Border.LayoutTransform>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#166534" Offset="0"/>
+                    <GradientStop Color="#14532D" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel Margin="16,28,16,24">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,0,8,40">
+                    <Border Width="44" Height="44" CornerRadius="10" Margin="0,0,14,0" Background="#16A34A">
+                        <TextBlock Text="+" FontSize="{StaticResource FontSizeSectionTitle}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="ClinicMS" FontSize="{StaticResource FontSizeSubsectionTitle}" FontWeight="ExtraBold" Foreground="White"/>
+                        <TextBlock Text="Quản lý phòng khám" FontSize="{StaticResource FontSizeXSmall}" Foreground="#86EFAC" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Margin="0">
+                    <!-- Dashboard: Home icon -->
+                    <views:NavButton Label="Trang Chủ" PageKey="dashboard" Icon="&#xE80F;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="dashboard"/>
+                    
+                    <!-- Patients: People icon -->
+                    <views:NavButton Label="Bệnh Nhân" PageKey="patients" Icon="&#xE716;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="patients"/>
+                    
+                    <!-- Doctors: Contact icon -->
+                    <views:NavButton Label="Bác Sĩ" PageKey="doctors" Icon="&#xE77B;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="doctors"/>
+                    
+                    <!-- Visits: Contact Card icon (Hồ sơ) -->
+                    <views:NavButton Label="Hồ sơ khám" PageKey="visits" Icon="&#xE160;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="visits"/>
+                    
+                    <!-- Medicines: Health icon (Thuốc) -->
+                    <views:NavButton Label="Thuốc" PageKey="medicines" Icon="&#xEADF;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="medicines"/>
+                    
+                    <!-- Invoices: Receipt icon (Hóa đơn) -->
+                    <views:NavButton Label="Hóa Đơn" PageKey="invoices" Icon="&#xE8C7;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="invoices"/>
+                    
+                    <!-- Settings: Settings icon -->
+                    <views:NavButton Label="Cài Đặt" PageKey="settings" Icon="&#xE713;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="settings"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <Grid Grid.Column="1" Background="#F6F9FC">
+            <!-- Luôn hiện Dashboard trước để người dùng vào việc ngay -->
+            <views:DashboardView Visibility="{Binding IsPageDashboard, Converter={StaticResource BoolToVisibility}}" DataContext="{Binding}"/>
+            
+            <views:PatientListView Visibility="{Binding IsPagePatients, Converter={StaticResource BoolToVisibility}}"/>
+            <views:DoctorListView Visibility="{Binding IsPageDoctors, Converter={StaticResource BoolToVisibility}}"/>
+            <views:VisitListView Visibility="{Binding IsPageVisits, Converter={StaticResource BoolToVisibility}}"/>
+            <views:MedicineListView Visibility="{Binding IsPageMedicines, Converter={StaticResource BoolToVisibility}}"/>
+            <views:SettingsView Visibility="{Binding IsPageSettings, Converter={StaticResource BoolToVisibility}}"/>
+
+            <Border Visibility="{Binding IsPageInvoices, Converter={StaticResource BoolToVisibility}}" Padding="32">
+                <TextBlock Text="[I] Quản Lý Hóa Đơn (Coming Soon)" FontSize="20" FontWeight="SemiBold" Foreground="#166534" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
+
+        <!-- TOASTS -->
+        <ItemsControl Grid.ColumnSpan="2"
+                      ItemsSource="{Binding Toast.Toasts}"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      Margin="0,20,20,0"
+                      Panel.ZIndex="900">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="{Binding Type, Converter={StaticResource ToastTypeToBrush}}"
+                            BorderBrush="{Binding Type, Converter={StaticResource ToastTypeToForeground}}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,10"
+                            Margin="0,0,0,8"
+                            MinWidth="260"
+                            MaxWidth="360">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="14" ShadowDepth="1" Opacity="0.10" Color="#000000"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="24" Height="24"
+                                    CornerRadius="12"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Top"
+                                    Background="{Binding Type, Converter={StaticResource ToastTypeToForeground}}">
+                                <TextBlock HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="White">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="✓"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                    <Setter Property="Text" Value="!"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        <TextBlock Text="{Binding Message}"
+                                   Grid.Column="1"
+                                   Foreground="{Binding Type, Converter={StaticResource ToastTypeToForeground}}"
+                                   TextWrapping="Wrap"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- OVERLAY MODAL -->
+        <Grid x:Name="ModalOverlay" Grid.ColumnSpan="2"
+              Visibility="Collapsed" Panel.ZIndex="999">
+            <Rectangle Fill="#80000000" MouseLeftButtonDown="ModalOverlay_MouseDown"/>
+            <ContentPresenter x:Name="ModalHost" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+
+    </Grid>
+</Border>
+</Window>

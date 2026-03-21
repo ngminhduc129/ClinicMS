@@ -1,0 +1,12 @@
+<UserControl x:Class="ClinicMS.Views.InfoRow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Margin="0,0,12,0">
+    <StackPanel>
+        <TextBlock x:Name="LabelTb" FontSize="11" FontWeight="Medium"
+                   Foreground="#6B7280" Margin="0,0,0,4"
+                   Text="LABEL"/>
+        <TextBlock x:Name="ValueTb" FontSize="14" FontWeight="Medium"
+                   Foreground="#1F2937" TextWrapping="Wrap" Text="—"/>
+    </StackPanel>
+</UserControl>

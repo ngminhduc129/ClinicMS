@@ -1,0 +1,239 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!--=========================================-->
+    <!-- MASTER THEME - Merges all theme files -->
+    <!--=========================================-->
+    <!-- This ResourceDictionary aggregates all theme-related resources
+         and should be referenced in App.xaml as the primary theme
+    -->
+
+    <!-- PRIMARY DICTIONARIES -->
+    <ResourceDictionary.MergedDictionaries>
+        <!-- Color Palette System -->
+        <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ThemeColors.xaml"/>
+        
+        <!-- Typography System -->
+        <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ThemeTypography.xaml"/>
+        
+        <!-- Control Styles (Button, TextBox, ComboBox, DataGrid, etc.) -->
+        <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ThemeControls.xaml"/>
+        
+        <!-- Container Styles (Cards, Navigation, Forms, Dialogs) -->
+        <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ThemeContainers.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--=========================================-->
+    <!-- WINDOW BASE STYLE -->
+    <!--=========================================-->
+    <Style x:Key="ApplicationWindowStyle" TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrushLight}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="WindowStartupLocation" Value="CenterScreen"/>
+        <Setter Property="MinWidth" Value="1024"/>
+        <Setter Property="MinHeight" Value="768"/>
+        <Setter Property="Width" Value="1400"/>
+        <Setter Property="Height" Value="900"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- DIALOG WINDOW STYLE -->
+    <!--=========================================-->
+    <Style x:Key="DialogWindowStyle" TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="WindowStartupLocation" Value="CenterOwner"/>
+        <Setter Property="WindowStyle" Value="None"/>
+        <Setter Property="ShowInTaskbar" Value="False"/>
+        <Setter Property="ResizeMode" Value="NoResize"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- ROOT GRID STYLE (MainWindow layout) -->
+    <!--=========================================-->
+    <Style x:Key="RootGridStyle" TargetType="Grid">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrushLight}"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- STATUS BADGE STYLES -->
+    <!--=========================================-->
+    <Style x:Key="StatusBadgeSuccessStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SuccessBkgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="10,4"/>
+    </Style>
+
+    <Style x:Key="StatusBadgeWarningStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource WarningBkgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="10,4"/>
+    </Style>
+
+    <Style x:Key="StatusBadgeErrorStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ErrorBkgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="10,4"/>
+    </Style>
+
+    <Style x:Key="StatusBadgeInfoStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource InfoBkgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource InfoBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="10,4"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- STATUS BADGE LABEL STYLES -->
+    <!--=========================================-->
+    <Style x:Key="StatusBadgeLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- EMPTY STATE / NO DATA CONTAINER -->
+    <!--=========================================-->
+    <Style x:Key="EmptyStateContainerStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="40"/>
+    </Style>
+
+    <Style x:Key="EmptyStateIconStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="48"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushTertiary}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+
+    <Style x:Key="EmptyStateTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCardTitle}"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushSecondary}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="EmptyStateDescriptionStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushTertiary}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="MaxWidth" Value="300"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- LOADING SPINNER STYLE -->
+    <!--=========================================-->
+    <Style x:Key="LoadingSpinnerStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="32"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryGreenBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <!--=========================================-->
+    <Style x:Key="ToastContainerStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="Margin" Value="16"/>
+    </Style>
+
+    <Style x:Key="ToastItemStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1,1,1,2"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Effect" Value="{StaticResource StandardShadow}"/>
+        <Setter Property="MaxWidth" Value="400"/>
+        <Setter Property="MinHeight" Value="50"/>
+    </Style>
+
+    <Style x:Key="ToastMessageStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- BREADCRUMB STYLE -->
+    <!--=========================================-->
+    <Style x:Key="BreadcrumbContainerStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+
+    <Style x:Key="BreadcrumbItemStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushSecondary}"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+    </Style>
+
+    <Style x:Key="BreadcrumbSeparatorStyle" TargetType="TextBlock">
+        <Setter Property="Text" Value="/"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrushTertiary}"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- TAG / PILL STYLES -->
+    <!--=========================================-->
+    <Style x:Key="TagStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrushDark}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+
+    <Style x:Key="PrimaryTagStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PrimaryGreenVeryLightBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+
+    <!--=========================================-->
+    <!-- KEYBOARD FOCUS VISUAL -->
+    <!--=========================================-->
+    <Style x:Key="{x:Static SystemParameters.FocusVisualStyleKey}">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle StrokeDashArray="1 2"
+                             Stroke="{StaticResource FocusHighlightBrush}"
+                             StrokeThickness="1"
+                             SnapsToDevicePixels="true"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -9,5 +9,4 @@ public class Prescription
     [Key]
     [Column("visit_id")]    public int    VisitId   { get; set; }
     [Column("created_at")] public string? CreatedAt { get; set; }
-    public List<PrescriptionDetail> Details { get; set; } = new();
 }

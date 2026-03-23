@@ -60,11 +60,6 @@ public class DatabaseService
         // ═══════════════════════════════════════════════
         //  DATABASE SCHEMA UPDATES
         // ═══════════════════════════════════════════════
-        // SQLite không hỗ trợ Migrations tốt bằng SQL Server, nên ta dùng SQL thủ công cho các cột mới
-        try { db.Database.ExecuteSqlRaw("ALTER TABLE PrescriptionDetails ADD COLUMN Quantity REAL DEFAULT 0"); } catch { }
-        try { db.Database.ExecuteSqlRaw("ALTER TABLE PrescriptionDetails ADD COLUMN Dosage TEXT"); } catch { }
-        try { db.Database.ExecuteSqlRaw("ALTER TABLE PrescriptionDetails ADD COLUMN PrescriptionVisitId INTEGER"); } catch { }
-        try { db.Database.ExecuteSqlRaw("UPDATE PrescriptionDetails SET PrescriptionVisitId = VisitId WHERE PrescriptionVisitId IS NULL"); } catch { }
     }
 
     private static ClinicDbContext Ctx() => new();

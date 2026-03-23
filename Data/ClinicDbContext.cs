@@ -97,7 +97,17 @@ public class ClinicDbContext : DbContext
             .HasOne(pc => pc.Contact).WithMany(c => c.PatientContacts).HasForeignKey(pc => pc.ContactId);
 
         mb.Entity<PrescriptionDetail>()
-            .HasOne(pd => pd.Medicine).WithMany().HasForeignKey(pd => pd.MedicineId);
+            .HasKey(pd => new { pd.VisitId, pd.MedicineId });
+        
+        mb.Entity<PrescriptionDetail>()
+            .HasOne(pd => pd.Visit)
+            .WithMany(v => v.PrescriptionDetails)
+            .HasForeignKey(pd => pd.VisitId);
+
+        mb.Entity<PrescriptionDetail>()
+            .HasOne(pd => pd.Medicine)
+            .WithMany()
+            .HasForeignKey(pd => pd.MedicineId);
 
         mb.Entity<ServiceOrder>()
             .HasOne(so => so.Service).WithMany().HasForeignKey(so => so.ServiceId);

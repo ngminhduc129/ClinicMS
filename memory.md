@@ -33,16 +33,28 @@ Tài liệu này ghi lại các thay đổi quan trọng về cấu trúc Databa
 ---
 
 ## 4. TỐI ƯU HÓA GIAO DIỆN & PHẢN HỒI (UI/UX)
-*   **Vấn đề:** Thêm bệnh nhân thành công nhưng không hiện ra danh sách (do vòng lặp sự kiện vô tận và lỗi nạp dữ liệu).
+*   **Vấn đề:** 
+    - Thêm bệnh nhân thành công nhưng không hiện ra danh sách (do vòng lặp sự kiện).
+    - Thanh tìm kiếm bác sĩ bị lag khi gõ phím.
 *   **Giải pháp:** 
-    - Sửa logic `ApplyFilter` trong `PatientListView.xaml.cs` để chặn vòng lặp nạp dữ liệu liên tục.
-    - Thêm khối `try-catch` vào các sự kiện `Save_Click` để hiển thị thông báo lỗi cụ thể qua `MessageBox` nếu có lỗi hệ thống xảy ra.
-    - Đảm bảo danh sách bệnh nhân luôn hiển thị người mới nhất lên đầu (sắp xếp `DESC` theo ID).
-*   **Kết quả:** Trải nghiệm người dùng mượt mà, thông tin lỗi rõ ràng, dữ liệu cập nhật tức thì.
+    - Sửa logic `ApplyFilter` trong `PatientListView.xaml.cs` để chặn vòng lặp nạp dữ liệu.
+    - Áp dụng kỹ thuật **Debounce (300ms)** và **CancellationTokenSource** vào `DoctorListView.xaml.cs` để tránh truy vấn database liên tục khi đang gõ.
+    - Đồng bộ hiệu ứng **Smooth Scrolling (Pixel-based)** cho tất cả danh sách DataGrid.
+*   **Kết quả:** Trải nghiệm người dùng mượt mà, tìm kiếm phản hồi tức thì.
 
 ---
 
-## 5. DANH SÁCH CÁC FILE QUAN TRỌNG ĐÃ CẬP NHẬT
+## 5. SỬA LỖI TRUY VẤN ĐƠN THUỐC (EF CORE MAPPING)
+*   **Vấn đề:** Lỗi `SQLite Error 1: no such column: p.PrescriptionVisitId` và `p.VisitId`.
+*   **Giải pháp:** 
+    - Thêm `[Column("...")]` vào Model `PrescriptionDetail` để khớp với database viết thường.
+    - Loại bỏ sự dư thừa quan hệ trong class `Prescription`.
+    - Cấu hình tường minh Fluent API trong `ClinicDbContext.cs` để EF Core không tự tạo cột "ảo" `PrescriptionVisitId`.
+*   **Kết quả:** Chức năng đơn thuốc hoạt động ổn định, truy xuất đúng cột `visit_id` trong Database.
+
+---
+
+## 6. DANH SÁCH CÁC FILE QUAN TRỌNG ĐÃ CẬP NHẬT
 1.  `Data\ClinicDbContext.cs`: Đồng bộ tên bảng `prescription_details`.
 2.  `Services\DatabaseService.cs`: Nâng cấp logic lưu Visit kèm Transaction.
 3.  `Views\VisitFormDialog.xaml.cs`: Sửa lỗi Deadlock và Validation Async.

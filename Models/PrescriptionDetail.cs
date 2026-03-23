@@ -5,18 +5,17 @@ namespace ClinicMS.Models;
 
 public class PrescriptionDetail
 {
-    public int VisitId { get; set; }
-    public int MedicineId { get; set; }
+    [Column("visit_id")]    public int VisitId { get; set; }
+    [Column("medicine_id")] public int MedicineId { get; set; }
 
     // Số lượng thuốc kê (Ví dụ: 10 viên, 2 chai)
-    public double Quantity { get; set; }
+    [Column("quantity")]    public double Quantity { get; set; }
 
     // Cách dùng (Ví dụ: "Sáng 1 viên, tối 1 viên sau ăn")
-    public string? Dosage { get; set; }
+    [Column("dosage")]      public string? Dosage { get; set; }
 
     [ForeignKey("MedicineId")]
     public Medicine? Medicine { get; set; }
 
-    [ForeignKey("VisitId")]
     public Visit? Visit { get; set; }
 }

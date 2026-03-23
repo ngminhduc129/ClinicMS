@@ -61,6 +61,7 @@ public partial class VisitFormDialog : UserControl
             {
                 SetupSearchComboBox(PatientNameBox, _patientNames);
                 SetupSearchComboBox(DoctorNameBox, _doctorNames);
+                SetupSearchComboBox(MedicineCombo, _vm.Medicines.Select(m => m.MedicineName ?? "").ToList());
                 _searchSetupDone = true;
             }
 
@@ -97,7 +98,8 @@ public partial class VisitFormDialog : UserControl
 
     private void RefreshMedicineList()
     {
-        MedicineCombo.ItemsSource = _vm.Medicines.OrderBy(m => m.MedicineName).ToList();
+        var medicines = _vm.Medicines.Select(m => m.MedicineName ?? "").ToList();
+        UpdateComboSource(MedicineCombo, medicines);
     }
 
     private static void UpdateComboSource(ComboBox comboBox, List<string> items)
@@ -163,7 +165,7 @@ public partial class VisitFormDialog : UserControl
 
     // ───────────────────────────── Data ─────────────────────────────
 
-    private void LoadData(Visit v)
+    private async void LoadData(Visit v)
     {
         PatientNameBox.Text = v.Patient?.FullName ?? _vm.Patients.FirstOrDefault(p => p.PatientId == v.PatientId)?.FullName ?? "";
         DoctorNameBox.Text = v.Doctor?.FullName ?? _vm.Doctors.FirstOrDefault(d => d.DoctorId == v.DoctorId)?.FullName ?? "";
@@ -178,6 +180,14 @@ public partial class VisitFormDialog : UserControl
         BPBox.Text = v.BloodPressure ?? "";
         TempBox.Text = v.Temperature ?? "";
         PrescriptionBox.Text = v.PrescriptionText ?? "";
+
+        // Load thuốc đã kê
+        var details = await _vm.GetPrescriptionDetailsAsync(v.VisitId);
+        _prescriptionItems.Clear();
+        foreach (var d in details) _prescriptionItems.Add(d);
+        
+        // Ensure the list reflects the loaded items
+        PrescriptionList.ItemsSource = _prescriptionItems;
 
         // ĐÃ SỬA: Load dữ liệu cho RadioButton Loại Khám
         RbAppt.IsChecked = v.VisitType == "Appointment";
@@ -196,7 +206,7 @@ public partial class VisitFormDialog : UserControl
     private Visit BuildVisit(int patientId, int doctorId)
     {
         var dt = BuildVisitDateTime(VisitDatePicker.SelectedDate, _editing);
-        return new Visit
+        var v = new Visit
         {
             VisitId = _editing?.VisitId ?? 0,
             PatientId = patientId,
@@ -219,6 +229,18 @@ public partial class VisitFormDialog : UserControl
             Temperature = TempBox.Text.Trim(),
             PrescriptionText = PrescriptionBox.Text.Trim()
         };
+
+        foreach (var item in _prescriptionItems)
+        {
+            v.PrescriptionDetails.Add(new PrescriptionDetail
+            {
+                VisitId = v.VisitId,
+                MedicineId = item.MedicineId,
+                Quantity = item.Quantity,
+                Dosage = item.Dosage
+            });
+        }
+        return v;
     }
 
     private static DateTime BuildVisitDateTime(DateTime? selectedDate, Visit? editing)
@@ -281,9 +303,17 @@ public partial class VisitFormDialog : UserControl
 
     private void ConfirmAddMedicine_Click(object sender, RoutedEventArgs e)
     {
-        if (MedicineCombo.SelectedItem is not Medicine med)
+        var medicineName = MedicineCombo.Text.Trim();
+        if (string.IsNullOrWhiteSpace(medicineName))
         {
             MessageBox.Show("Vui lòng chọn thuốc.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var med = _vm.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
+        if (med == null)
+        {
+            MessageBox.Show("Không tìm thấy thuốc này trong hệ thống.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -294,12 +324,13 @@ public partial class VisitFormDialog : UserControl
         }
 
         double.TryParse(MedicineQty.Text, out double qty);
+        if (qty <= 0) qty = 1;
 
         // Kiểm tra xem thuốc đã có trong đơn chưa
         var existing = _prescriptionItems.FirstOrDefault(p => p.MedicineId == med.MedicineId);
         if (existing != null)
         {
-            existing.Quantity = qty;
+            existing.Quantity += qty;
             existing.Dosage = MedicineDosage.Text;
             // Refresh ListView
             PrescriptionList.Items.Refresh();
@@ -316,6 +347,7 @@ public partial class VisitFormDialog : UserControl
         }
 
         // Reset input
+        MedicineCombo.Text = "";
         MedicineQty.Clear();
         MedicineDosage.Clear();
         MedicineInputArea.Visibility = Visibility.Collapsed;
@@ -428,7 +460,7 @@ public partial class VisitFormDialog : UserControl
         {
             comboBox.Loaded += (s, e) =>
             {
-                if (comboBox.Template.FindName("PART_EditableTextBox", comboBox) is TextBox tb2)
+                if (comboBox.Template?.FindName("PART_EditableTextBox", comboBox) is TextBox tb2)
                 {
                     tb2.TextChanged -= EditableComboBox_TextChanged;
                     tb2.TextChanged += EditableComboBox_TextChanged;

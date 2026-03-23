@@ -83,6 +83,7 @@
         </Style>
 
         <Style x:Key="FormComboBox" TargetType="ComboBox">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="FontSize"        Value="13"/>
             <Setter Property="Foreground"      Value="{StaticResource C.Gray800}"/>
             <Setter Property="Background"      Value="{StaticResource C.White}"/>
@@ -93,25 +94,36 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
+                            <!-- Shadow Layer -->
                             <Border x:Name="FocusShadow" CornerRadius="10" Background="Transparent" Opacity="0">
                                 <Border.Effect>
                                     <DropShadowEffect Color="#22C55E" Opacity="0.18" BlurRadius="10" ShadowDepth="0"/>
                                 </Border.Effect>
                             </Border>
 
+                            <!-- Main Rounded Border -->
                             <Border x:Name="Root"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="10">
+                                    CornerRadius="10"
+                                    SnapsToDevicePixels="True"
+                                    ClipToBounds="True">
                                 <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="36"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Dropdown Arrow Button -->
                                     <ToggleButton x:Name="PART_DropDownToggle" 
+                                                  Grid.ColumnSpan="2"
                                                   IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   Focusable="False" ClickMode="Press" Background="Transparent" BorderThickness="0">
                                         <ToggleButton.Template>
                                             <ControlTemplate TargetType="ToggleButton">
                                                 <Border Background="Transparent">
-                                                    <Path Data="M 0 0 L 5 5 L 10 0" 
+                                                    <Path x:Name="Arrow" Data="M 0 0 L 5 5 L 10 0" 
                                                           Stroke="{StaticResource C.Gray400}" StrokeThickness="1.8" 
                                                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0" 
                                                           StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
@@ -120,21 +132,24 @@
                                         </ToggleButton.Template>
                                     </ToggleButton>
 
+                                    <!-- Selection Display (Non-editable) -->
                                     <ContentPresenter x:Name="ContentSite"
                                                       Content="{TemplateBinding SelectionBoxItem}"
-                                                      Margin="12,0,36,0"
+                                                      Margin="12,0,0,0"
                                                       VerticalAlignment="Center"
                                                       IsHitTestVisible="False"/>
 
+                                    <!-- Editable Text Area (The Search Bar) -->
                                     <TextBox x:Name="PART_EditableTextBox"
-                                             Margin="10,0,36,0"
+                                             Margin="10,0,0,0"
                                              Background="Transparent"
                                              BorderThickness="0"
                                              Foreground="{StaticResource C.Gray800}"
                                              FontSize="13"
                                              VerticalAlignment="Center"
                                              Visibility="Hidden"
-                                             IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                                             IsReadOnly="{TemplateBinding IsReadOnly}"
+                                             Padding="0"/>
                                 </Grid>
                             </Border>
 
@@ -154,8 +169,8 @@
                                     <Border.Effect>
                                         <DropShadowEffect Color="#000000" Opacity="0.10" BlurRadius="20" ShadowDepth="4"/>
                                     </Border.Effect>
-                                    <ScrollViewer Padding="6">
-                                        <ItemsPresenter/>
+                                    <ScrollViewer Padding="6" SnapsToDevicePixels="True">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
                                     </ScrollViewer>
                                 </Border>
                             </Popup>
@@ -599,13 +614,17 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Margin="0,0,10,0">
-                                                        <TextBlock Text="Chọn Thuốc" Style="{StaticResource FormLabel}" FontSize="11"/>
-                                                        <ComboBox x:Name="MedicineCombo" Height="38" Padding="10,0" 
-                                                                  DisplayMemberPath="MedicineName" SelectedValuePath="MedicineId"/>
+                                                        <TextBlock Text="Chọn Thuốc" Style="{StaticResource FormLabel}"/>
+                                                        <ComboBox x:Name="MedicineCombo" Style="{StaticResource FormComboBox}"
+                                                                  Margin="0,0,0,14"
+                                                                  IsEditable="True" IsTextSearchEnabled="False"
+                                                                  StaysOpenOnEdit="True"
+                                                                  SelectionChanged="SearchComboBox_SelectionChanged"
+                                                                  LostKeyboardFocus="SearchComboBox_LostKeyboardFocus"/>
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="1">
-                                                        <TextBlock Text="Số Lượng" Style="{StaticResource FormLabel}" FontSize="11"/>
-                                                        <TextBox x:Name="MedicineQty" Style="{StaticResource FormTextBox}" Height="38" Padding="10,0"/>
+                                                        <TextBlock Text="Số Lượng" Style="{StaticResource FormLabel}"/>
+                                                        <TextBox x:Name="MedicineQty" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0" Margin="0,0,0,14"/>
                                                     </StackPanel>
                                                 </Grid>
                                                 <StackPanel Margin="0,10,0,0">

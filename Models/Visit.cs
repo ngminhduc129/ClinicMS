@@ -28,6 +28,7 @@ public class Visit
     // Navigation
     public Patient? Patient { get; set; }
     public Doctor?  Doctor  { get; set; }
+    public ICollection<PrescriptionDetail> PrescriptionDetails { get; set; } = new List<PrescriptionDetail>();
 
     // Computed
     [NotMapped] public string PatientName    => Patient?.FullName ?? "";

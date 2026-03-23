@@ -359,14 +359,32 @@ public class MainViewModel : BaseViewModel
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
 
+    public async Task<List<PrescriptionDetail>> GetPrescriptionDetailsAsync(int visitId) => await _db.GetPrescriptionDetailsAsync(visitId);
+    public async Task SavePrescriptionAsync(int visitId, List<PrescriptionDetail> items) => await _db.SavePrescriptionDetailsAsync(visitId, items);
+
     public async Task<bool> AddVisitAsync(Visit v)
     {
-        try { await _db.AddVisitAsync(v); await LoadVisitsAsync(); Toast.Show("Thêm hồ sơ khám thành công"); return true; }
+        try 
+        { 
+            await _db.AddVisitAsync(v); 
+            if (v.PrescriptionDetails.Any())
+                await _db.SavePrescriptionDetailsAsync(v.VisitId, v.PrescriptionDetails.ToList());
+            await LoadVisitsAsync(); 
+            Toast.Show("Thêm hồ sơ khám thành công"); 
+            return true; 
+        }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
     public async Task<bool> UpdateVisitAsync(Visit v)
     {
-        try { await _db.UpdateVisitAsync(v); await LoadVisitsAsync(); Toast.Show("Cập nhật hồ sơ khám thành công"); return true; }
+        try 
+        { 
+            await _db.UpdateVisitAsync(v); 
+            await _db.SavePrescriptionDetailsAsync(v.VisitId, v.PrescriptionDetails.ToList());
+            await LoadVisitsAsync(); 
+            Toast.Show("Cập nhật hồ sơ khám thành công"); 
+            return true; 
+        }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
     public async Task<bool> DeleteVisitAsync(Visit v)

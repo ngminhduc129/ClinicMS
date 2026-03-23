@@ -19,8 +19,17 @@
         <SolidColorBrush x:Key="C.Gray200"   Color="#E5E7EB"/>
         <SolidColorBrush x:Key="C.Gray400"   Color="#9CA3AF"/>
         <SolidColorBrush x:Key="C.Gray600"   Color="#4B5563"/>
+        <SolidColorBrush x:Key="C.Gray500"   Color="#6B7280"/>
         <SolidColorBrush x:Key="C.Gray800"   Color="#1F2937"/>
         <SolidColorBrush x:Key="C.Red"       Color="#EF4444"/>
+
+        <!-- ===== FORM LABEL ===== -->
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource C.Gray600}"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
 
         <!-- ===== SECTION LABEL ===== -->
         <Style x:Key="SectionLabel" TargetType="TextBlock">
@@ -457,6 +466,76 @@
             </Setter>
         </Style>
 
+        <Style x:Key="FormComboBox" TargetType="ComboBox">
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Foreground"      Value="{StaticResource C.Gray800}"/>
+            <Setter Property="Background"      Value="{StaticResource C.White}"/>
+            <Setter Property="BorderBrush"     Value="{StaticResource C.Gray200}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Height"          Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="FocusShadow" CornerRadius="10" Background="Transparent" Opacity="0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#22C55E" Opacity="0.18" BlurRadius="10" ShadowDepth="0"/>
+                                </Border.Effect>
+                            </Border>
+                            <Border x:Name="Root" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10">
+                                <Grid>
+                                    <ToggleButton x:Name="PART_DropDownToggle" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Focusable="False" ClickMode="Press" Background="Transparent" BorderThickness="0">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent">
+                                                    <Path Data="M 0 0 L 4 4 L 8 0" Stroke="{StaticResource C.Gray400}" StrokeThickness="1.5" 
+                                                          HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <TextBox x:Name="PART_EditableTextBox" Margin="10,0,26,0" Background="Transparent" BorderThickness="0"
+                                             Foreground="{StaticResource C.Gray800}" FontSize="12" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <ContentPresenter x:Name="ContentSite" Content="{TemplateBinding SelectionBoxItem}" Margin="10,0,26,0"
+                                                      VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                </Grid>
+                            </Border>
+                            <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" PopupAnimation="Slide">
+                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ComboBox}}" MaxHeight="200"
+                                        Background="White" BorderBrush="{StaticResource C.Gray200}" BorderThickness="1" CornerRadius="8" Margin="0,4,0,0">
+                                    <ScrollViewer Padding="4"><ItemsPresenter/></ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/><Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource C.Green600}"/><Setter TargetName="FocusShadow" Property="Opacity" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="10,6"/><Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem"><Border x:Name="Bg" CornerRadius="6" Margin="1" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Green50}"/></Trigger>
+                            <Trigger Property="IsSelected" Value="True"><Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Green100}"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Margin="32,28,32,32">
@@ -793,7 +872,55 @@
                                     </Border>
 
                                     <StackPanel x:Name="MedicineList"/>
-                                    <TextBlock x:Name="MedicineEmpty" Text="Tính năng đơn thuốc đang phát triển." FontSize="13" Foreground="{StaticResource C.Gray400}" HorizontalAlignment="Center" Margin="0,16,0,8" Visibility="Collapsed"/>
+                                    
+                                    <!-- QUICK ADD MEDICINE AREA -->
+                                    <Border x:Name="QuickAddMedicineArea" Visibility="Collapsed" Background="#F9FAFB" CornerRadius="8" Padding="12" Margin="0,8,0,0" BorderBrush="#E5E7EB" BorderThickness="1">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Margin="0,0,8,0">
+                                                <TextBlock Text="Chọn thuốc" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C.Gray500}" Margin="0,0,0,4"/>
+                                                <ComboBox x:Name="QuickMedicineCombo" Height="32"
+                                                          IsEditable="True" IsTextSearchEnabled="False"
+                                                          StaysOpenOnEdit="True"
+                                                          SelectionChanged="SearchComboBox_SelectionChanged"
+                                                          LostKeyboardFocus="SearchComboBox_LostKeyboardFocus">
+                                                    <ComboBox.Resources>
+                                                        <Style TargetType="TextBox">
+                                                            <Setter Property="Padding" Value="8,0"/>
+                                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                            <Setter Property="FontSize" Value="12"/>
+                                                        </Style>
+                                                    </ComboBox.Resources>
+                                                </ComboBox>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                                <TextBlock Text="Số lượng" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C.Gray500}" Margin="0,0,0,4"/>
+                                                <TextBox x:Name="QuickMedicineQty" Height="32" VerticalContentAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,8,0">
+                                                <TextBlock Text="Cách dùng / Liều dùng" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C.Gray500}" Margin="0,0,0,4"/>
+                                                <TextBox x:Name="QuickMedicineDosage" Height="32" VerticalContentAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                                <Button Content="Hủy" Click="CancelQuickAdd_Click" Style="{StaticResource OutlineBtn}" Height="32" Padding="12,0" Margin="0,0,4,0"/>
+                                                <Button Content="Lưu" Click="ConfirmQuickAdd_Click" Style="{StaticResource GreenBtn}" Height="32" Padding="16,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <TextBlock x:Name="MedicineEmpty" Text="Chưa có đơn thuốc nào." FontSize="13" Foreground="{StaticResource C.Gray400}" HorizontalAlignment="Center" Margin="0,16,0,8" Visibility="Collapsed"/>
                                 </StackPanel>
                             </Border>
 

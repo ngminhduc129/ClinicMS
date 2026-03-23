@@ -287,6 +287,40 @@ public class DatabaseService
                        .ToListAsync();
     }
 
+    public async Task<List<PrescriptionDetail>> GetPrescriptionDetailsAsync(int visitId)
+    {
+        await using var db = Ctx();
+        return await db.PrescriptionDetails
+            .Include(pd => pd.Medicine)
+            .Where(pd => pd.VisitId == visitId)
+            .ToListAsync();
+    }
+
+    public async Task SavePrescriptionDetailsAsync(int visitId, List<PrescriptionDetail> items)
+    {
+        await using var db = Ctx();
+        
+        // Xóa đơn cũ
+        var old = await db.PrescriptionDetails.Where(pd => pd.VisitId == visitId).ToListAsync();
+        if (old.Any()) db.PrescriptionDetails.RemoveRange(old);
+        await db.SaveChangesAsync();
+        
+        // Thêm mới
+        foreach (var item in items)
+        {
+            var detail = new PrescriptionDetail
+            {
+                VisitId = visitId,
+                MedicineId = item.MedicineId,
+                Quantity = item.Quantity,
+                Dosage = item.Dosage
+            };
+            db.PrescriptionDetails.Add(detail);
+        }
+        
+        await db.SaveChangesAsync();
+    }
+
     // ═══════════════════════════════════════════════
     //  DOCTORS
     // ═══════════════════════════════════════════════

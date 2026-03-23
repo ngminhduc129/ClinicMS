@@ -40,3 +40,13 @@ packages/
 .gemini/
 .dotnet_home/
 .nuget/
+
+## [Scripts & Database Tools]
+*.ps1
+*.py
+*.db
+!rebuild_database.py
+!sync_schema_v2.py
+!generate_patients.py
+!fix_null_columns.py
+!fix_columns_final.py

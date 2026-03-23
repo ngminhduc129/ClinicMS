@@ -260,39 +260,29 @@ public partial class VisitFormDialog : UserControl
 
     // ───────────────────────────── Validation ─────────────────────────────
 
-    private bool TryResolvePatientId(out int patientId, out string error)
+    private async Task<(int id, string? error)> TryResolvePatientIdAsync()
     {
-        patientId = 0; error = "";
         var name = PatientNameBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(name)) { error = "Vui lòng nhập tên bệnh nhân."; return false; }
-        
-        // Tìm bệnh nhân trong toàn bộ database thay vì danh sách bị giới hạn 50 người
+        if (string.IsNullOrWhiteSpace(name)) return (0, "Vui lòng nhập tên bệnh nhân.");
+
         var db = new DatabaseService();
-        var matchTask = db.GetPatientByNameAsync(name);
-        matchTask.Wait(); // Chờ đồng bộ trong hàm bool (hoặc dùng Task.Run)
-        
-        var match = matchTask.Result;
-        if (match == null) { error = "Không tìm thấy bệnh nhân trong hệ thống."; return false; }
-        
-        patientId = match.PatientId; return true;
+        var match = await db.GetPatientByNameAsync(name);
+
+        if (match == null) return (0, "Không tìm thấy bệnh nhân trong hệ thống.");
+        return (match.PatientId, null);
     }
 
-    private bool TryResolveDoctorId(out int doctorId, out string error)
+    private async Task<(int id, string? error)> TryResolveDoctorIdAsync()
     {
-        doctorId = 0; error = "";
         var name = DoctorNameBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(name)) { error = "Vui lòng nhập tên bác sĩ."; return false; }
-        
-        var db = new DatabaseService();
-        var matchTask = db.GetDoctorByNameAsync(name); // Tôi sẽ thêm hàm này vào DBService
-        matchTask.Wait();
-        
-        var match = matchTask.Result;
-        if (match == null) { error = "Không tìm thấy bác sĩ trong hệ thống."; return false; }
-        
-        doctorId = match.DoctorId; return true;
-    }
+        if (string.IsNullOrWhiteSpace(name)) return (0, "Vui lòng nhập tên bác sĩ.");
 
+        var db = new DatabaseService();
+        var match = await db.GetDoctorByNameAsync(name);
+
+        if (match == null) return (0, "Không tìm thấy bác sĩ trong hệ thống.");
+        return (match.DoctorId, null);
+    }
     // ───────────────────────────── Prescription Logic ─────────────────────────────
 
     private void AddMedicine_Click(object sender, RoutedEventArgs e)
@@ -389,25 +379,41 @@ public partial class VisitFormDialog : UserControl
 
     private async void Save_Click(object s, RoutedEventArgs e)
     {
-        if (!TryResolvePatientId(out var patientId, out var patientError))
-        { MessageBox.Show(patientError, "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-        if (!TryResolveDoctorId(out var doctorId, out var doctorError))
-        { MessageBox.Show(doctorError, "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-
-        var v = BuildVisit(patientId, doctorId);
-        
-        // Gán danh sách thuốc vào Visit trước khi lưu
-        // Lưu ý: Tùy thuộc vào DatabaseService có xử lý lưu kèm Child collection hay không
-        // Nếu không, ta sẽ cần gọi thêm một hàm lưu đơn thuốc riêng.
-        
-        bool ok = _isEditing ? await _vm.UpdateVisitAsync(v) : await _vm.AddVisitAsync(v);
-        
-        if (ok)
+        try
         {
-            // Lưu chi tiết đơn thuốc vào bảng PrescriptionDetails
-            // Tôi giả định bạn sẽ cần một hàm trong MainViewModel để lưu đống này
-            // await _vm.SavePrescriptionAsync(v.VisitId, _prescriptionItems.ToList());
-            CloseForm(true);
+            var (patientId, patientError) = await TryResolvePatientIdAsync();
+            if (patientError != null)
+            { 
+                MessageBox.Show(patientError, "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); 
+                return; 
+            }
+
+            var (doctorId, doctorError) = await TryResolveDoctorIdAsync();
+            if (doctorError != null)
+            { 
+                MessageBox.Show(doctorError, "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); 
+                return; 
+            }
+
+            SaveBtn.IsEnabled = false;
+            var v = BuildVisit(patientId, doctorId);
+            
+            // Lưu Visit và đơn thuốc đi kèm
+            bool ok = _isEditing ? await _vm.UpdateVisitAsync(v) : await _vm.AddVisitAsync(v);
+            
+            if (ok)
+            {
+                CloseForm(true);
+            }
+            else
+            {
+                SaveBtn.IsEnabled = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            SaveBtn.IsEnabled = true;
+            MessageBox.Show($"Lỗi khi lưu hồ sơ: {ex.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

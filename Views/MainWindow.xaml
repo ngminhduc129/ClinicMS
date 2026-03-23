@@ -11,9 +11,12 @@
         WindowStartupLocation="CenterScreen"
         Background="#F6F9FC">
     <Border UseLayoutRounding="True" SnapsToDevicePixels="True">
-        <Border.LayoutTransform>
+        <Border.RenderTransformOrigin>
+            <Point X="0.5" Y="0.5"/>
+        </Border.RenderTransformOrigin>
+        <Border.RenderTransform>
             <ScaleTransform ScaleX="{Binding FontScale}" ScaleY="{Binding FontScale}"/>
-        </Border.LayoutTransform>
+        </Border.RenderTransform>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>

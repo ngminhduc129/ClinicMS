@@ -112,15 +112,10 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
 
         var search = _search?.Trim() ?? "";
         
-        // Nếu có từ khóa, ta gọi hàm search chuyên sâu từ Database
+        // Nếu có từ khóa và danh sách hiện tại không đủ (hoặc người dùng yêu cầu search DB), ta mới gọi search
         if (!string.IsNullOrEmpty(search))
         {
             await _vm.SearchPatientsAsync(search);
-        }
-        else
-        {
-            // Nếu không có từ khóa (xóa trắng search), ta luôn nạp lại 50 người đầu tiên
-            await _vm.LoadPatientsAsync();
         }
 
         // Tạo bản sao và áp dụng lọc giới tính (gender) nếu có

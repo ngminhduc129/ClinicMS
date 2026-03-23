@@ -124,7 +124,7 @@ public class DatabaseService
                     from subPc in contacts.DefaultIfEmpty()
                     join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
                     from subC in finalContacts.DefaultIfEmpty()
-                    orderby p.FullName
+                    orderby p.PatientId descending
                     select new { p, subC };
 
         var results = await query.Skip(offset).Take(limit).ToListAsync();
@@ -212,6 +212,7 @@ public class DatabaseService
         await db.SaveChangesAsync();
 
         p.Phone = null; p.Email = null; p.Address = null; // stored in contacts
+        if (string.IsNullOrEmpty(p.CreatedAt)) p.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         db.Patients.Add(p);
         await db.SaveChangesAsync();
 
@@ -379,18 +380,68 @@ public class DatabaseService
     public async Task<Visit> AddVisitAsync(Visit v)
     {
         await using var db = Ctx();
-        if (string.IsNullOrEmpty(v.VisitTime))
-            v.VisitTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        db.Visits.Add(v);
-        await db.SaveChangesAsync();
-        return v;
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        try
+        {
+            if (string.IsNullOrEmpty(v.VisitTime))
+                v.VisitTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            // 1. Lưu thông tin Visit trước để lấy VisitId
+            db.Visits.Add(v);
+            await db.SaveChangesAsync();
+
+            // 2. Lưu chi tiết đơn thuốc nếu có
+            if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())
+            {
+                foreach (var detail in v.PrescriptionDetails)
+                {
+                    detail.VisitId = v.VisitId; // Đảm bảo đúng VisitId mới sinh
+                    db.PrescriptionDetails.Add(detail);
+                }
+                await db.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+            return v;
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task UpdateVisitAsync(Visit v)
     {
         await using var db = Ctx();
-        db.Visits.Update(v);
-        await db.SaveChangesAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        try
+        {
+            // 1. Cập nhật thông tin Visit
+            db.Visits.Update(v);
+
+            // 2. Xóa sạch đơn thuốc cũ và ghi lại mới để đơn giản hóa logic đồng bộ
+            var oldDetails = await db.PrescriptionDetails.Where(pd => pd.VisitId == v.VisitId).ToListAsync();
+            db.PrescriptionDetails.RemoveRange(oldDetails);
+            await db.SaveChangesAsync();
+
+            if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())
+            {
+                foreach (var detail in v.PrescriptionDetails)
+                {
+                    detail.VisitId = v.VisitId;
+                    db.PrescriptionDetails.Add(detail);
+                }
+                await db.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task DeleteVisitAsync(int id)

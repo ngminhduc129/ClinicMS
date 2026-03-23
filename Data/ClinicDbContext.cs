@@ -76,6 +76,7 @@ public class ClinicDbContext : DbContext
         mb.Entity<InvoiceItem>().ToTable("invoice_items");
         mb.Entity<Payment>().ToTable("payments");
         mb.Entity<AppSetting>().ToTable("AppSettings");
+        mb.Entity<PrescriptionDetail>().ToTable("prescription_details");
 
         // Composite PKs
         mb.Entity<PatientContact>().HasKey(pc => new { pc.PatientId, pc.ContactId });

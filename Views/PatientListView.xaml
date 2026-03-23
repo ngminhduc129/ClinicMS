@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ClinicMS.Views.PatientListView"
+<UserControl x:Class="ClinicMS.Views.PatientListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Self"
@@ -312,7 +312,7 @@
 
         <!-- ══════════════════ TABLE CARD ══════════════════ -->
         <Grid Grid.Row="2">
-            <!-- Shadow layer (Separate from content to prevent blur) -->
+            <!-- Shadow layer -->
             <Border Background="White" CornerRadius="10">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.08" Color="#000"/>
@@ -335,36 +335,6 @@
                                    FontFamily="Segoe UI" HorizontalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Empty State -->
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,60">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding ElementName=Self, Path=FilteredCount}" Value="0"/>
-                                            <Condition Binding="{Binding LoadingPatients}"                    Value="False"/>
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <Border Width="64" Height="64" CornerRadius="10" Background="#F0FDF4"
-                                HorizontalAlignment="Center" Margin="0,0,0,16">
-                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="28"
-                                       Foreground="#A7F3D0"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="Không có bệnh nhân nào" FontSize="16" FontWeight="SemiBold"
-                                   Foreground="#374151" FontFamily="Segoe UI"
-                                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                        <TextBlock Text="Hãy thêm bệnh nhân mới hoặc thay đổi từ khóa tìm kiếm."
-                                   FontSize="13" Foreground="#9CA3AF" FontFamily="Segoe UI"
-                                   HorizontalAlignment="Center"/>
-                    </StackPanel>
-
                     <!-- DataGrid -->
                     <DataGrid x:Name="PatientDataGrid"
                               ItemsSource="{Binding ElementName=Self, Path=FilteredPatients}"
@@ -376,15 +346,18 @@
                               GridLinesVisibility="None" BorderThickness="0"
                               Background="Transparent" FontFamily="Segoe UI" FontSize="13"
                               HeadersVisibility="Column" RowHeight="54"
-                              AlternationCount="999999"
                               VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Disabled"
                               SelectionChanged="DataGrid_SelectionChanged"
-                              VirtualizingStackPanel.IsVirtualizing="True"
-                              VirtualizingStackPanel.VirtualizationMode="Recycling"
-                              VirtualizingStackPanel.CacheLengthUnit="Item"
-                              VirtualizingStackPanel.CacheLength="10,10"
-                              ScrollViewer.IsDeferredScrollingEnabled="True">
+                              
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              VirtualizingPanel.ScrollUnit="Pixel"
+                              VirtualizingPanel.CacheLength="2,2"
+                              VirtualizingPanel.CacheLengthUnit="Page"
+                              
+                              ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.IsDeferredScrollingEnabled="False">
 
                         <!-- Column Header -->
                         <DataGrid.ColumnHeaderStyle>
@@ -424,21 +397,18 @@
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Background"  Value="#F0FDF4"/>
-                                        <Setter Property="BorderBrush" Value="#D1FAE5"/>
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Background"  Value="#DCFCE7"/>
-                                        <Setter Property="BorderBrush" Value="#A7F3D0"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.RowStyle>
 
-                        <!-- Cell Style: tắt màu xanh dương khi click -->
+                        <!-- Cell Style -->
                         <DataGrid.CellStyle>
                             <Style TargetType="DataGridCell">
                                 <Setter Property="BorderThickness"  Value="0"/>
-                                <Setter Property="BorderBrush"      Value="Transparent"/>
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                                 <Setter Property="Background"       Value="Transparent"/>
                                 <Setter Property="Template">
@@ -454,9 +424,7 @@
                         </DataGrid.CellStyle>
 
                         <DataGrid.Columns>
-
-                            <!-- STT -->
-                            <DataGridTemplateColumn Header="STT" Width="0.5*">
+                            <DataGridTemplateColumn Header="STT" Width="60">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock VerticalAlignment="Center" Padding="16,0,0,0"
@@ -472,8 +440,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!-- MÃ BN -->
-                            <DataGridTemplateColumn Header="MÃ BN" Width="0.8*">
+                            <DataGridTemplateColumn Header="MÃ BN" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Background="#DCFCE7" CornerRadius="10"
@@ -482,199 +449,119 @@
                                                 Margin="16,0,0,0">
                                             <TextBlock Text="{Binding DisplayId}"
                                                        Foreground="#16A34A"
-                                                       FontWeight="Bold" FontSize="13"
-                                                       VerticalAlignment="Center"/>
+                                                       FontWeight="Bold" FontSize="13"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!-- HỌ TÊN -->
-                            <DataGridTextColumn Header="HỌ TÊN" Width="2*" Binding="{Binding FullName}">
+                            <DataGridTextColumn Header="HỌ TÊN" Width="180" Binding="{Binding FullName}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Padding"           Value="16,0,0,0"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="FontWeight"        Value="SemiBold"/>
                                         <Setter Property="Foreground"        Value="#111827"/>
-                                        <Setter Property="FontSize"          Value="13"/>
+                                        <Setter Property="TextTrimming"      Value="CharacterEllipsis"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
-                            <!-- SỐ ĐIỆN THOẠI -->
-                            <DataGridTextColumn Header="ĐIỆN THOẠI" Width="1*" Binding="{Binding PhoneDisplay}">
+                            <DataGridTextColumn Header="ĐIỆN THOẠI" Width="120" Binding="{Binding PhoneDisplay}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Padding"           Value="16,0,0,0"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Foreground"        Value="#6B7280"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding PhoneDisplay}" Value="—">
-                                                <Setter Property="Foreground" Value="#D1D5DB"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
-                            <!-- NGÀY SINH -->
-                            <DataGridTextColumn Header="NGÀY SINH" Width="1*" Binding="{Binding DateOfBirthDisplay}">
+                            <DataGridTextColumn Header="NGÀY SINH" Width="100" Binding="{Binding DateOfBirthDisplay}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Padding"           Value="16,0,0,0"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Foreground"        Value="#6B7280"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding DateOfBirthDisplay}" Value="—">
-                                                <Setter Property="Foreground" Value="#D1D5DB"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
-                            <!-- GIỚI TÍNH -->
-                            <DataGridTextColumn Header="GIỚI TÍNH" Width="0.8*" Binding="{Binding GenderDisplay}">
+                            <DataGridTextColumn Header="GIỚI TÍNH" Width="80" Binding="{Binding GenderDisplay}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Padding"           Value="16,0,0,0"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Foreground"        Value="#6B7280"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding GenderDisplay}" Value="—">
-                                                <Setter Property="Foreground" Value="#D1D5DB"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
-                            <!-- ĐỊA CHỈ -->
-                            <DataGridTextColumn Header="ĐỊA CHỈ" Width="2*" Binding="{Binding AddressDisplay}">
+                            <DataGridTextColumn Header="ĐỊA CHỈ" Width="*" Binding="{Binding AddressDisplay}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Padding"           Value="16,0,0,0"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Foreground"        Value="#6B7280"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding AddressDisplay}" Value="—">
-                                                <Setter Property="Foreground" Value="#D1D5DB"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
+                                        <Setter Property="TextTrimming"      Value="CharacterEllipsis"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
-                            <!-- GHI CHÚ -->
-                            <DataGridTextColumn Header="GHI CHÚ" Width="1.2*" Binding="{Binding NoteDisplay}">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0,0,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground"        Value="#6B7280"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding NoteDisplay}" Value="—">
-                                                <Setter Property="Foreground" Value="#D1D5DB"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-
-                            <!-- ACTIONS -->
                             <DataGridTemplateColumn Header="" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,12,0">
-
-                                            <!-- Chi tiết -->
-                                            <Button Width="32" Height="32" Margin="0,0,4,0"
-                                                    Cursor="Hand" ToolTip="Chi tiết"
-                                                    Click="Detail_Click">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,12,0">
+                                            <Button Width="32" Height="32" Margin="0,0,4,0" Cursor="Hand" Click="Detail_Click">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bg" CornerRadius="10"
-                                                                Background="Transparent">
-                                                            <TextBlock x:Name="Ic" Text="&#xE7B3;"
-                                                                       FontFamily="Segoe MDL2 Assets"
-                                                                       FontSize="14" Foreground="#9CA3AF"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
+                                                        <Border x:Name="Bg" CornerRadius="10" Background="Transparent">
+                                                            <TextBlock x:Name="Ic" Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
-                                                                <Setter TargetName="Ic" Property="Foreground" Value="#16A34A"/>
+                                                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/><Setter TargetName="Ic" Property="Foreground" Value="#16A34A"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
                                                 </Button.Template>
                                             </Button>
-
-                                            <!-- Sửa -->
-                                            <Button Width="32" Height="32" Margin="0,0,4,0"
-                                                    Cursor="Hand" ToolTip="Sửa"
-                                                    Click="Edit_Click">
+                                            <Button Width="32" Height="32" Margin="0,0,4,0" Cursor="Hand" Click="Edit_Click">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bg" CornerRadius="10"
-                                                                Background="Transparent">
-                                                            <TextBlock x:Name="Ic" Text="&#xE70F;"
-                                                                       FontFamily="Segoe MDL2 Assets"
-                                                                       FontSize="14" Foreground="#9CA3AF"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
+                                                        <Border x:Name="Bg" CornerRadius="10" Background="Transparent">
+                                                            <TextBlock x:Name="Ic" Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
-                                                                <Setter TargetName="Ic" Property="Foreground" Value="#16A34A"/>
+                                                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/><Setter TargetName="Ic" Property="Foreground" Value="#16A34A"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
                                                 </Button.Template>
                                             </Button>
-
-                                            <!-- Xóa -->
-                                            <Button Width="32" Height="32"
-                                                    Cursor="Hand" ToolTip="Xóa"
-                                                    Click="Delete_Click">
+                                            <Button Width="32" Height="32" Cursor="Hand" Click="Delete_Click">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bg" CornerRadius="10"
-                                                                Background="Transparent">
-                                                            <TextBlock x:Name="Ic" Text="&#xE74D;"
-                                                                       FontFamily="Segoe MDL2 Assets"
-                                                                       FontSize="14" Foreground="#9CA3AF"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"/>
+                                                        <Border x:Name="Bg" CornerRadius="10" Background="Transparent">
+                                                            <TextBlock x:Name="Ic" Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bg" Property="Background" Value="#FEE2E2"/>
-                                                                <Setter TargetName="Ic" Property="Foreground" Value="#B91C1C"/>
+                                                                <Setter TargetName="Bg" Property="Background" Value="#FEE2E2"/><Setter TargetName="Ic" Property="Foreground" Value="#B91C1C"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
                                                 </Button.Template>
                                             </Button>
-
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </Border>
         </Grid>
-
     </Grid>
 </UserControl>
-
-

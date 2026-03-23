@@ -40,3 +40,4 @@ packages/
 .gemini/
 .dotnet_home/
 .nuget/
+.idea/

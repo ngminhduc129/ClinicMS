@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using ClinicMS.Models;
 using ClinicMS.Services;
 
@@ -107,32 +111,41 @@ public class MainViewModel : BaseViewModel
 
     private async Task InitializeAndLoad()
     {
-        string logFile = @"D:\ClinicMS\boot_log.txt";
-        try 
-        {
-            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting boot with Lazy Loading...\n");
+        var logDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ClinicMS");
+        Directory.CreateDirectory(logDir);
+        string logFile = Path.Combine(logDir, "boot_log.txt");
 
+        try
+        {
+            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting...\n");
+
+            // Chạy Initialize trên background thread để không block UI
+            // và đảm bảo connection được đóng hoàn toàn trước khi query
             await Task.Run(() => DatabaseService.Initialize());
+
+            File.AppendAllText(logFile, $"[{DateTime.Now}] DB Init OK\n");
+
             await LoadSettingsAsync();
             await LoadDashboardDataAsync();
-            
-            // Nạp cache tên đầy đủ trước để dùng cho tìm kiếm (Suggestion)
+
             FullPatientNames = await _db.GetAllPatientNamesAsync();
-            FullDoctorNames = await _db.GetAllDoctorNamesAsync();
-            
+            FullDoctorNames  = await _db.GetAllDoctorNamesAsync();
+
             await Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
 
-            // Chỉ nạp 50 người đầu tiên cho danh sách hiển thị
-            _patientOffset = 0;
+            _patientOffset       = 0;
             _isAllPatientsLoaded = false;
             Patients.Clear();
             await LoadMorePatientsInternalAsync();
 
-            File.AppendAllText(logFile, $"[{DateTime.Now}] Initial batch loaded. Count: {Patients.Count}\n");
+            File.AppendAllText(logFile, $"[{DateTime.Now}] Loaded OK. Patients: {Patients.Count}\n");
         }
         catch (Exception ex)
         {
             File.AppendAllText(logFile, $"[{DateTime.Now}] ERROR: {ex}\n");
+            Toast.ShowError($"Lỗi khởi động: {ex.Message}");
         }
     }
 

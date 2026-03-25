@@ -28,11 +28,23 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
 
     private string _search = "";
     private string _specialtyFilter = "";
+    private System.Threading.CancellationTokenSource? _searchCts;
 
-    private void Search_TextChanged(object s, TextChangedEventArgs e)
+    private async void Search_TextChanged(object s, TextChangedEventArgs e)
     {
         _search = ((TextBox)s).Text.Trim();
-        ApplyFilter();
+        
+        // Debounce: Hủy tác vụ cũ nếu người dùng vẫn đang gõ
+        _searchCts?.Cancel();
+        _searchCts = new System.Threading.CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        try 
+        {
+            await Task.Delay(300, token); // Chờ 300ms
+            ApplyFilter();
+        }
+        catch (TaskCanceledException) { /* Bỏ qua nếu bị hủy */ }
     }
 
     private void FilterButton_Click(object s, RoutedEventArgs e)

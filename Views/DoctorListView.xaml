@@ -328,8 +328,17 @@
                               GridLinesVisibility="None" BorderThickness="0"
                               Background="Transparent" FontFamily="Segoe UI" FontSize="13"
                               HeadersVisibility="Column" RowHeight="54"
-                              VerticalScrollBarVisibility="Hidden"
-                              HorizontalScrollBarVisibility="Hidden">
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Hidden"
+                              
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              VirtualizingPanel.ScrollUnit="Pixel"
+                              VirtualizingPanel.CacheLength="2,2"
+                              VirtualizingPanel.CacheLengthUnit="Page"
+                              
+                              ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.IsDeferredScrollingEnabled="False">
 
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader">

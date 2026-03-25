@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using ClinicMS.Models;
 using ClinicMS.Services;
 
@@ -111,42 +107,45 @@ public class MainViewModel : BaseViewModel
 
     private async Task InitializeAndLoad()
     {
-        var logDir = Path.Combine(
+        string logFile = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "ClinicMS");
-        Directory.CreateDirectory(logDir);
-        string logFile = Path.Combine(logDir, "boot_log.txt");
-
-        try
+            "ClinicMS", "boot_log.txt");
+            
+        try 
         {
-            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting...\n");
+            // Đợi một chút để UI render xong khung cửa sổ
+            await Task.Delay(100);
+            
+            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting boot with Lazy Loading...\n");
 
-            // Chạy Initialize trên background thread để không block UI
-            // và đảm bảo connection được đóng hoàn toàn trước khi query
             await Task.Run(() => DatabaseService.Initialize());
-
-            File.AppendAllText(logFile, $"[{DateTime.Now}] DB Init OK\n");
-
             await LoadSettingsAsync();
             await LoadDashboardDataAsync();
-
+            
+            // Nạp cache tên đầy đủ trước để dùng cho tìm kiếm (Suggestion)
             FullPatientNames = await _db.GetAllPatientNamesAsync();
-            FullDoctorNames  = await _db.GetAllDoctorNamesAsync();
-
+            FullDoctorNames = await _db.GetAllDoctorNamesAsync();
+            
             await Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
 
-            _patientOffset       = 0;
+            // 2. Chỉ nạp 50 người đầu tiên cho danh sách hiển thị để hiện UI ngay
+            _patientOffset = 0;
             _isAllPatientsLoaded = false;
             Patients.Clear();
             await LoadMorePatientsInternalAsync();
 
-            File.AppendAllText(logFile, $"[{DateTime.Now}] Loaded OK. Patients: {Patients.Count}\n");
+            File.AppendAllText(logFile, $"[{DateTime.Now}] Initial 50 loaded. Ready for Lazy Loading.\n");
         }
         catch (Exception ex)
         {
             File.AppendAllText(logFile, $"[{DateTime.Now}] ERROR: {ex}\n");
-            Toast.ShowError($"Lỗi khởi động: {ex.Message}");
         }
+    }
+
+    private async Task LoadAllPatientsInBackground()
+    {
+        // Đã xóa để chuyển sang Lazy Load thực thụ (cuộn đến đâu nạp đến đó)
+        await Task.CompletedTask;
     }
 
     public async Task LoadMorePatientsAsync()
@@ -318,8 +317,16 @@ public class MainViewModel : BaseViewModel
     {
         LoadingVisits = true;
         try { 
-            var list = await _db.GetVisitsAsync(); Visits.Clear(); foreach (var v in list) Visits.Add(v); TotalVisits = Visits.Count;
-            var today = DateTime.Today.ToString("yyyy-MM-dd"); VisitsToday = Visits.Count(v => v.VisitTime?.StartsWith(today) == true);
+            // Chỉ lấy 100 lượt khám gần nhất cho Dashboard để tránh treo UI
+            var list = await _db.GetVisitsAsync(); 
+            var displayList = list.Take(100).ToList();
+            
+            Visits.Clear(); 
+            foreach (var v in displayList) Visits.Add(v); 
+            
+            TotalVisits = list.Count;
+            var today = DateTime.Today.ToString("yyyy-MM-dd"); 
+            VisitsToday = list.Count(v => v.VisitTime?.StartsWith(today) == true);
         }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingVisits = false; }
     }
@@ -327,14 +334,22 @@ public class MainViewModel : BaseViewModel
     public async Task LoadMedicinesAsync()
     {
         LoadingMedicines = true;
-        try { var list = await _db.GetMedicinesAsync(); Medicines.Clear(); foreach (var m in list) Medicines.Add(m); }
+        try { 
+            var list = await _db.GetMedicinesAsync(); 
+            Medicines.Clear(); 
+            foreach (var m in list) Medicines.Add(m); 
+        }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingMedicines = false; }
     }
 
     public async Task LoadInvoicesAsync()
     {
         LoadingInvoices = true;
-        try { var list = await _db.GetInvoicesAsync(); Invoices.Clear(); foreach (var i in list) Invoices.Add(i); }
+        try { 
+            var list = await _db.GetInvoicesAsync(); 
+            Invoices.Clear(); 
+            foreach (var i in list) Invoices.Add(i); 
+        }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingInvoices = false; }
     }
 

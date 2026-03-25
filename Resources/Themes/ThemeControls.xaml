@@ -474,14 +474,17 @@
         <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
         <Setter Property="RowHeight" Value="44"/>
         
-        <!-- Smooth Scrolling & Virtualization -->
+        <!-- HIGH PERFORMANCE SCROLLING & VIRTUALIZATION -->
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
         <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
         <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
         <Setter Property="VirtualizingStackPanel.ScrollUnit" Value="Pixel"/>
-        <Setter Property="VirtualizingStackPanel.CacheLength" Value="10,10"/>
-        <Setter Property="VirtualizingStackPanel.CacheLengthUnit" Value="Item"/>
+        <Setter Property="VirtualizingStackPanel.CacheLength" Value="5,5"/>
+        <Setter Property="VirtualizingStackPanel.CacheLengthUnit" Value="Page"/>
+        
+        <!-- Hardware Acceleration -->
+        <Setter Property="RenderOptions.EdgeMode" Value="Aliased"/>
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
     </Style>
 
     <!-- DataGrid Column Header -->

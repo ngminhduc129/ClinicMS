@@ -107,9 +107,15 @@ public class MainViewModel : BaseViewModel
 
     private async Task InitializeAndLoad()
     {
-        string logFile = @"D:\ClinicMS\boot_log.txt";
+        string logFile = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ClinicMS", "boot_log.txt");
+            
         try 
         {
+            // Đợi một chút để UI render xong khung cửa sổ
+            await Task.Delay(100);
+            
             File.WriteAllText(logFile, $"[{DateTime.Now}] Starting boot with Lazy Loading...\n");
 
             await Task.Run(() => DatabaseService.Initialize());
@@ -122,18 +128,24 @@ public class MainViewModel : BaseViewModel
             
             await Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
 
-            // Chỉ nạp 50 người đầu tiên cho danh sách hiển thị
+            // 2. Chỉ nạp 50 người đầu tiên cho danh sách hiển thị để hiện UI ngay
             _patientOffset = 0;
             _isAllPatientsLoaded = false;
             Patients.Clear();
             await LoadMorePatientsInternalAsync();
 
-            File.AppendAllText(logFile, $"[{DateTime.Now}] Initial batch loaded. Count: {Patients.Count}\n");
+            File.AppendAllText(logFile, $"[{DateTime.Now}] Initial 50 loaded. Ready for Lazy Loading.\n");
         }
         catch (Exception ex)
         {
             File.AppendAllText(logFile, $"[{DateTime.Now}] ERROR: {ex}\n");
         }
+    }
+
+    private async Task LoadAllPatientsInBackground()
+    {
+        // Đã xóa để chuyển sang Lazy Load thực thụ (cuộn đến đâu nạp đến đó)
+        await Task.CompletedTask;
     }
 
     public async Task LoadMorePatientsAsync()
@@ -305,8 +317,16 @@ public class MainViewModel : BaseViewModel
     {
         LoadingVisits = true;
         try { 
-            var list = await _db.GetVisitsAsync(); Visits.Clear(); foreach (var v in list) Visits.Add(v); TotalVisits = Visits.Count;
-            var today = DateTime.Today.ToString("yyyy-MM-dd"); VisitsToday = Visits.Count(v => v.VisitTime?.StartsWith(today) == true);
+            // Chỉ lấy 100 lượt khám gần nhất cho Dashboard để tránh treo UI
+            var list = await _db.GetVisitsAsync(); 
+            var displayList = list.Take(100).ToList();
+            
+            Visits.Clear(); 
+            foreach (var v in displayList) Visits.Add(v); 
+            
+            TotalVisits = list.Count;
+            var today = DateTime.Today.ToString("yyyy-MM-dd"); 
+            VisitsToday = list.Count(v => v.VisitTime?.StartsWith(today) == true);
         }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingVisits = false; }
     }
@@ -314,14 +334,22 @@ public class MainViewModel : BaseViewModel
     public async Task LoadMedicinesAsync()
     {
         LoadingMedicines = true;
-        try { var list = await _db.GetMedicinesAsync(); Medicines.Clear(); foreach (var m in list) Medicines.Add(m); }
+        try { 
+            var list = await _db.GetMedicinesAsync(); 
+            Medicines.Clear(); 
+            foreach (var m in list) Medicines.Add(m); 
+        }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingMedicines = false; }
     }
 
     public async Task LoadInvoicesAsync()
     {
         LoadingInvoices = true;
-        try { var list = await _db.GetInvoicesAsync(); Invoices.Clear(); foreach (var i in list) Invoices.Add(i); }
+        try { 
+            var list = await _db.GetInvoicesAsync(); 
+            Invoices.Clear(); 
+            foreach (var i in list) Invoices.Add(i); 
+        }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingInvoices = false; }
     }
 

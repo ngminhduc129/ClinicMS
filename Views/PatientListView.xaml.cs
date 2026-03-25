@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -29,12 +32,10 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
     {
         InitializeComponent();
         
-        // Theo dõi khi DataContext (MainViewModel) được gán vào trang
         this.DataContextChanged += (s, e) => {
             if (e.NewValue is MainViewModel vm) {
                 _vm = vm;
                 _vm.Patients.CollectionChanged += OnPatientsCollectionChanged;
-                // Lắng nghe thay đổi tổng số bệnh nhân từ ViewModel
                 _vm.PropertyChanged += (s2, e2) => {
                     if (e2.PropertyName == nameof(MainViewModel.TotalPatients))
                         OnPropertyChanged(nameof(FilteredCount));
@@ -43,10 +44,8 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
             }
         };
 
-        // Gắn sự kiện cuộn chuột cho DataGrid
         PatientDataGrid.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(OnScrollChanged));
 
-        // Bo góc card đúng cách
         TableCard.SizeChanged += (s, e) =>
         {
             TableCard.Clip = new RectangleGeometry(
@@ -57,7 +56,6 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
 
     private async void OnScrollChanged(object sender, ScrollChangedEventArgs e)
     {
-        // Nếu cuộn xuống gần hết (còn cách đáy 100 pixel)
         if (e.VerticalChange > 0 && e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight - 100)
         {
             if (_vm != null)
@@ -67,9 +65,43 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         }
     }
 
+    private bool _isUpdatingCollection = false;
     private void OnPatientsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        ApplyFilter();
+        if (_isUpdatingCollection) return;
+
+        Dispatcher.BeginInvoke(() => {
+            _isUpdatingCollection = true;
+            try
+            {
+                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
+                {
+                    var gender = _genderFilter;
+                    foreach (Patient p in e.NewItems)
+                    {
+                        if (!FilteredPatients.Any(x => x.PatientId == p.PatientId))
+                        {
+                            if (string.IsNullOrEmpty(gender) || p.Gender == gender)
+                                FilteredPatients.Add(p);
+                        }
+                    }
+                    OnPropertyChanged(nameof(FilteredCount));
+                }
+                else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+                {
+                    FilteredPatients.Clear();
+                    ApplyFilter();
+                }
+                else
+                {
+                    ApplyFilter();
+                }
+            }
+            finally
+            {
+                _isUpdatingCollection = false;
+            }
+        });
     }
 
     private string _search = "";
@@ -103,39 +135,70 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
     private int _filterRequestCount = 0;
     private async void ApplyFilter()
     {
-        if (_vm == null) return;
+        if (_vm == null || _isUpdatingCollection) return;
         
         int currentRequest = ++_filterRequestCount;
-        // Debounce: Chờ một chút để người dùng gõ xong
-        await Task.Delay(200);
-        if (currentRequest != _filterRequestCount) return;
+        
+        if (!string.IsNullOrEmpty(_search)) {
+            await Task.Delay(300);
+            if (currentRequest != _filterRequestCount) return;
+        }
 
         var search = _search?.Trim() ?? "";
         
-        // Nếu có từ khóa và danh sách hiện tại không đủ (hoặc người dùng yêu cầu search DB), ta mới gọi search
         if (!string.IsNullOrEmpty(search))
         {
             await _vm.SearchPatientsAsync(search);
         }
 
-        // Tạo bản sao và áp dụng lọc giới tính (gender) nếu có
         var gender = _genderFilter;
-        var filteredList = await Task.Run(() => {
-            return _vm.Patients.Where(p => 
-                (string.IsNullOrEmpty(gender) || p.Gender == gender)
-            ).ToList();
-        });
+        var sourceItems = _vm.Patients.Where(p => 
+            (string.IsNullOrEmpty(gender) || p.Gender == gender)
+        ).ToList();
 
-        // Cập nhật kết quả lên UI thread
-        UpdateFilteredCollection(filteredList);
+        if (currentRequest == _filterRequestCount)
+        {
+            SyncCollection(sourceItems);
+        }
     }
 
-    private void UpdateFilteredCollection(List<Patient> items)
+    private void SyncCollection(List<Patient> newItems)
     {
-        FilteredPatients.Clear();
-        foreach (var p in items) FilteredPatients.Add(p);
-        OnPropertyChanged(nameof(FilteredCount));
-        OnPropertyChanged(nameof(FilteredPatients));
+        _isUpdatingCollection = true;
+        try
+        {
+            // Kiểm tra xem có thực sự cần cập nhật không
+            if (FilteredPatients.Count == newItems.Count)
+            {
+                bool isSame = true;
+                for (int i = 0; i < newItems.Count; i++) {
+                    if (FilteredPatients[i].PatientId != newItems[i].PatientId) { isSame = false; break; }
+                }
+                if (isSame) return;
+            }
+
+            // 1. Loại bỏ mục cũ (Surgical Remove) - Không làm Reset thanh cuộn
+            var newIds = new HashSet<int>(newItems.Select(x => x.PatientId));
+            for (int i = FilteredPatients.Count - 1; i >= 0; i--)
+            {
+                if (!newIds.Contains(FilteredPatients[i].PatientId))
+                    FilteredPatients.RemoveAt(i);
+            }
+
+            // 2. Thêm mục mới (Surgical Add)
+            var existingIds = new HashSet<int>(FilteredPatients.Select(x => x.PatientId));
+            foreach (var item in newItems)
+            {
+                if (!existingIds.Contains(item.PatientId))
+                    FilteredPatients.Add(item);
+            }
+
+            OnPropertyChanged(nameof(FilteredCount));
+        }
+        finally
+        {
+            _isUpdatingCollection = false;
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

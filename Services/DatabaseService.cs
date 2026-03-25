@@ -147,7 +147,9 @@ public class DatabaseService
                     from subPc in contacts.DefaultIfEmpty()
                     join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
                     from subC in finalContacts.DefaultIfEmpty()
-                    where string.IsNullOrEmpty(searchTerm) || p.FullName.ToLower().Contains(searchTerm.ToLower())
+                    where string.IsNullOrEmpty(searchTerm) || 
+                          p.FullName.ToLower().Contains(searchTerm.ToLower()) ||
+                          (subC != null && subC.Phone != null && subC.Phone.Contains(searchTerm))
                     orderby p.FullName
                     select new { p, subC };
 

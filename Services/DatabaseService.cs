@@ -322,6 +322,12 @@ public class DatabaseService
     // ═══════════════════════════════════════════════
     //  DOCTORS
     // ═══════════════════════════════════════════════
+    public async Task<int> GetDoctorsCountAsync()
+    {
+        await using var db = Ctx();
+        return await db.Doctors.CountAsync();
+    }
+
     public async Task<List<Doctor>> GetDoctorsAsync()
     {
         await using var db = Ctx();
@@ -364,14 +370,29 @@ public class DatabaseService
     // ═══════════════════════════════════════════════
     //  VISITS
     // ═══════════════════════════════════════════════
-    public async Task<List<Visit>> GetVisitsAsync()
+    public async Task<List<Visit>> GetVisitsAsync(int offset = 0, int limit = 1000)
     {
         await using var db = Ctx();
         return await db.Visits
                        .Include(v => v.Patient)
                        .Include(v => v.Doctor)
                        .OrderByDescending(v => v.VisitTime)
+                       .Skip(offset)
+                       .Take(limit)
                        .ToListAsync();
+    }
+
+    public async Task<int> GetVisitsCountAsync()
+    {
+        await using var db = Ctx();
+        return await db.Visits.CountAsync();
+    }
+
+    public async Task<int> GetTodayVisitsCountAsync()
+    {
+        await using var db = Ctx();
+        var today = DateTime.Today.ToString("yyyy-MM-dd");
+        return await db.Visits.CountAsync(v => v.VisitTime != null && v.VisitTime.StartsWith(today));
     }
 
     public async Task<Visit> AddVisitAsync(Visit v)
@@ -519,7 +540,7 @@ public class DatabaseService
     // ═══════════════════════════════════════════════
     //  INVOICES
     // ═══════════════════════════════════════════════
-    public async Task<List<Invoice>> GetInvoicesAsync()
+    public async Task<List<Invoice>> GetInvoicesAsync(int offset = 0, int limit = 1000)
     {
         await using var db = Ctx();
         return await db.Invoices
@@ -527,6 +548,8 @@ public class DatabaseService
                        .Include(i => i.Visit).ThenInclude(v => v!.Doctor)
                        .Include(i => i.Payments)
                        .OrderByDescending(i => i.CreatedAt)
+                       .Skip(offset)
+                       .Take(limit)
                        .ToListAsync();
     }
 

@@ -114,27 +114,35 @@ public class MainViewModel : BaseViewModel
         try 
         {
             // Đợi một chút để UI render xong khung cửa sổ
-            await Task.Delay(100);
+            await Task.Delay(150);
             
-            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting boot with Lazy Loading...\n");
+            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting optimized boot...\n");
 
+            // 1. Khởi tạo DB và Settings (Nhanh)
             await Task.Run(() => DatabaseService.Initialize());
             await LoadSettingsAsync();
+            
+            // 2. Tải Dashboard (Dữ liệu tối thiểu để hiện UI)
             await LoadDashboardDataAsync();
             
-            // Nạp cache tên đầy đủ trước để dùng cho tìm kiếm (Suggestion)
-            FullPatientNames = await _db.GetAllPatientNamesAsync();
-            FullDoctorNames = await _db.GetAllDoctorNamesAsync();
-            
-            await Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
+            // 3. Tải song song các danh sách phụ (Chạy nền)
+            _ = Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
 
-            // 2. Chỉ nạp 50 người đầu tiên cho danh sách hiển thị để hiện UI ngay
+            // 4. Tải 50 bệnh nhân đầu tiên cho tab Bệnh nhân (Lazy loading)
             _patientOffset = 0;
             _isAllPatientsLoaded = false;
             Patients.Clear();
             await LoadMorePatientsInternalAsync();
 
-            File.AppendAllText(logFile, $"[{DateTime.Now}] Initial 50 loaded. Ready for Lazy Loading.\n");
+            // 5. TRÌ HOÃN: Tải cache tên cho gợi ý tìm kiếm sau cùng để không chặn UI
+            _ = Task.Run(async () => {
+                await Task.Delay(2000); // Đợi ứng dụng ổn định hẳn
+                FullPatientNames = await _db.GetAllPatientNamesAsync();
+                FullDoctorNames = await _db.GetAllDoctorNamesAsync();
+                File.AppendAllText(logFile, $"[{DateTime.Now}] Suggestion cache loaded in background.\n");
+            });
+
+            File.AppendAllText(logFile, $"[{DateTime.Now}] Dashboard ready. Background tasks running.\n");
         }
         catch (Exception ex)
         {
@@ -237,11 +245,14 @@ public class MainViewModel : BaseViewModel
     private async Task LoadDashboardDataAsync()
     {
         try {
-            await LoadVisitsAsync();
-            // Lấy số lượng nhanh từ DB thay vì đếm trong bộ nhớ
+            // Lấy các con số thống kê nhanh trước
             TotalPatients = await _db.GetPatientsCountAsync();
-            var dList = await _db.GetDoctorsAsync();
-            TotalDoctors = dList.Count;
+            TotalDoctors = await _db.GetDoctorsCountAsync();
+            TotalVisits = await _db.GetVisitsCountAsync();
+            VisitsToday = await _db.GetTodayVisitsCountAsync();
+
+            // Tải danh sách hiển thị (Giới hạn 100)
+            await LoadVisitsAsync();
         } catch { }
     }
 
@@ -317,16 +328,11 @@ public class MainViewModel : BaseViewModel
     {
         LoadingVisits = true;
         try { 
-            // Chỉ lấy 100 lượt khám gần nhất cho Dashboard để tránh treo UI
-            var list = await _db.GetVisitsAsync(); 
-            var displayList = list.Take(100).ToList();
+            // CHỈ lấy 100 lượt khám gần nhất trực tiếp từ DB
+            var list = await _db.GetVisitsAsync(0, 100); 
             
             Visits.Clear(); 
-            foreach (var v in displayList) Visits.Add(v); 
-            
-            TotalVisits = list.Count;
-            var today = DateTime.Today.ToString("yyyy-MM-dd"); 
-            VisitsToday = list.Count(v => v.VisitTime?.StartsWith(today) == true);
+            foreach (var v in list) Visits.Add(v); 
         }
         catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingVisits = false; }
     }
@@ -346,7 +352,8 @@ public class MainViewModel : BaseViewModel
     {
         LoadingInvoices = true;
         try { 
-            var list = await _db.GetInvoicesAsync(); 
+            // CHỈ lấy 100 hóa đơn gần nhất trực tiếp từ DB
+            var list = await _db.GetInvoicesAsync(0, 100); 
             Invoices.Clear(); 
             foreach (var i in list) Invoices.Add(i); 
         }

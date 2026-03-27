@@ -676,38 +676,45 @@
                         <TextBlock Text="DANH SÁCH LƯỢT KHÁM" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C.Gray400}"/>
                     </Border>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
-                        <StackPanel>
-                            <ListBox x:Name="VisitGroupList"
-                                     Background="White"
-                                     BorderThickness="0"
-                                     FocusVisualStyle="{x:Null}"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                     HorizontalContentAlignment="Stretch"
-                                     ScrollViewer.CanContentScroll="True"
-                                     VirtualizingStackPanel.IsVirtualizing="True"
-                                     VirtualizingStackPanel.VirtualizationMode="Recycling">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="Focusable" Value="False"/>
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                        <Setter Property="BorderThickness" Value="0"/>
-                                        <Setter Property="Padding" Value="0"/>
-                                        <Setter Property="Margin" Value="0"/>
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ListBoxItem">
-                                                    <ContentPresenter/>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                            </ListBox>
-                            <TextBlock x:Name="VisitEmptyState" Text="Chưa có bệnh án nào" Foreground="{StaticResource C.Gray400}" FontSize="14" HorizontalAlignment="Center" Margin="0,60,0,0" Visibility="Collapsed"/>
-                        </StackPanel>
-                    </ScrollViewer>
+                    <Grid Grid.Row="1">
+                        <ListBox x:Name="VisitGroupList"
+                                 Background="White"
+                                 BorderThickness="0"
+                                 FocusVisualStyle="{x:Null}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.CanContentScroll="False"
+                                 VirtualizingStackPanel.IsVirtualizing="True"
+                                 VirtualizingStackPanel.VirtualizationMode="Recycling">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Focusable" Value="False"/>
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                        
+                        <TextBlock x:Name="VisitEmptyState" 
+                                   Text="Chưa có bệnh án nào" 
+                                   Foreground="{StaticResource C.Gray400}" 
+                                   FontSize="14" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Top"
+                                   Margin="0,60,0,0" 
+                                   Visibility="Collapsed"/>
+                    </Grid>
                 </Grid>
             </Border>
 

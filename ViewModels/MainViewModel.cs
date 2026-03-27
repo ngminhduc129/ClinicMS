@@ -1,5 +1,9 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 using ClinicMS.Models;
 using ClinicMS.Services;
 
@@ -45,7 +49,6 @@ public class MainViewModel : BaseViewModel
                 OnPropertyChanged(nameof(IsPageInvoices));
                 OnPropertyChanged(nameof(IsPageSettings));
 
-                // Lazy load data based on page
                 _ = value switch
                 {
                     "patients"  => Patients.Count == 0 ? LoadPatientsAsync() : Task.CompletedTask,
@@ -70,10 +73,12 @@ public class MainViewModel : BaseViewModel
     public ObservableCollection<Patient>  Patients  { get; } = new();
     public ObservableCollection<Doctor>   Doctors   { get; } = new();
     public ObservableCollection<Visit>    Visits    { get; } = new();
+    public ObservableCollection<Visit>    TodayVisits { get; } = new();
     public ObservableCollection<Medicine> Medicines { get; } = new();
     public ObservableCollection<Invoice>  Invoices  { get; } = new();
+    public ObservableCollection<Appointment> UpcomingAppointments { get; } = new();
+    public ObservableCollection<ChartItem> WeeklyStats { get; } = new();
 
-    // Cache cho gợi ý tìm kiếm (Suggestion)
     private List<string> _fullPatientNames = new();
     public List<string> FullPatientNames { get => _fullPatientNames; set => SetProperty(ref _fullPatientNames, value); }
     
@@ -96,164 +101,72 @@ public class MainViewModel : BaseViewModel
     public MainViewModel()
     {
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "dashboard");
-        
-        // Khởi tạo dữ liệu theo quy trình an toàn
         _ = InitializeAndLoad();
     }
 
     private int _patientOffset = 0;
     private const int PageSize = 50;
     private bool _isAllPatientsLoaded = false;
+    private string _lastSearchTerm = "";
 
     private async Task InitializeAndLoad()
     {
-        string logFile = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "ClinicMS", "boot_log.txt");
-            
         try 
         {
-            // Đợi một chút để UI render xong khung cửa sổ
             await Task.Delay(150);
-            
-            File.WriteAllText(logFile, $"[{DateTime.Now}] Starting optimized boot...\n");
-
-            // 1. Khởi tạo DB và Settings (Nhanh)
             await Task.Run(() => DatabaseService.Initialize());
             await LoadSettingsAsync();
-            
-            // 2. Tải Dashboard (Dữ liệu tối thiểu để hiện UI)
             await LoadDashboardDataAsync();
-            
-            // 3. Tải song song các danh sách phụ (Chạy nền)
             _ = Task.WhenAll(LoadDoctorsAsync(), LoadMedicinesAsync());
-
-            // 4. Tải 50 bệnh nhân đầu tiên cho tab Bệnh nhân (Lazy loading)
+            
             _patientOffset = 0;
             _isAllPatientsLoaded = false;
-            Patients.Clear();
             await LoadMorePatientsInternalAsync();
 
-            // 5. TRÌ HOÃN: Tải cache tên cho gợi ý tìm kiếm sau cùng để không chặn UI
             _ = Task.Run(async () => {
-                await Task.Delay(2000); // Đợi ứng dụng ổn định hẳn
+                await Task.Delay(2000);
                 FullPatientNames = await _db.GetAllPatientNamesAsync();
                 FullDoctorNames = await _db.GetAllDoctorNamesAsync();
-                File.AppendAllText(logFile, $"[{DateTime.Now}] Suggestion cache loaded in background.\n");
             });
-
-            File.AppendAllText(logFile, $"[{DateTime.Now}] Dashboard ready. Background tasks running.\n");
-        }
-        catch (Exception ex)
-        {
-            File.AppendAllText(logFile, $"[{DateTime.Now}] ERROR: {ex}\n");
-        }
+        } catch { }
     }
 
-    private async Task LoadAllPatientsInBackground()
-    {
-        // Đã xóa để chuyển sang Lazy Load thực thụ (cuộn đến đâu nạp đến đó)
-        await Task.CompletedTask;
-    }
-
-    public async Task LoadMorePatientsAsync()
-    {
-        // Nếu đang tìm kiếm thì không thực hiện LoadMore theo phân trang bình thường
-        if (!string.IsNullOrEmpty(_lastSearchTerm)) return;
-        
-        if (LoadingPatients || _isAllPatientsLoaded) return;
-        await LoadMorePatientsInternalAsync();
-    }
-
-    private string _lastSearchTerm = "";
-
-    public async Task SearchPatientsAsync(string term)
-    {
-        _lastSearchTerm = term;
-        _patientOffset = 0;
-        _isAllPatientsLoaded = false;
-        
-        LoadingPatients = true;
-        try
-        {
-            var results = await _db.SearchPatientsAsync(term);
-            Patients.Clear();
-            foreach (var p in results) Patients.Add(p);
-            
-            // Nếu không tìm kiếm, ta coi như đã nạp xong trang đầu
-            if (string.IsNullOrEmpty(term)) _patientOffset = Patients.Count;
-        }
-        finally
-        {
-            LoadingPatients = false;
-        }
-    }
-
-    private string _lastDoctorSearch = "";
-    public async Task SearchDoctorsAsync(string term)
-    {
-        _lastDoctorSearch = term;
-        LoadingDoctors = true;
-        try
-        {
-            var results = await _db.SearchDoctorsAsync(term);
-            Doctors.Clear();
-            foreach (var d in results) Doctors.Add(d);
-        }
-        finally { LoadingDoctors = false; }
-    }
-
-    private async Task LoadMorePatientsInternalAsync()
-    {
-        LoadingPatients = true;
-        try
-        {
-            var nextBatch = await _db.GetPatientsWithContactsAsync(_patientOffset, PageSize);
-            if (nextBatch.Count < PageSize) _isAllPatientsLoaded = true;
-
-            foreach (var p in nextBatch) Patients.Add(p);
-            _patientOffset += nextBatch.Count;
-            OnPropertyChanged(nameof(Patients));
-        }
-        finally
-        {
-            LoadingPatients = false;
-        }
-    }
-
-
-    private async Task LoadAllDataAsync()
-    {
-        // Method này đã được gộp vào InitializeAndLoadAsync
-        await Task.CompletedTask;
-    }
-
-    private async Task LoadInitialPatientsAsync()
-    {
-        LoadingPatients = true;
-        try
-        {
-            var list = await _db.GetPatientsWithContactsAsync(0, 50);
-            Patients.Clear();
-            foreach (var p in list) Patients.Add(p);
-            TotalPatients = await _db.GetPatientsCountAsync();
-        }
-        catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); }
-        finally { LoadingPatients = false; }
-    }
-
-    private async Task LoadDashboardDataAsync()
+    public async Task LoadDashboardDataAsync()
     {
         try {
-            // Lấy các con số thống kê nhanh trước
             TotalPatients = await _db.GetPatientsCountAsync();
             TotalDoctors = await _db.GetDoctorsCountAsync();
             TotalVisits = await _db.GetVisitsCountAsync();
             VisitsToday = await _db.GetTodayVisitsCountAsync();
 
-            // Tải danh sách hiển thị (Giới hạn 100)
+            var appointments = await _db.GetUpcomingAppointmentsAsync(5);
+            UpcomingAppointments.Clear();
+            foreach (var a in appointments) UpcomingAppointments.Add(a);
+
+            await LoadWeeklyStatsAsync();
+
+            var todayList = await _db.GetTodayVisitsAsync();
+            TodayVisits.Clear();
+            foreach (var v in todayList) TodayVisits.Add(v);
+
             await LoadVisitsAsync();
         } catch { }
+    }
+
+    private async Task LoadWeeklyStatsAsync()
+    {
+        var data = await _db.GetVisitCountByDayAsync(7);
+        WeeklyStats.Clear();
+        int max = data.Values.Any() ? data.Values.Max() : 1;
+        if (max < 5) max = 5;
+
+        for (int i = 6; i >= 0; i--)
+        {
+            var date = DateTime.Today.AddDays(-i);
+            var dateStr = date.ToString("yyyy-MM-dd");
+            int count = data.ContainsKey(dateStr) ? data[dateStr] : 0;
+            WeeklyStats.Add(new ChartItem { Label = i == 0 ? "Hôm nay" : date.ToString("dd/MM"), Value = count, Percentage = (double)count / max * 100 });
+        }
     }
 
     private async Task LoadSettingsAsync()
@@ -261,186 +174,147 @@ public class MainViewModel : BaseViewModel
         try
         {
             var level = await _db.GetSettingAsync("FontSizeLevel");
-            if (!string.IsNullOrWhiteSpace(level))
-            {
-                _fontSizeLevel = level;
-                OnPropertyChanged(nameof(FontSizeLevel));
-                ApplyFontScale(level, save: false);
-                return;
-            }
-        }
-        catch
-        {
-            // ignore settings errors
-        }
-
-        ApplyFontScale(_fontSizeLevel, save: false);
+            if (!string.IsNullOrWhiteSpace(level)) { _fontSizeLevel = level; ApplyFontScale(level, save: false); }
+        } catch { }
     }
 
     private void ApplyFontScale(string level, bool save)
     {
-        var scale = level switch
-        {
-            "Small" => 0.85,
-            "Large" => 1.20,
-            _ => 1.00
-        };
-
+        var scale = level switch { "Small" => 0.85, "Large" => 1.20, _ => 1.00 };
         FontScale = scale;
-        // Sử dụng manager mới để cập nhật toàn cục
         FontScaleManager.UpdateApplicationScale(scale);
-
-        if (save)
-        {
-            _ = _db.SetSettingAsync("FontSizeLevel", level);
-        }
+        if (save) _ = _db.SetSettingAsync("FontSizeLevel", level);
     }
 
-    private async Task LoadAllAsync()
+    // ═══════════════════════════════════════════════
+    //  PATIENTS & DOCTORS SEARCH/LOAD
+    // ═══════════════════════════════════════════════
+
+    public async Task LoadMorePatientsAsync()
     {
-        // Đã thay thế bằng LoadDashboardDataAsync và Lazy Loading
-        await LoadDashboardDataAsync();
+        if (!string.IsNullOrEmpty(_lastSearchTerm)) return;
+        if (LoadingPatients || _isAllPatientsLoaded) return;
+        await LoadMorePatientsInternalAsync();
+    }
+
+    private async Task LoadMorePatientsInternalAsync()
+    {
+        LoadingPatients = true;
+        try {
+            var nextBatch = await _db.GetPatientsWithContactsAsync(_patientOffset, PageSize);
+            if (nextBatch.Count < PageSize) _isAllPatientsLoaded = true;
+            foreach (var p in nextBatch) Patients.Add(p);
+            _patientOffset += nextBatch.Count;
+        } finally { LoadingPatients = false; }
+    }
+
+    public async Task SearchPatientsAsync(string term)
+    {
+        _lastSearchTerm = term;
+        _patientOffset = 0; _isAllPatientsLoaded = false;
+        LoadingPatients = true;
+        try {
+            var results = await _db.SearchPatientsAsync(term);
+            Patients.Clear();
+            foreach (var p in results) Patients.Add(p);
+            if (string.IsNullOrEmpty(term)) _patientOffset = Patients.Count;
+        } finally { LoadingPatients = false; }
+    }
+
+    public async Task SearchDoctorsAsync(string term)
+    {
+        LoadingDoctors = true;
+        try {
+            var results = await _db.SearchDoctorsAsync(term);
+            Doctors.Clear();
+            foreach (var d in results) Doctors.Add(d);
+        } finally { LoadingDoctors = false; }
     }
 
     public async Task LoadPatientsAsync()
     {
-        LoadingPatients = true;
-        try
-        {
-            var list = await _db.GetPatientsWithContactsAsync();
-
-            Patients.Clear();
-            foreach (var p in list) Patients.Add(p);
-            TotalPatients = await _db.GetPatientsCountAsync();
-        }
-        catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); }
-        finally { LoadingPatients = false; }
+        _patientOffset = 0; _isAllPatientsLoaded = false; Patients.Clear();
+        await LoadMorePatientsInternalAsync();
+        TotalPatients = await _db.GetPatientsCountAsync();
     }
 
     public async Task LoadDoctorsAsync()
     {
         LoadingDoctors = true;
         try { var list = await _db.GetDoctorsAsync(); Doctors.Clear(); foreach (var d in list) Doctors.Add(d); TotalDoctors = Doctors.Count; }
-        catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingDoctors = false; }
+        catch { } finally { LoadingDoctors = false; }
     }
+
+    public async Task<(Patient?, Contact?)> GetPatientWithContactAsync(int id) => await _db.GetPatientWithContactAsync(id);
+    public async Task<List<Visit>> GetPatientVisitsAsync(int patientId) => await _db.GetPatientVisitsAsync(patientId);
+
+    // ═══════════════════════════════════════════════
+    //  VISITS & OTHERS
+    // ═══════════════════════════════════════════════
 
     public async Task LoadVisitsAsync()
     {
+        if (LoadingVisits) return;
         LoadingVisits = true;
-        try { 
-            // CHỈ lấy 100 lượt khám gần nhất trực tiếp từ DB
-            var list = await _db.GetVisitsAsync(0, 100); 
-            
+        try 
+        { 
+            var todayList = await _db.GetTodayVisitsAsync(); 
             Visits.Clear(); 
-            foreach (var v in list) Visits.Add(v); 
-        }
-        catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingVisits = false; }
+            foreach (var v in todayList) Visits.Add(v); 
+
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    var historyList = await _db.GetVisitsAsync(0, 10000); 
+                    App.Current.Dispatcher.Invoke(() => { foreach (var v in historyList) { if (Visits.All(ex => ex.VisitId != v.VisitId)) Visits.Add(v); } });
+                } catch { }
+            });
+        } catch { } finally { LoadingVisits = false; }
     }
 
     public async Task LoadMedicinesAsync()
     {
         LoadingMedicines = true;
-        try { 
-            var list = await _db.GetMedicinesAsync(); 
-            Medicines.Clear(); 
-            foreach (var m in list) Medicines.Add(m); 
-        }
-        catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingMedicines = false; }
+        try { var list = await _db.GetMedicinesAsync(); Medicines.Clear(); foreach (var m in list) Medicines.Add(m); }
+        catch { } finally { LoadingMedicines = false; }
     }
 
     public async Task LoadInvoicesAsync()
     {
         LoadingInvoices = true;
-        try { 
-            // CHỈ lấy 100 hóa đơn gần nhất trực tiếp từ DB
-            var list = await _db.GetInvoicesAsync(0, 100); 
-            Invoices.Clear(); 
-            foreach (var i in list) Invoices.Add(i); 
-        }
-        catch (Exception ex) { Toast.ShowError($"Lỗi: {ex.Message}"); } finally { LoadingInvoices = false; }
+        try { var list = await _db.GetInvoicesAsync(0, 100); Invoices.Clear(); foreach (var i in list) Invoices.Add(i); }
+        catch { } finally { LoadingInvoices = false; }
     }
 
-    public async Task<bool> AddPatientAsync(Patient p)
+    public async Task<bool> AddVisitAsync(Visit v)
     {
-        try { await _db.AddPatientAsync(p); await LoadPatientsAsync(); Toast.Show("Thêm bệnh nhân thành công"); return true; }
+        try { await _db.AddVisitAsync(v); await LoadDashboardDataAsync(); Toast.Show("Thêm hồ sơ thành công"); return true; }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
-    public async Task<bool> UpdatePatientAsync(Patient p)
+    public async Task<bool> UpdateVisitAsync(Visit v)
     {
-        try { await _db.UpdatePatientAsync(p); await LoadPatientsAsync(); Toast.Show("Cập nhật bệnh nhân thành công"); return true; }
+        try { await _db.UpdateVisitAsync(v); await LoadDashboardDataAsync(); Toast.Show("Cập nhật thành công"); return true; }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
-    public async Task<bool> DeletePatientAsync(Patient p)
+    public async Task<bool> DeleteVisitAsync(Visit v)
     {
-        try { await _db.DeletePatientAsync(p.PatientId); await LoadPatientsAsync(); Toast.Show("Xóa bệnh nhân thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<(Patient?, Contact?)> GetPatientWithContactAsync(int id) => await _db.GetPatientWithContactAsync(id);
-    public async Task<List<Visit>> GetPatientVisitsAsync(int patientId) => await _db.GetPatientVisitsAsync(patientId);
-
-    public async Task<bool> AddDoctorAsync(Doctor d)
-    {
-        try { await _db.AddDoctorAsync(d); await LoadDoctorsAsync(); Toast.Show("Thêm bác sĩ thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<bool> UpdateDoctorAsync(Doctor d)
-    {
-        try { await _db.UpdateDoctorAsync(d); await LoadDoctorsAsync(); Toast.Show("Cập nhật bác sĩ thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<bool> DeleteDoctorAsync(Doctor d)
-    {
-        try { await _db.DeleteDoctorAsync(d.DoctorId); await LoadDoctorsAsync(); Toast.Show("Xóa bác sĩ thành công"); return true; }
+        try { await _db.DeleteVisitAsync(v.VisitId); await LoadDashboardDataAsync(); Toast.Show("Đã xóa hồ sơ"); return true; }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
 
     public async Task<List<PrescriptionDetail>> GetPrescriptionDetailsAsync(int visitId) => await _db.GetPrescriptionDetailsAsync(visitId);
     public async Task SavePrescriptionAsync(int visitId, List<PrescriptionDetail> items) => await _db.SavePrescriptionDetailsAsync(visitId, items);
 
-    public async Task<bool> AddVisitAsync(Visit v)
-    {
-        try 
-        { 
-            await _db.AddVisitAsync(v); 
-            if (v.PrescriptionDetails.Any())
-                await _db.SavePrescriptionDetailsAsync(v.VisitId, v.PrescriptionDetails.ToList());
-            await LoadVisitsAsync(); 
-            Toast.Show("Thêm hồ sơ khám thành công"); 
-            return true; 
-        }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<bool> UpdateVisitAsync(Visit v)
-    {
-        try 
-        { 
-            await _db.UpdateVisitAsync(v); 
-            await _db.SavePrescriptionDetailsAsync(v.VisitId, v.PrescriptionDetails.ToList());
-            await LoadVisitsAsync(); 
-            Toast.Show("Cập nhật hồ sơ khám thành công"); 
-            return true; 
-        }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<bool> DeleteVisitAsync(Visit v)
-    {
-        try { await _db.DeleteVisitAsync(v.VisitId); await LoadVisitsAsync(); Toast.Show("Xóa hồ sơ khám thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
+    public async Task<bool> AddPatientAsync(Patient p) { try { await _db.AddPatientAsync(p); await LoadPatientsAsync(); return true; } catch { return false; } }
+    public async Task<bool> UpdatePatientAsync(Patient p) { try { await _db.UpdatePatientAsync(p); await LoadPatientsAsync(); return true; } catch { return false; } }
+    public async Task<bool> DeletePatientAsync(Patient p) { try { await _db.DeletePatientAsync(p.PatientId); await LoadPatientsAsync(); return true; } catch { return false; } }
+    
+    public async Task<bool> AddDoctorAsync(Doctor d) { try { await _db.AddDoctorAsync(d); await LoadDoctorsAsync(); return true; } catch { return false; } }
+    public async Task<bool> UpdateDoctorAsync(Doctor d) { try { await _db.UpdateDoctorAsync(d); await LoadDoctorsAsync(); return true; } catch { return false; } }
+    public async Task<bool> DeleteDoctorAsync(Doctor d) { try { await _db.DeleteDoctorAsync(d.DoctorId); await LoadDoctorsAsync(); return true; } catch { return false; } }
 
-    public async Task<bool> AddMedicineAsync(Medicine m)
-    {
-        try { await _db.AddMedicineAsync(m); await LoadMedicinesAsync(); Toast.Show("Thêm thuốc thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<bool> UpdateMedicineAsync(Medicine m)
-    {
-        try { await _db.UpdateMedicineAsync(m); await LoadMedicinesAsync(); Toast.Show("Cập nhật thuốc thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
-    public async Task<bool> DeleteMedicineAsync(Medicine m)
-    {
-        try { await _db.DeleteMedicineAsync(m.MedicineId); await LoadMedicinesAsync(); Toast.Show("Xóa thuốc thành công"); return true; }
-        catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
-    }
+    public async Task<bool> AddMedicineAsync(Medicine m) { try { await _db.AddMedicineAsync(m); await LoadMedicinesAsync(); return true; } catch { return false; } }
+    public async Task<bool> UpdateMedicineAsync(Medicine m) { try { await _db.UpdateMedicineAsync(m); await LoadMedicinesAsync(); return true; } catch { return false; } }
+    public async Task<bool> DeleteMedicineAsync(Medicine m) { try { await _db.DeleteMedicineAsync(m.MedicineId); await LoadMedicinesAsync(); return true; } catch { return false; } }
 }

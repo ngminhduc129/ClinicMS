@@ -7,6 +7,12 @@
              SnapsToDevicePixels="True">
 
     <UserControl.Resources>
+        <!-- Thêm CollectionViewSource để Grouping và Filtering tự động -->
+        <CollectionViewSource x:Key="VisitsViewSource" Source="{Binding Visits}" Filter="CollectionViewSource_Filter">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="StatusGroup" />
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
 
         <SolidColorBrush x:Key="C.Green700"  Color="#15803D"/>
         <SolidColorBrush x:Key="C.Green600"  Color="#16A34A"/>
@@ -571,7 +577,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE8EF;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="#16A34A" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock x:Name="TxtTotalCount" FontSize="13" FontWeight="Bold" Foreground="#111827"
-                                   Text="{Binding ElementName=Self, Path=FilteredVisits.Count, StringFormat={}{0} lượt khám}"/>
+                                   Text="0 lượt khám"/>
                     </StackPanel>
                 </Border>
                 <Button Style="{StaticResource IconBtn}" Margin="0,0,10,0" ToolTip="Làm mới" Click="Refresh_Click">
@@ -677,34 +683,72 @@
                     </Border>
 
                     <Grid Grid.Row="1">
-                        <ListBox x:Name="VisitGroupList"
-                                 Background="White"
-                                 BorderThickness="0"
-                                 FocusVisualStyle="{x:Null}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                 HorizontalContentAlignment="Stretch"
-                                 ScrollViewer.CanContentScroll="False"
-                                 VirtualizingStackPanel.IsVirtualizing="True"
-                                 VirtualizingStackPanel.VirtualizationMode="Recycling">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Focusable" Value="False"/>
-                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
+                        <ListView x:Name="VisitGroupList"
+                                  ItemsSource="{Binding Source={StaticResource VisitsViewSource}}"
+                                  Background="White"
+                                  BorderThickness="0"
+                                  FocusVisualStyle="{x:Null}"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  HorizontalContentAlignment="Stretch"
+                                  SelectionMode="Single"
+                                  SelectionChanged="VisitGroupList_SelectionChanged"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling"
+                                  VirtualizingPanel.ScrollUnit="Pixel">
+                            
+                            <!-- Định nghĩa nhóm (Header của Waiting, InProgress, Completed) -->
+                            <ListView.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#F9FAFB" BorderBrush="#F3F4F6" BorderThickness="0,0,0,1" Padding="16,10">
+                                                <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </ListView.GroupStyle>
+
+                            <!-- Định nghĩa từng dòng (Item) -->
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
                                     <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="Margin" Value="0"/>
-                                    <Setter Property="Background" Value="Transparent"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <ContentPresenter/>
+                                            <ControlTemplate TargetType="ListViewItem">
+                                                <Border x:Name="Bg" Background="Transparent" Padding="16,12" BorderBrush="#F3F4F6" BorderThickness="0,0,0,1">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bg" Property="Background" Value="#F0FDF4"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
-                            </ListBox.ItemContainerStyle>
-                        </ListBox>
+                            </ListView.ItemContainerStyle>
+
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <StackPanel Orientation="Horizontal" Width="75">
+                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{Binding StatusDotColor}"/>
+                                            <TextBlock Text="{Binding FormattedTime}" FontSize="13" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding PatientName}" FontSize="13" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="12" Foreground="#9CA3AF"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                         
                         <TextBlock x:Name="VisitEmptyState" 
                                    Text="Chưa có bệnh án nào" 

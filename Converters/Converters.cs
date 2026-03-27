@@ -132,3 +132,16 @@ public class IndexConverter : IMultiValueConverter
     }
     public object[] ConvertBack(object v, Type[] t, object p, CultureInfo c) => throw new NotImplementedException();
 }
+
+/// <summary>Tính toán chiều cao cột biểu đồ dựa trên % và chiều cao tối đa</summary>
+public class PercentageToHeightConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type t, object p, CultureInfo c)
+    {
+        if (values.Length < 2) return 0.0;
+        double percentage = System.Convert.ToDouble(values[0]);
+        double maxHeight = System.Convert.ToDouble(values[1]);
+        return (percentage / 100.0) * maxHeight;
+    }
+    public object[] ConvertBack(object v, Type[] t, object p, CultureInfo c) => throw new NotImplementedException();
+}

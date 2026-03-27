@@ -49,4 +49,32 @@ public class Visit
         "Completed"   => "Hoàn thành",
         _             => Status
     };
+
+    [NotMapped]
+    public string StatusGroup => Status switch
+    {
+        "Waiting"     => "CHỜ KHÁM",
+        "In Progress" => "ĐANG KHÁM",
+        "Completed"   => "ĐÃ KHÁM",
+        _             => "CHỜ KHÁM"
+    };
+
+    [NotMapped]
+    public string StatusDotColor => Status switch
+    {
+        "In Progress" => "#3B82F6",
+        "Completed"   => "#16A34A",
+        _             => "#F59E0B"
+    };
+
+    [NotMapped]
+    public string FormattedTime
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(VisitTime)) return "--:--";
+            if (DateTime.TryParse(VisitTime, out var dt)) return dt.ToString("HH:mm");
+            return "--:--";
+        }
+    }
 }

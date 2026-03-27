@@ -7,6 +7,32 @@ namespace ClinicMS.Services;
 
 public class DatabaseService
 {
+    public async Task<List<Appointment>> GetUpcomingAppointmentsAsync(int limit = 10)
+    {
+        await using var db = Ctx();
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return await db.Appointments
+                       .Include(a => a.Patient)
+                       .Include(a => a.Doctor)
+                       .Where(a => a.AppointmentTime.CompareTo(now) >= 0 && a.Status == "Scheduled")
+                       .OrderBy(a => a.AppointmentTime)
+                       .Take(limit)
+                       .ToListAsync();
+    }
+
+    public async Task<Dictionary<string, int>> GetVisitCountByDayAsync(int daysBack = 7)
+    {
+        await using var db = Ctx();
+        var startDate = DateTime.Today.AddDays(-daysBack + 1).ToString("yyyy-MM-dd");
+        
+        var list = await db.Visits
+                           .Where(v => v.VisitTime != null && v.VisitTime.CompareTo(startDate) >= 0)
+                           .ToListAsync();
+
+        return list.GroupBy(v => v.VisitTime!.Substring(0, 10))
+                   .ToDictionary(g => g.Key, g => g.Count());
+    }
+
     public static void Initialize()
     {
         using var db = new ClinicDbContext();
@@ -370,6 +396,18 @@ public class DatabaseService
     // ═══════════════════════════════════════════════
     //  VISITS
     // ═══════════════════════════════════════════════
+    public async Task<List<Visit>> GetTodayVisitsAsync()
+    {
+        await using var db = Ctx();
+        var today = DateTime.Today.ToString("yyyy-MM-dd");
+        return await db.Visits
+                       .Include(v => v.Patient)
+                       .Include(v => v.Doctor)
+                       .Where(v => v.VisitTime != null && v.VisitTime.StartsWith(today))
+                       .OrderByDescending(v => v.VisitTime)
+                       .ToListAsync();
+    }
+
     public async Task<List<Visit>> GetVisitsAsync(int offset = 0, int limit = 1000)
     {
         await using var db = Ctx();

@@ -1,7 +1,21 @@
-﻿<UserControl x:Class="ClinicMS.Views.DashboardView"
+<UserControl x:Class="ClinicMS.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#F0FDF4">
+    <UserControl.Resources>
+        <Style x:Key="ChartBar" TargetType="Border">
+            <Setter Property="Background" Value="#22C55E"/>
+            <Setter Property="CornerRadius" Value="4,4,0,0"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#16A34A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="32">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -12,34 +26,21 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0">
-            <TextBlock FontSize="26" FontWeight="Bold" Foreground="#111827">
-                Hi 👋 Chào mừng đến với ClinicMS
-            </TextBlock>
-            <TextBlock FontSize="14" Foreground="#6B7280" Margin="0,6,0,0">
-                Hệ thống quản lý phòng khám — dữ liệu lưu cục bộ, không cần internet.
-            </TextBlock>
+            <TextBlock FontSize="26" FontWeight="Bold" Foreground="#111827">Hi 👋 Chào mừng đến với ClinicMS</TextBlock>
+            <TextBlock FontSize="14" Foreground="#6B7280" Margin="0,6,0,0">Hệ thống quản lý phòng khám — dữ liệu lưu cục bộ, không cần internet.</TextBlock>
         </StackPanel>
 
+        <!-- STATS CARDS -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition/>
+                <ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/>
-                </Border.Effect>
+                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#ECFDF5"
-                            HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="20"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#ECFDF5" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669"/>
                     </Border>
                     <TextBlock Text="{Binding TotalPatients}" FontSize="32" FontWeight="Bold" Foreground="#065F46"/>
                     <TextBlock Text="Bệnh Nhân" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
@@ -47,14 +48,10 @@
             </Border>
 
             <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/>
-                </Border.Effect>
+                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#F0FDF4"
-                            HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="20"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#16A34A"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#F0FDF4" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#16A34A"/>
                     </Border>
                     <TextBlock Text="{Binding TotalDoctors}" FontSize="32" FontWeight="Bold" Foreground="#15803D"/>
                     <TextBlock Text="Bác Sĩ" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
@@ -62,14 +59,10 @@
             </Border>
 
             <Border Grid.Column="4" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/>
-                </Border.Effect>
+                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#FEF3C7"
-                            HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#D97706"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#FEF3C7" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#D97706"/>
                     </Border>
                     <TextBlock Text="{Binding TotalVisits}" FontSize="32" FontWeight="Bold" Foreground="#D97706"/>
                     <TextBlock Text="Tổng Hồ Sơ Khám" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
@@ -77,14 +70,10 @@
             </Border>
 
             <Border Grid.Column="6" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/>
-                </Border.Effect>
+                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#FCE7F3"
-                            HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#BE185D"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#FCE7F3" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#BE185D"/>
                     </Border>
                     <TextBlock Text="{Binding VisitsToday}" FontSize="32" FontWeight="Bold" Foreground="#BE185D"/>
                     <TextBlock Text="Khám Hôm Nay" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
@@ -92,262 +81,164 @@
             </Border>
         </Grid>
 
+        <!-- MAIN CONTENT AREA -->
         <Grid Grid.Row="4">
-            <!-- Shadow layer (Separate from content to prevent blur) -->
-            <Border Background="White" CornerRadius="10">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000" Opacity="0.08" BlurRadius="20" ShadowDepth="0"/>
-                </Border.Effect>
-            </Border>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Inner: clip corners via code-behind RectangleGeometry -->
-            <Border x:Name="TableCard" Background="White" CornerRadius="10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+            <!-- LEFT: CHART & TODAY'S VISITS -->
+            <StackPanel Grid.Column="0">
+                
+                <!-- WEEKLY CHART -->
+                <Border Background="White" CornerRadius="16" Padding="24" Margin="0,0,0,24">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="THỐNG KÊ 7 NGÀY QUA" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{Binding WeeklyStats}" Height="160">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><UniformGrid Columns="7" VerticalAlignment="Bottom"/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid VerticalAlignment="Bottom">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding Value}" FontSize="11" FontWeight="SemiBold" Foreground="#16A34A" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                            <Border Style="{StaticResource ChartBar}">
+                                                <Border.Height>
+                                                    <MultiBinding Converter="{StaticResource PercentageToHeightConverter}">
+                                                        <Binding Path="Percentage"/><Binding Source="120"/>
+                                                    </MultiBinding>
+                                                </Border.Height>
+                                            </Border>
+                                            <TextBlock Text="{Binding Label}" FontSize="10" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
 
-                    <Border Grid.Row="0" Padding="24,18" BorderBrush="#F3F4F6" BorderThickness="0,0,0,1" Background="#F9FAFB">
-                        <Grid>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Width="32" Height="32" CornerRadius="8" Background="#DCFCE7" Margin="0,0,12,0">
-                                    <TextBlock Text="&#xE81C;" FontFamily="Segoe MDL2 Assets" FontSize="14" 
-                                               Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <StackPanel>
-                                    <TextBlock Text="Hồ Sơ Khám Gần Đây" FontSize="15" FontWeight="Bold" Foreground="#111827"/>
-                                    <TextBlock Text="Danh sách các lượt khám mới nhất trong hệ thống" FontSize="12" Foreground="#9CA3AF" Margin="0,2,0,0"/>
-                                </StackPanel>
+                <!-- TODAY'S VISITS LIST (Styled like Patient List) -->
+                <Border Background="White" CornerRadius="16" Padding="24">
+                    <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                        <Grid Grid.Row="0" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="BỆNH NHÂN KHÁM HÔM NAY" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
+                                <TextBlock Text="Các bệnh nhân đang chờ hoặc đã khám trong ngày" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
                             </StackPanel>
-
-                            <Button HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Click="Refresh_Click">
+                            <Button HorizontalAlignment="Right" Click="Refresh_Click" Cursor="Hand">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bg" Background="Transparent" CornerRadius="8" Padding="12,6">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="#6B7280" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Làm mới" FontSize="13" FontWeight="Medium" Foreground="#374151" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bg" Property="Background" Value="#F3F4F6"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
+                                        <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#9CA3AF"/>
                                     </ControlTemplate>
                                 </Button.Template>
                             </Button>
                         </Grid>
-                    </Border>
 
-                    <!-- DataGrid -->
-                    <DataGrid Grid.Row="1"
-                              x:Name="DashboardDataGrid"
-                              ItemsSource="{Binding Visits}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False" CanUserDeleteRows="False"
-                              CanUserReorderColumns="False" IsReadOnly="True"
-                              SelectionMode="Single" SelectionUnit="FullRow"
-                              GridLinesVisibility="None" BorderThickness="0"
-                              Background="Transparent" FontFamily="Segoe UI" FontSize="13"
-                              HeadersVisibility="Column" RowHeight="52"
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled"
-                              
-                              VirtualizingPanel.IsVirtualizing="True"
-                              VirtualizingPanel.VirtualizationMode="Recycling"
-                              VirtualizingPanel.ScrollUnit="Pixel"
-                              VirtualizingPanel.CacheLength="20,20"
-                              VirtualizingPanel.CacheLengthUnit="Item"
-                              ScrollViewer.CanContentScroll="True">
-
-                        <!-- Column Header -->
-                        <DataGrid.ColumnHeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background"      Value="#F9FAFB"/>
-                                <Setter Property="Foreground"      Value="#9CA3AF"/>
-                                <Setter Property="FontSize"        Value="12"/>
-                                <Setter Property="FontWeight"      Value="SemiBold"/>
-                                <Setter Property="Padding"         Value="16,12"/>
-                                <Setter Property="BorderBrush"     Value="#F3F4F6"/>
-                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="DataGridColumnHeader">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <TextBlock Text="{TemplateBinding Content}"
-                                                           Foreground="{TemplateBinding Foreground}"
-                                                           FontSize="{TemplateBinding FontSize}"
-                                                           FontWeight="{TemplateBinding FontWeight}"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </DataGrid.ColumnHeaderStyle>
-
-                        <!-- Row Style -->
-                        <DataGrid.RowStyle>
-                            <Style TargetType="DataGridRow">
-                                <Setter Property="Background"      Value="White"/>
-                                <Setter Property="BorderBrush"     Value="#F3F4F6"/>
-                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background"  Value="#F0FDF4"/>
-                                        <Setter Property="BorderBrush" Value="#D1FAE5"/>
-                                    </Trigger>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background"  Value="#DCFCE7"/>
-                                        <Setter Property="BorderBrush" Value="#A7F3D0"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.RowStyle>
-
-                        <!-- Cell Style -->
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness"  Value="0"/>
-                                <Setter Property="BorderBrush"      Value="Transparent"/>
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                <Setter Property="Background"       Value="Transparent"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="DataGridCell">
-                                            <Border Background="Transparent" BorderThickness="0">
-                                                <ContentPresenter VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </DataGrid.CellStyle>
-
-                        <DataGrid.Columns>
-                            <!-- STT -->
-                            <DataGridTemplateColumn Header="STT" Width="60">
-                                <DataGridTemplateColumn.CellTemplate>
+                        <ScrollViewer Grid.Row="1" MaxHeight="350" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding TodayVisits}">
+                                <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock VerticalAlignment="Center" Padding="16,0,0,0"
-                                                   Foreground="#9CA3AF" FontSize="13">
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource IndexConverter}">
-                                                    <Binding />
-                                                    <Binding Path="ItemsSource" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                        <Border BorderBrush="#F9FAFB" BorderThickness="0,0,0,1" Padding="0,12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Width="70">
+                                                    <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse">
+                                                                <Setter Property="Fill" Value="#F59E0B"/> <!-- Default: Waiting -->
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="In Progress"><Setter Property="Fill" Value="#3B82F6"/></DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Completed"><Setter Property="Fill" Value="#16A34A"/></DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
+                                                    <TextBlock Text="{Binding FormattedTime}" FontSize="13" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                </StackPanel>
 
-                            <DataGridTextColumn Header="BỆNH NHÂN" Width="1.5*" Binding="{Binding PatientName}">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0,0,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="FontWeight"        Value="SemiBold"/>
-                                        <Setter Property="Foreground"        Value="#111827"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                                                <StackPanel Grid.Column="1" Margin="12,0">
+                                                    <TextBlock Text="{Binding PatientName}" FontWeight="Bold" FontSize="14" Foreground="#374151"/>
+                                                    <TextBlock Text="{Binding Diagnosis}" FontSize="12" Foreground="#9CA3AF" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
 
-                            <DataGridTextColumn Header="BÁC SĨ" Width="1.5*" Binding="{Binding DoctorName}">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0,0,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground"        Value="#374151"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-
-                            <DataGridTextColumn Header="THỜI GIAN" Width="1.2*" Binding="{Binding VisitTime}">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0,0,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground"        Value="#6B7280"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-
-                            <DataGridTemplateColumn Header="TRẠNG THÁI" Width="120">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border CornerRadius="10" Padding="8,3" Margin="16,0,0,0"
-                                                Height="24" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                                Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
-                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="12" FontWeight="Medium"
-                                                       Foreground="{Binding Status, Converter={StaticResource StatusToBrush}}"/>
+                                                <Border Grid.Column="2" CornerRadius="8" Padding="8,3" VerticalAlignment="Center"
+                                                        Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
+                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Medium"
+                                                               Foreground="{Binding Status, Converter={StaticResource StatusToBrush}}"/>
+                                                </Border>
+                                            </Grid>
                                         </Border>
                                     </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
 
-                            <DataGridTextColumn Header="CHẨN ĐOÁN" Width="2*" Binding="{Binding Diagnosis}">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0,0,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground"        Value="#6B7280"/>
-                                        <Setter Property="TextTrimming"      Value="CharacterEllipsis"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                        <!-- Empty State -->
+                        <TextBlock Grid.Row="1" Text="Hôm nay chưa có lượt khám nào" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding TodayVisits.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+            </StackPanel>
 
-                            <!-- ACTIONS -->
-                            <DataGridTemplateColumn Header="" Width="100">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0">
-                                            <!-- Chi tiết -->
-                                            <Button Width="32" Height="32" Margin="0,0,4,0" Cursor="Hand" ToolTip="Chi tiết" Click="Detail_Click">
-                                                <Button.Template>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bg" CornerRadius="8" Background="Transparent">
-                                                            <TextBlock x:Name="Ic" Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" 
-                                                                       FontSize="14" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
-                                                                <Setter TargetName="Ic" Property="Foreground" Value="#16A34A"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Button.Template>
-                                            </Button>
+            <!-- RIGHT: UPCOMING APPOINTMENTS -->
+            <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="24">
+                <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                        <TextBlock Text="LỊCH HẸN SẮP TỚI" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
+                        <TextBlock Text="Các bệnh nhân đặt lịch trước" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
+                    </StackPanel>
 
-                                            <!-- Sửa -->
-                                            <Button Width="32" Height="32" Cursor="Hand" ToolTip="Sửa" Click="Edit_Click">
-                                                <Button.Template>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="Bg" CornerRadius="8" Background="Transparent">
-                                                            <TextBlock x:Name="Ic" Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" 
-                                                                       FontSize="14" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
-                                                                <Setter TargetName="Ic" Property="Foreground" Value="#16A34A"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Button.Template>
-                                            </Button>
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding UpcomingAppointments}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#F9FAFB" BorderThickness="0,0,0,1" Padding="0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <Border Width="36" Height="36" CornerRadius="8" Background="#FEF3C7" Margin="0,0,12,0">
+                                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Patient.FullName}" FontWeight="Bold" FontSize="13" Foreground="#374151"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                <TextBlock Text="{Binding AppointmentTime}" FontSize="11" Foreground="#9CA3AF"/>
+                                                <TextBlock Text=" • " FontSize="11" Foreground="#D1D5DB"/>
+                                                <TextBlock Text="{Binding Doctor.FullName}" FontSize="11" Foreground="#16A34A"/>
+                                            </StackPanel>
                                         </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <TextBlock Grid.Row="1" Text="Không có lịch hẹn" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers><DataTrigger Binding="{Binding UpcomingAppointments.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </Grid>
             </Border>
         </Grid>

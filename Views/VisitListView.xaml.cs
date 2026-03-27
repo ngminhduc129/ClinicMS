@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -19,14 +20,18 @@ public partial class VisitListView : UserControl
     private MainViewModel? _vm;
     private Visit? _selectedVisit;
     private string _currentStatus = "Waiting";
+    private bool _isDirty = false;
     private NotifyCollectionChangedEventHandler? _visitsChangedHandler;
     private DateTime? _selectedDateFilter;
-
-    public ObservableCollection<Visit> FilteredVisits { get; } = new();
 
     public VisitListView()
     {
         InitializeComponent();
+        
+        // MẶC ĐỊNH: Chọn lọc ngày hôm nay khi mở tab
+        _selectedDateFilter = DateTime.Today;
+        VisitDateFilter.SelectedDate = _selectedDateFilter;
+
         DataContextChanged += OnDataContextChanged;
         Unloaded += OnUnloaded;
 
@@ -49,6 +54,7 @@ public partial class VisitListView : UserControl
             _vm = vm;
             _visitsChangedHandler = (s2, e2) => ApplyFilter();
             _vm.Visits.CollectionChanged += _visitsChangedHandler;
+            
             ApplyFilter();
             if (_vm.Visits.Count == 0) await _vm.LoadVisitsAsync();
         }
@@ -66,71 +72,89 @@ public partial class VisitListView : UserControl
     {
         _search = ((TextBox)s).Text.Trim();
         int currentRequest = ++_searchRequestCount;
-        await Task.Delay(250); // Debounce để hết lag
+        await Task.Delay(250); 
         if (currentRequest == _searchRequestCount) ApplyFilter();
     }
 
-    private string GetPatientName(Visit v)
-        => v.Patient?.FullName ?? _vm?.Patients.FirstOrDefault(p => p.PatientId == v.PatientId)?.FullName ?? "";
-
-    private string GetDoctorName(Visit v)
-        => v.Doctor?.FullName ?? _vm?.Doctors.FirstOrDefault(d => d.DoctorId == v.DoctorId)?.FullName ?? "";
-
     private void ApplyFilter()
     {
-        if (_vm == null) return;
         if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(ApplyFilter); return; }
+        
+        var cvs = (CollectionViewSource)FindResource("VisitsViewSource");
+        if (cvs?.View != null)
+        {
+            cvs.View.Refresh();
+            
+            // Đếm số lượng sau khi lọc
+            int count = cvs.View.Cast<object>().Count();
+            TxtTotalCount.Text = $"{count} lượt khám";
 
-        var q = _vm.Visits.Where(v =>
-            (string.IsNullOrWhiteSpace(_search) ||
-             GetPatientName(v).Contains(_search, StringComparison.OrdinalIgnoreCase) ||
-             GetDoctorName(v).Contains(_search, StringComparison.OrdinalIgnoreCase) ||
-             (v.Diagnosis?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false))
-            && (!_selectedDateFilter.HasValue || VisitMatchesDate(v, _selectedDateFilter.Value)));
-
-        FilteredVisits.Clear();
-        foreach (var v in q) FilteredVisits.Add(v);
-
-        RebuildVisitList();
+            // Cập nhật trạng thái Empty
+            VisitEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
-    private void RebuildVisitList()
+    // LOGIC LỌC CỰC NHANH (Chạy cho từng item)
+    private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
     {
-        VisitGroupList.Items.Clear();
-        var waiting = FilteredVisits.Where(v => NormalizeStatus(v.Status) == "Waiting").ToList();
-        var inProgress = FilteredVisits.Where(v => NormalizeStatus(v.Status) == "InProgress").ToList();
-        var completed = FilteredVisits.Where(v => NormalizeStatus(v.Status) == "Completed").ToList();
+        if (e.Item is not Visit v) { e.Accepted = false; return; }
 
-        if (waiting.Count > 0) { VisitGroupList.Items.Add(MakeSectionHeader($"CHỜ KHÁM ({waiting.Count})")); foreach (var v in waiting) VisitGroupList.Items.Add(MakeVisitItem(v, "#F59E0B")); }
-        if (inProgress.Count > 0) { VisitGroupList.Items.Add(MakeSectionHeader($"ĐANG KHÁM ({inProgress.Count})")); foreach (var v in inProgress) VisitGroupList.Items.Add(MakeVisitItem(v, "#3B82F6")); }
-        if (completed.Count > 0) { VisitGroupList.Items.Add(MakeSectionHeader($"ĐÃ KHÁM ({completed.Count})")); foreach (var v in completed) VisitGroupList.Items.Add(MakeVisitItem(v, "#16A34A")); }
+        // 1. Lọc theo ngày
+        if (_selectedDateFilter.HasValue)
+        {
+            if (!VisitMatchesDate(v, _selectedDateFilter.Value)) { e.Accepted = false; return; }
+        }
 
-        VisitEmptyState.Visibility = FilteredVisits.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        // 2. Lọc theo từ khóa tìm kiếm (Dùng thuộc tính pre-cached)
+        if (!string.IsNullOrWhiteSpace(_search))
+        {
+            var search = _search.ToLower();
+            bool match = v.PatientName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         v.DoctorName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         (v.Diagnosis?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+            
+            if (!match) { e.Accepted = false; return; }
+        }
+
+        e.Accepted = true;
     }
 
-    private Border MakeSectionHeader(string title) => new() { Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F9FAFB")), BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F3F4F6")), BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(16, 10, 16, 10), Child = new TextBlock { Text = title, FontSize = 11, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9CA3AF")) } };
-
-    private Border MakeVisitItem(Visit v, string dotColor)
+    private void VisitGroupList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        bool isSelected = _selectedVisit?.VisitId == v.VisitId;
-        var item = new Border { Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(isSelected ? "#F0FDF4" : "#FFFFFF")), Padding = new Thickness(16, 12, 16, 12), Cursor = System.Windows.Input.Cursors.Hand, Child = new StackPanel { Orientation = Orientation.Horizontal, Children = { new StackPanel { Orientation = Orientation.Horizontal, Width = 75, Children = { new Ellipse { Width = 8, Height = 8, Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(isSelected ? "#16A34A" : dotColor)) }, new TextBlock { Text = FormatVisitTime(v.VisitTime), FontSize = 13, FontWeight = FontWeights.SemiBold, Margin = new Thickness(8,0,0,0) } } }, new StackPanel { Children = { new TextBlock { Text = GetPatientName(v), FontSize = 13, FontWeight = FontWeights.Bold }, new TextBlock { Text = v.VisitTypeDisplay, FontSize = 12, Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9CA3AF")) } } } } }, Tag = v };
-        item.MouseLeftButtonUp += (s, e) => { _selectedVisit = v; RebuildVisitList(); ShowDetail(v); };
-        return item;
+        if (VisitGroupList.SelectedItem is Visit v)
+        {
+            if (_isDirty && _selectedVisit != null && _selectedVisit.VisitId != v.VisitId)
+            {
+                var result = MessageBox.Show(
+                    "Bạn có thay đổi chưa lưu. Bạn có chắc muốn chuyển sang bệnh nhân khác và mất các thay đổi này không?",
+                    "Xác nhận chuyển", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                
+                if (result != MessageBoxResult.Yes)
+                {
+                    VisitGroupList.SelectionChanged -= VisitGroupList_SelectionChanged;
+                    VisitGroupList.SelectedItem = _selectedVisit;
+                    VisitGroupList.SelectionChanged += VisitGroupList_SelectionChanged;
+                    return;
+                }
+            }
+
+            _selectedVisit = v;
+            _isDirty = false;
+            ShowDetail(v);
+        }
     }
 
     private async void ShowDetail(Visit v)
     {
         _selectedVisit = v;
+        _isDirty = false;
         DetailEmpty.Visibility = Visibility.Collapsed;
         DetailLoading.Visibility = Visibility.Collapsed;
         DetailForm.Visibility = Visibility.Visible;
 
-        var patientName = GetPatientName(v);
-        var doctorName = GetDoctorName(v);
-
-        DetailAvatar.Text = !string.IsNullOrEmpty(patientName) ? patientName[0].ToString().ToUpper() : "?";
-        DetailPatientName.Text = patientName;
-        DetailPatientGender.Text = $"Bác sĩ: {doctorName}";
+        DetailAvatar.Text = !string.IsNullOrEmpty(v.PatientName) ? v.PatientName[0].ToString().ToUpper() : "?";
+        DetailPatientName.Text = v.PatientName;
+        DetailPatientGender.Text = $"Bác sĩ: {v.DoctorName}";
         DetailPatientId.Text = $"Ngày: {FormatVisitDate(v.VisitTime)}";
         DetailPatientAge.Text = $"Loại: {v.VisitTypeDisplay}";
 
@@ -145,7 +169,6 @@ public partial class VisitListView : UserControl
         _currentStatus = NormalizeStatus(v.Status);
         UpdateStatusButtons();
 
-        // Render danh sách thuốc
         MedicineList.Children.Clear();
         if (_vm != null)
         {
@@ -186,29 +209,40 @@ public partial class VisitListView : UserControl
         return new Border { Child = grid, BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F3F4F6")), BorderThickness = new Thickness(0, 0, 0, 1) };
     }
 
+    private void OnInputChanged(object sender, TextChangedEventArgs e) { _isDirty = true; }
+    private void OnStatusChanged(object sender, RoutedEventArgs e) { _isDirty = true; }
+
     private void UpdateStatusButtons()
     {
-        BtnWaiting.Background = _currentStatus == "Waiting" ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF3C7")) : Brushes.White;
-        BtnInProgress.Background = _currentStatus == "InProgress" ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE")) : Brushes.White;
-        BtnCompleted.Background = _currentStatus == "Completed" ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1FAE5")) : Brushes.White;
+        BtnWaiting.Background = NormalizeStatus(_currentStatus) == "Waiting" ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF3C7")) : Brushes.White;
+        BtnInProgress.Background = NormalizeStatus(_currentStatus) == "In Progress" ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE")) : Brushes.White;
+        BtnCompleted.Background = NormalizeStatus(_currentStatus) == "Completed" ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1FAE5")) : Brushes.White;
     }
 
-    private void StatusWaiting_Click(object s, RoutedEventArgs e) { _currentStatus = "Waiting"; UpdateStatusButtons(); }
-    private void StatusInProgress_Click(object s, RoutedEventArgs e) { _currentStatus = "InProgress"; UpdateStatusButtons(); }
-    private void StatusCompleted_Click(object s, RoutedEventArgs e) { _currentStatus = "Completed"; UpdateStatusButtons(); }
+    private void StatusWaiting_Click(object s, RoutedEventArgs e) { _currentStatus = "Waiting"; UpdateStatusButtons(); OnStatusChanged(s, e); }
+    private void StatusInProgress_Click(object s, RoutedEventArgs e) { _currentStatus = "In Progress"; UpdateStatusButtons(); OnStatusChanged(s, e); }
+    private void StatusCompleted_Click(object s, RoutedEventArgs e) { _currentStatus = "Completed"; UpdateStatusButtons(); OnStatusChanged(s, e); }
 
     private async void Save_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null || _selectedVisit == null) return;
-        _selectedVisit.Status = _currentStatus == "InProgress" ? "In Progress" : _currentStatus;
-        _selectedVisit.Pulse = InputPulse.Text.Trim(); _selectedVisit.BloodPressure = InputBloodPressure.Text.Trim(); _selectedVisit.Temperature = InputTemperature.Text.Trim(); _selectedVisit.Weight = InputWeight.Text.Trim(); _selectedVisit.Symptoms = InputSymptoms.Text.Trim(); _selectedVisit.Note = InputNote.Text.Trim(); _selectedVisit.Diagnosis = InputDiagnosis.Text.Trim();
+        _selectedVisit.Status = _currentStatus;
+        _selectedVisit.Pulse = InputPulse.Text.Trim(); 
+        _selectedVisit.BloodPressure = InputBloodPressure.Text.Trim(); 
+        _selectedVisit.Temperature = InputTemperature.Text.Trim(); 
+        _selectedVisit.Weight = InputWeight.Text.Trim(); 
+        _selectedVisit.Symptoms = InputSymptoms.Text.Trim(); 
+        _selectedVisit.Note = InputNote.Text.Trim(); 
+        _selectedVisit.Diagnosis = InputDiagnosis.Text.Trim();
+        
         var selectedId = _selectedVisit.VisitId;
         await _vm.UpdateVisitAsync(_selectedVisit);
         _selectedVisit = _vm.Visits.FirstOrDefault(x => x.VisitId == selectedId) ?? _selectedVisit;
+        _isDirty = false;
         ApplyFilter();
     }
 
-    private void CancelDetail_Click(object s, RoutedEventArgs e) { _selectedVisit = null; DetailForm.Visibility = Visibility.Collapsed; DetailEmpty.Visibility = Visibility.Visible; RebuildVisitList(); }
+    private void CancelDetail_Click(object s, RoutedEventArgs e) { _selectedVisit = null; DetailForm.Visibility = Visibility.Collapsed; DetailEmpty.Visibility = Visibility.Visible; _isDirty = false; }
     private void AddMedicineDetail_Click(object sender, RoutedEventArgs e) 
     { 
         QuickAddMedicineArea.Visibility = Visibility.Visible;
@@ -253,10 +287,8 @@ public partial class VisitListView : UserControl
             Dosage = QuickMedicineDosage.Text.Trim()
         };
 
-        // Lấy danh sách hiện tại để cập nhật
         var currentDetails = await _vm.GetPrescriptionDetailsAsync(_selectedVisit.VisitId);
         
-        // Kiểm tra xem thuốc đã có chưa
         var existing = currentDetails.FirstOrDefault(d => d.MedicineId == newItem.MedicineId);
         if (existing != null)
         {
@@ -268,14 +300,13 @@ public partial class VisitListView : UserControl
             currentDetails.Add(newItem);
         }
 
-        // Lưu vào DB
         await _vm.SavePrescriptionAsync(_selectedVisit.VisitId, currentDetails);
         
-        // Cập nhật UI
         CancelQuickAdd_Click(null!, null!);
         ShowDetail(_selectedVisit); 
         _vm.Toast.Show("Đã thêm thuốc vào đơn.");
     }
+
     private static void SetupSearchComboBox(ComboBox comboBox, List<string> allItems)
     {
         comboBox.Tag = allItems;
@@ -355,7 +386,7 @@ public partial class VisitListView : UserControl
     private void Edit_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var form = new VisitFormDialog(_vm, _selectedVisit); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadVisitsAsync(); }, () => form.HasData()); }
     private void Delete_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var confirm = new ConfirmDialog("Xóa hồ sơ khám này?", "Thao tác không thể hoàn tác.", _vm); _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.DeleteVisitAsync(_selectedVisit); }); }
     
-    private static string NormalizeStatus(string? status) { var s = status?.Trim(); if (string.IsNullOrWhiteSpace(s)) return "Waiting"; if (s.Equals("In Progress", StringComparison.OrdinalIgnoreCase) || s.Equals("InProgress", StringComparison.OrdinalIgnoreCase)) return "InProgress"; if (s.Equals("Completed", StringComparison.OrdinalIgnoreCase)) return "Completed"; return "Waiting"; }
+    private static string NormalizeStatus(string? status) { var s = status?.Trim(); if (string.IsNullOrWhiteSpace(s)) return "Waiting"; if (s.Equals("In Progress", StringComparison.OrdinalIgnoreCase) || s.Equals("InProgress", StringComparison.OrdinalIgnoreCase)) return "In Progress"; if (s.Equals("Completed", StringComparison.OrdinalIgnoreCase)) return "Completed"; return "Waiting"; }
     private static string FormatVisitTime(string? visitTime) { if (TryParseVisitDateTime(visitTime, out var dt)) return dt.ToString("HH:mm"); return "--:--"; }
     private static string FormatVisitDate(string? visitTime) { if (TryParseVisitDateTime(visitTime, out var dt)) return dt.ToString("dd/MM/yyyy"); return ""; }
     private static bool TryParseVisitDateTime(string? value, out DateTime dt) { dt = default; if (string.IsNullOrWhiteSpace(value)) return false; var formats = new[] { "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy" }; if (DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt)) return true; return DateTime.TryParse(value, out dt); }

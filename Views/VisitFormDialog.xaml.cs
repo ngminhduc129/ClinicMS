@@ -20,6 +20,8 @@ public partial class VisitFormDialog : UserControl
 
     private readonly MainViewModel _vm;
     private readonly Visit? _editing;
+    private int? _selectedPatientId;
+    private int? _selectedDoctorId;
     private List<string> _patientNames = new();
     private List<string> _doctorNames = new();
     private bool _isEditing => _editing != null;
@@ -167,6 +169,9 @@ public partial class VisitFormDialog : UserControl
 
     private async void LoadData(Visit v)
     {
+        _selectedPatientId = v.PatientId;
+        _selectedDoctorId = v.DoctorId;
+
         PatientNameBox.Text = v.Patient?.FullName ?? _vm.Patients.FirstOrDefault(p => p.PatientId == v.PatientId)?.FullName ?? "";
         DoctorNameBox.Text = v.Doctor?.FullName ?? _vm.Doctors.FirstOrDefault(d => d.DoctorId == v.DoctorId)?.FullName ?? "";
 
@@ -262,6 +267,8 @@ public partial class VisitFormDialog : UserControl
 
     private async Task<(int id, string? error)> TryResolvePatientIdAsync()
     {
+        if (_selectedPatientId.HasValue) return (_selectedPatientId.Value, null);
+
         var name = PatientNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name)) return (0, "Vui lòng nhập tên bệnh nhân.");
 
@@ -274,6 +281,8 @@ public partial class VisitFormDialog : UserControl
 
     private async Task<(int id, string? error)> TryResolveDoctorIdAsync()
     {
+        if (_selectedDoctorId.HasValue) return (_selectedDoctorId.Value, null);
+
         var name = DoctorNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name)) return (0, "Vui lòng nhập tên bác sĩ.");
 
@@ -443,6 +452,14 @@ public partial class VisitFormDialog : UserControl
 
     // ───────────────────────────── Helpers ─────────────────────────────
 
+    private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+        if (parentObject == null) return null;
+        if (parentObject is T parent) return parent;
+        return FindParent<T>(parentObject);
+    }
+
     public bool HasData() => IsDirty();
 
     private static List<string> BuildNameList(IEnumerable<string?> names) =>
@@ -484,6 +501,18 @@ public partial class VisitFormDialog : UserControl
         var text = tb.Text ?? string.Empty;
         var caretIndex = tb.CaretIndex;
 
+        // Reset ID khi người dùng gõ tay đổi tên
+        if (cb.Name == "PatientNameBox")
+        {
+            var parent = FindParent<VisitFormDialog>(cb);
+            if (parent != null) parent._selectedPatientId = null;
+        }
+        else if (cb.Name == "DoctorNameBox")
+        {
+            var parent = FindParent<VisitFormDialog>(cb);
+            if (parent != null) parent._selectedDoctorId = null;
+        }
+
         // Tránh vòng lặp vô tận khi cập nhật ItemsSource
         tb.TextChanged -= EditableComboBox_TextChanged;
 
@@ -517,6 +546,18 @@ public partial class VisitFormDialog : UserControl
 
         cb.Text = selected;
         cb.IsDropDownOpen = false;
+
+        // Cập nhật ID dựa trên tên đã chọn (nếu là Patient/Doctor box)
+        if (cb.Name == "PatientNameBox")
+        {
+            var p = _vm.Patients.FirstOrDefault(x => x.FullName == selected);
+            if (p != null) _selectedPatientId = p.PatientId;
+        }
+        else if (cb.Name == "DoctorNameBox")
+        {
+            var d = _vm.Doctors.FirstOrDefault(x => x.FullName == selected);
+            if (d != null) _selectedDoctorId = d.DoctorId;
+        }
 
         if (cb.Template.FindName("PART_EditableTextBox", cb) is TextBox tb)
         {

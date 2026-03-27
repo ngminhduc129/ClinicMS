@@ -20,6 +20,7 @@
             <conv:ZeroToVisibilityConverter x:Key="ZeroToVisibility"/>
             <conv:PageToBoldConverter x:Key="PageToBold"/>
             <conv:IndexConverter x:Key="IndexConverter"/>
+            <conv:PercentageToHeightConverter x:Key="PercentageToHeightConverter"/>
 
             <sys:Double x:Key="FontScale">1.0</sys:Double>
 

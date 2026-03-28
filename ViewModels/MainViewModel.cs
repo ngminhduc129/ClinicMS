@@ -289,17 +289,32 @@ public class MainViewModel : BaseViewModel
 
     public async Task<bool> AddVisitAsync(Visit v)
     {
-        try { await _db.AddVisitAsync(v); await LoadDashboardDataAsync(); Toast.Show("Thêm hồ sơ thành công"); return true; }
+        try { 
+            await _db.AddVisitAsync(v); 
+            await LoadDashboardDataAsync(); // Nạp lại toàn bộ TodayVisits và Stats
+            Toast.Show("Thêm hồ sơ thành công"); 
+            return true; 
+        }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
     public async Task<bool> UpdateVisitAsync(Visit v)
     {
-        try { await _db.UpdateVisitAsync(v); await LoadDashboardDataAsync(); Toast.Show("Cập nhật thành công"); return true; }
+        try { 
+            await _db.UpdateVisitAsync(v); 
+            await LoadDashboardDataAsync(); // Nạp lại toàn bộ TodayVisits và Stats
+            Toast.Show("Cập nhật thành công"); 
+            return true; 
+        }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
     public async Task<bool> DeleteVisitAsync(Visit v)
     {
-        try { await _db.DeleteVisitAsync(v.VisitId); await LoadDashboardDataAsync(); Toast.Show("Đã xóa hồ sơ"); return true; }
+        try { 
+            await _db.DeleteVisitAsync(v.VisitId); 
+            await LoadDashboardDataAsync(); // Nạp lại toàn bộ TodayVisits và Stats
+            Toast.Show("Đã xóa hồ sơ"); 
+            return true; 
+        }
         catch (Exception ex) { Toast.ShowError(ex.Message); return false; }
     }
 

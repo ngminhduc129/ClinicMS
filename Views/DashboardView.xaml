@@ -141,7 +141,7 @@
                             </Button>
                         </Grid>
 
-                        <ScrollViewer Grid.Row="1" MaxHeight="350" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer Grid.Row="1" MaxHeight="600" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding TodayVisits}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

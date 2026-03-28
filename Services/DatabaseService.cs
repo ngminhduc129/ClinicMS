@@ -429,8 +429,9 @@ public class DatabaseService
     public async Task<int> GetTodayVisitsCountAsync()
     {
         await using var db = Ctx();
-        var today = DateTime.Today.ToString("yyyy-MM-dd");
-        return await db.Visits.CountAsync(v => v.VisitTime != null && v.VisitTime.StartsWith(today));
+        var today1 = DateTime.Today.ToString("yyyy-MM-dd");
+        var today2 = DateTime.Today.ToString("dd/MM/yyyy");
+        return await db.Visits.CountAsync(v => v.VisitTime != null && (v.VisitTime.StartsWith(today1) || v.VisitTime.StartsWith(today2)));
     }
 
     public async Task<Visit> AddVisitAsync(Visit v)

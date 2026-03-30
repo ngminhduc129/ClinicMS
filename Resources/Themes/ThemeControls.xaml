@@ -3,55 +3,13 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <!--=========================================-->
-    <!-- BRUSHES & COLORS -->
-    <!--=========================================-->
-    <SolidColorBrush x:Key="PrimaryGreenBrush" Color="#16A34A"/>
-    <SolidColorBrush x:Key="PrimaryGreenDarkBrush" Color="#15803D"/>
-    <SolidColorBrush x:Key="PrimaryGreenLightBrush" Color="#DCFCE7"/>
-    <SolidColorBrush x:Key="PrimaryGreenVeryLightBrush" Color="#F0FDF4"/>
-    <SolidColorBrush x:Key="TextBrushWhite" Color="White"/>
-    <SolidColorBrush x:Key="TextBrushPrimary" Color="#0F172A"/>
-    <SolidColorBrush x:Key="TextBrushSecondary" Color="#64748B"/>
-    <SolidColorBrush x:Key="SurfaceBrushWhite" Color="White"/>
-    <SolidColorBrush x:Key="BackgroundBrushDark" Color="#F8FAFC"/>
-    <SolidColorBrush x:Key="BorderBrushLight" Color="#E2E8F0"/>
-    <SolidColorBrush x:Key="BorderBrushMedium" Color="#CBD5E1"/>
-    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#F1F5F9"/>
-    <SolidColorBrush x:Key="PressedBackgroundBrush" Color="#E2E8F0"/>
-    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#F1F5F9"/>
-    <SolidColorBrush x:Key="DisabledTextBrush" Color="#CBD5E1"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
-    <SolidColorBrush x:Key="DividerBrush" Color="#F1F5F9"/>
-
-    <!--=========================================-->
-    <!-- FONTS -->
-    <!--=========================================-->
-    <FontFamily x:Key="FontFamilyPrimary">Segoe UI</FontFamily>
-    <FontWeight x:Key="FontWeightMedium">Medium</FontWeight>
-
-    <!--=========================================-->
-    <!-- SHADOWS -->
-    <!--=========================================-->
-    <DropShadowEffect x:Key="SoftShadow" BlurRadius="8" ShadowDepth="1" Color="#000000" Opacity="0.06"/>
-    <DropShadowEffect x:Key="InsetShadow" BlurRadius="4" ShadowDepth="1" Color="#000000" Opacity="0.04"/>
-    <DropShadowEffect x:Key="StandardShadow" BlurRadius="8" ShadowDepth="2" Color="#000000" Opacity="0.08"/>
-    <DropShadowEffect x:Key="ElevatedShadow" BlurRadius="12" ShadowDepth="4" Color="#000000" Opacity="0.12"/>
-
-    <system:Double x:Key="FontSizeHeader1">28</system:Double>
-    <system:Double x:Key="FontSizeHeader2">24</system:Double>
-    <system:Double x:Key="FontSizeHeader3">20</system:Double>
-    <system:Double x:Key="FontSizeBody">14</system:Double>
-    <system:Double x:Key="FontSizeButton">14</system:Double>
-    <system:Double x:Key="FontSizeSmall">12</system:Double>
-
-    <!--=========================================-->
     <!-- BUTTONS -->
     <!--=========================================-->
 
     <!-- PRIMARY BUTTON -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource PrimaryGreenBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushWhite}"/>
+        <Setter Property="Background" Value="#16A34A"/>
+        <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="Padding" Value="16,10"/>
@@ -61,7 +19,11 @@
         <Setter Property="Height" Value="40"/>
         <Setter Property="MinWidth" Value="120"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Effect" Value="{StaticResource SoftShadow}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="1" Opacity="0.08" Direction="270"/>
+            </Setter.Value>
+        </Setter>
         <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         <Setter Property="RenderTransform">
             <Setter.Value>
@@ -78,10 +40,10 @@
                             CornerRadius="10"
                             Padding="{TemplateBinding Padding}">
                         <Grid>
-                            <Border x:Name="ShineOverlay" Background="{StaticResource PrimaryGreenDarkBrush}"
+                            <Border x:Name="ShineOverlay" Background="#14532D"
                                     Opacity="0" CornerRadius="10"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                              TextBlock.Foreground="{StaticResource TextBrushWhite}"/>
+                                              TextBlock.Foreground="White"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -104,12 +66,12 @@
                             </BeginStoryboard>
                         </EventTrigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource PrimaryGreenDarkBrush}"/>
+                            <Setter Property="Background" Value="#14532D"/>
                             <Setter TargetName="ShineOverlay" Property="Opacity" Value="0"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{StaticResource DisabledBackgroundBrush}"/>
-                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                            <Setter Property="Background" Value="#F3F4F6"/>
+                            <Setter Property="Foreground" Value="#9CA3AF"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -119,10 +81,10 @@
 
     <!-- SECONDARY BUTTON -->
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="BorderThickness" Value="1.5"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderBrush" Value="#E2E8F0"/>
         <Setter Property="Padding" Value="16,10"/>
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/>
@@ -130,7 +92,11 @@
         <Setter Property="Height" Value="40"/>
         <Setter Property="MinWidth" Value="120"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Effect" Value="{StaticResource SoftShadow}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="1" Opacity="0.08" Direction="270"/>
+            </Setter.Value>
+        </Setter>
         <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         <Setter Property="RenderTransform">
             <Setter.Value>
@@ -147,7 +113,7 @@
                             CornerRadius="10"
                             Padding="{TemplateBinding Padding}">
                         <Grid>
-                            <Border x:Name="HoverOverlay" Background="{StaticResource HoverBackgroundBrush}"
+                            <Border x:Name="HoverOverlay" Background="#F3F4F6"
                                     Opacity="0" CornerRadius="10"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
@@ -174,7 +140,7 @@
                             </BeginStoryboard>
                         </EventTrigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource PressedBackgroundBrush}"/>
+                            <Setter Property="Background" Value="#E5E7EB"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -184,8 +150,8 @@
 
     <!-- DANGER BUTTON -->
     <Style x:Key="DangerButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushWhite}"/>
+        <Setter Property="Background" Value="#EF4444"/>
+        <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="16,10"/>
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
@@ -194,7 +160,11 @@
         <Setter Property="Height" Value="40"/>
         <Setter Property="MinWidth" Value="120"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Effect" Value="{StaticResource SoftShadow}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="1" Opacity="0.08" Direction="270"/>
+            </Setter.Value>
+        </Setter>
         <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         <Setter Property="RenderTransform">
             <Setter.Value>
@@ -212,7 +182,7 @@
                         <Grid>
                             <Border x:Name="HoverOverlay" Background="#DC2626" Opacity="0" CornerRadius="10"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                              TextBlock.Foreground="{StaticResource TextBrushWhite}"/>
+                                              TextBlock.Foreground="White"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -246,7 +216,7 @@
     <!-- ICON BUTTON -->
     <Style x:Key="IconButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushSecondary}"/>
+        <Setter Property="Foreground" Value="#6B7280"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="8"/>
         <Setter Property="Width" Value="40"/>
@@ -263,7 +233,7 @@
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="MainBorder" Background="{TemplateBinding Background}" CornerRadius="10">
                         <Grid>
-                            <Border x:Name="HoverOverlay" Background="{StaticResource HoverBackgroundBrush}"
+                            <Border x:Name="HoverOverlay" Background="#F3F4F6"
                                     Opacity="0" CornerRadius="10"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
@@ -297,9 +267,9 @@
     <!-- TEXTBOX -->
     <!--=========================================-->
     <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#111827"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderBrush" Value="#E2E8F0"/>
         <Setter Property="BorderThickness" Value="1.5"/>
         <Setter Property="Padding" Value="12,11"/>
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
@@ -307,8 +277,12 @@
         <Setter Property="Height" Value="40"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="CaretBrush" Value="{StaticResource PrimaryGreenBrush}"/>
-        <Setter Property="Effect" Value="{StaticResource InsetShadow}"/>
+        <Setter Property="CaretBrush" Value="#16A34A"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="1" Opacity="0.06" Direction="270"/>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -339,7 +313,7 @@
                             </BeginStoryboard>
                         </EventTrigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="#16A34A"/>
                             <Setter TargetName="MainBorder" Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -352,9 +326,9 @@
     <!-- COMBOBOX -->
     <!--=========================================-->
     <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#111827"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderBrush" Value="#E2E8F0"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="12,10"/>
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
@@ -394,7 +368,7 @@
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           IsHitTestVisible="False"/>
                         <Path Grid.Column="1"
-                              Fill="{StaticResource TextBrushSecondary}"
+                              Fill="#6B7280"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
                               Margin="0,0,12,0"
@@ -406,8 +380,8 @@
                                IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
                                Placement="Bottom"
                                PlacementTarget="{Binding ElementName=DropDownToggle}">
-                            <Border Background="{StaticResource SurfaceBrushWhite}"
-                                    BorderBrush="{StaticResource BorderBrushLight}"
+                            <Border Background="White"
+                                    BorderBrush="#E5E7EB"
                                     BorderThickness="1"
                                     CornerRadius="10">
                                 <Border.Effect>
@@ -421,10 +395,10 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="{StaticResource BorderBrushMedium}"/>
+                            <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="#D1D5DB"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+                            <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="#16A34A"/>
                             <Setter TargetName="DropDownToggle" Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -446,10 +420,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="#F3F4F6"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource PrimaryGreenLightBrush}"/>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="#DCFCE7"/>
                             <Setter Property="Foreground" Value="#15803D"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -462,7 +436,7 @@
     <!-- DATAGRID -->
     <!--=========================================-->
     <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -491,9 +465,9 @@
 
     <!-- DataGrid Column Header -->
     <Style x:Key="ModernDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{StaticResource BackgroundBrushDark}"/>
+        <Setter Property="Background" Value="#F3F4F6"/>
         <Setter Property="Foreground" Value="#111827"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushLight}"/>
+        <Setter Property="BorderBrush" Value="#E5E7EB"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="Padding" Value="12,10"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
@@ -504,10 +478,10 @@
 
     <!-- DataGrid Row -->
     <Style x:Key="ModernDataGridRowStyle" TargetType="DataGridRow">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrushWhite}"/>
+        <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="BorderBrush" Value="#E5E7EB"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DataGridRow">
@@ -544,7 +518,7 @@
                             </BeginStoryboard>
                         </EventTrigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="DGR_Border" Property="Background" Value="{StaticResource PrimaryGreenLightBrush}"/>
+                            <Setter TargetName="DGR_Border" Property="Background" Value="#DCFCE7"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

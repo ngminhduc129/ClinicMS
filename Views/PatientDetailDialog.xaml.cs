@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,75 +10,45 @@ namespace ClinicMS.Views;
 
 public partial class PatientDetailDialog : UserControl
 {
-    private readonly MainViewModel _vm;
-    private Patient _patient;
+    private readonly PatientDetailViewModel _viewModel;
 
-    public PatientDetailDialog(MainViewModel vm, Patient patient)
+    public PatientDetailDialog(MainViewModel mainVm, Patient patient)
     {
         InitializeComponent();
-        _vm      = vm;
-        _patient = patient;
+        _viewModel = new PatientDetailViewModel(mainVm, patient);
+        DataContext = _viewModel;
+
         Opacity = 0;
-        _ = LoadAsync();
-        Loaded += (_, _) => AnimateOpen();
+        Loaded += async (_, _) => 
+        {
+            AnimateOpen();
+            await _viewModel.LoadDataAsync();
+        };
     }
 
     private void AnimateOpen()
     {
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var dur = TimeSpan.FromSeconds(0.24);
+        var dur = TimeSpan.FromSeconds(0.3);
 
-        var translate = new TranslateTransform(0, 40);
-        var scale = new ScaleTransform(0.96, 0.96);
+        var translate = new TranslateTransform(0, 30);
         var group = new TransformGroup();
-        group.Children.Add(scale);
         group.Children.Add(translate);
-        RenderTransformOrigin = new Point(0.5, 0.5);
-        RenderTransform = group;
+        
+        DialogRoot.RenderTransformOrigin = new Point(0.5, 0.5);
+        DialogRoot.RenderTransform = group;
 
-        BeginAnimation(OpacityProperty,
-            new DoubleAnimation(0, 1, dur) { EasingFunction = ease });
-        translate.BeginAnimation(TranslateTransform.YProperty,
-            new DoubleAnimation(40, 0, dur) { EasingFunction = ease });
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty,
-            new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty,
-            new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
-    }
-
-    private async Task LoadAsync()
-    {
-        var (p, contact) = await _vm.GetPatientWithContactAsync(_patient.PatientId);
-        if (p == null) { Close_Click(null!, null!); return; }
-        _patient = p;
-
-        InitialsCircle.Text = p.Initials;
-        NameText.Text       = p.FullName;
-        GenderDobText.Text  = $"{p.Gender ?? "—"}  •  {p.DateOfBirth ?? "—"}";
-
-        PhoneRow.Value   = contact?.Phone   ?? "—";
-        EmailRow.Value   = contact?.Email   ?? "—";
-        AddressRow.Value = contact?.Address ?? "—";
-
-        BloodRow.Value   = p.BloodType ?? "—";
-        HeightRow.Value  = p.HeightCm.HasValue  ? $"{p.HeightCm} cm" : "—";
-        WeightRow.Value  = p.WeightKg.HasValue  ? $"{p.WeightKg} kg" : "—";
-        NoteRow.Value    = p.Note ?? "—";
-
-        var visits = await _vm.GetPatientVisitsAsync(p.PatientId);
-        VisitList.ItemsSource = visits;
-        NoVisitsText.Visibility = visits.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, dur));
+        translate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(30, 0, dur) { EasingFunction = ease });
     }
 
     private void Edit_Click(object s, RoutedEventArgs e)
     {
-        var form = new PatientFormDialog(_vm, _patient);
-        _vm.Modal.Show(form, result => { if (result == true) _ = LoadAsync(); }, () => form.HasData());
+        _viewModel.Edit();
     }
 
     private void Close_Click(object s, RoutedEventArgs e)
     {
-        if (DataContext is MainViewModel vm) vm.Modal.Close();
-        else _vm.Modal.Close();
+        _viewModel.Close();
     }
 }

@@ -4,32 +4,85 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <StackPanel MaxWidth="600" HorizontalAlignment="Left" Margin="40">
-            <TextBlock Text="Cài Đặt Hệ Thống" FontSize="24" FontWeight="Bold" Foreground="#166534" Margin="0,0,0,32"/>
-            <Border Background="White" CornerRadius="12" Padding="24" BorderBrush="#E5E7EB" BorderThickness="1">
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <Grid Margin="40">
+        <StackPanel MaxWidth="800" HorizontalAlignment="Left">
+            
+            <!-- HEADER -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,32">
+                <Border Width="48" Height="48" CornerRadius="12" Background="#DCFCE7" Margin="0,0,16,0">
+                    <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#166534" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Cài Đặt Hệ Thống" Style="{StaticResource PageTitleStyle}" Margin="0"/>
+                    <TextBlock Text="Quản lý cấu hình giao diện và ứng dụng" Style="{StaticResource SmallTextStyle}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- SETTINGS GROUPS -->
+            <Border Background="White" CornerRadius="16" Padding="32" BorderBrush="#E5E7EB" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+                </Border.Effect>
+                
                 <StackPanel>
-                    <TextBlock Text="Giao Diện" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
-                    <Grid Margin="0,0,0,16">
+                    <!-- GIAO DIỆN SECTION -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                        <TextBlock Text="&#xE790;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="#166534" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Giao Diện Người Dùng" Style="{StaticResource SectionTitleStyle}" Margin="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Separator Background="#F3F4F6" Margin="0,0,0,24"/>
+
+                    <!-- FONT SIZE SETTING -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Cỡ chữ hệ thống" Style="{StaticResource EmphasisBoldStyle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Điều chỉnh kích thước hiển thị của toàn bộ văn bản và giao diện ứng dụng." 
+                                       Style="{StaticResource SmallTextStyle}" MaxWidth="450" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Preview Text -->
+                            <TextBlock Text="Aa" FontSize="20" FontWeight="Bold" Foreground="#9CA3AF" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            
+                            <ComboBox Width="220" Style="{StaticResource ModernComboBoxStyle}"
+                                      SelectedValuePath="Tag"
+                                      SelectedValue="{Binding FontSizeLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem Content="Nhỏ (85%)" Tag="Small"/>
+                                <ComboBoxItem Content="Trung bình (100%)" Tag="Medium"/>
+                                <ComboBoxItem Content="Lớn (120%)" Tag="Large"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <Separator Background="#F3F4F6" Margin="0,24,0,24"/>
+
+                    <!-- THÔNG TIN PHIÊN BẢN (Ví dụ thêm để đầy đặn giao diện) -->
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Cỡ chữ hệ thống" FontSize="14" FontWeight="Medium" Foreground="#374151"/>
-                            <TextBlock Text="Điều chỉnh kích thước văn bản hiển thị trong toàn bộ ứng dụng" FontSize="12" Foreground="#6B7280" Margin="0,4,0,0"/>
+                            <TextBlock Text="Phiên bản ứng dụng" Style="{StaticResource EmphasisBoldStyle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="ClinicMS v2.1.0 - Hệ thống quản lý phòng khám hiện đại." Style="{StaticResource SmallTextStyle}"/>
                         </StackPanel>
-                        <ComboBox Grid.Column="1" Width="200" VerticalAlignment="Center"
-                                  SelectedValuePath="Tag"
-                                  SelectedValue="{Binding FontSizeLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <ComboBoxItem Content="Nhỏ" Tag="Small"/>
-                            <ComboBoxItem Content="Trung bình" Tag="Medium"/>
-                            <ComboBoxItem Content="Lớn" Tag="Large"/>
-                        </ComboBox>
+                        <TextBlock Grid.Column="1" Text="Đã cập nhật" Foreground="#16A34A" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </Grid>
+
                 </StackPanel>
             </Border>
+
+            <!-- FOOTER INFO -->
+            <TextBlock Text="© 2026 ClinicMS Team. Đã đăng ký bản quyền." 
+                       HorizontalAlignment="Center" Margin="0,32,0,0" Style="{StaticResource XSmallTextStyle}"/>
         </StackPanel>
     </Grid>
 </UserControl>

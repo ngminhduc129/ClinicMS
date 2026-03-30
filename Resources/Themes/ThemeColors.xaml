@@ -65,49 +65,49 @@
     <!--=========================================-->
     
     <!-- Primary Brand Brushes -->
-    <SolidColorBrush x:Key="PrimaryGreenBrush" Color="{StaticResource PrimaryGreenColor}"/>
-    <SolidColorBrush x:Key="PrimaryGreenDarkBrush" Color="{StaticResource PrimaryGreenDarkColor}"/>
-    <SolidColorBrush x:Key="PrimaryGreenLightBrush" Color="{StaticResource PrimaryGreenLightColor}"/>
-    <SolidColorBrush x:Key="PrimaryGreenVeryLightBrush" Color="{StaticResource PrimaryGreenVeryLightColor}"/>
+    <SolidColorBrush x:Key="PrimaryGreenBrush" Color="#16A34A"/>
+    <SolidColorBrush x:Key="PrimaryGreenDarkBrush" Color="#166534"/>
+    <SolidColorBrush x:Key="PrimaryGreenLightBrush" Color="#DCFCE7"/>
+    <SolidColorBrush x:Key="PrimaryGreenVeryLightBrush" Color="#F0FDF4"/>
     
     <!-- Background Brushes -->
-    <SolidColorBrush x:Key="BackgroundBrushLight" Color="{StaticResource BackgroundColorLight}"/>
-    <SolidColorBrush x:Key="BackgroundBrushDark" Color="{StaticResource BackgroundColorDark}"/>
-    <SolidColorBrush x:Key="SurfaceBrushWhite" Color="{StaticResource SurfaceColorWhite}"/>
+    <SolidColorBrush x:Key="BackgroundBrushLight" Color="#F9FAFB"/>
+    <SolidColorBrush x:Key="BackgroundBrushDark" Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="SurfaceBrushWhite" Color="#FFFFFF"/>
     
     <!-- Border Brushes -->
-    <SolidColorBrush x:Key="BorderBrushLight" Color="{StaticResource BorderColorLight}"/>
-    <SolidColorBrush x:Key="BorderBrushMedium" Color="{StaticResource BorderColorMedium}"/>
-    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}"/>
+    <SolidColorBrush x:Key="BorderBrushLight" Color="#E5E7EB"/>
+    <SolidColorBrush x:Key="BorderBrushMedium" Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="#E5E7EB"/>
     
     <!-- Text Brushes -->
-    <SolidColorBrush x:Key="TextBrushPrimary" Color="{StaticResource TextPrimaryColor}"/>
-    <SolidColorBrush x:Key="TextBrushSecondary" Color="{StaticResource TextSecondaryColor}"/>
-    <SolidColorBrush x:Key="TextBrushTertiary" Color="{StaticResource TextTertiaryColor}"/>
-    <SolidColorBrush x:Key="TextBrushWhite" Color="{StaticResource TextWhiteColor}"/>
+    <SolidColorBrush x:Key="TextBrushPrimary" Color="#111827"/>
+    <SolidColorBrush x:Key="TextBrushSecondary" Color="#4B5563"/>
+    <SolidColorBrush x:Key="TextBrushTertiary" Color="#9CA3AF"/>
+    <SolidColorBrush x:Key="TextBrushWhite" Color="#FFFFFF"/>
     
     <!-- Status Brushes -->
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColorGreen}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColorAmber}"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColorRed}"/>
-    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColorBlue}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="#3B82F6"/>
     
     <!-- Light Status Backgrounds -->
-    <SolidColorBrush x:Key="SuccessBkgBrush" Color="{StaticResource SuccessColorLightBg}"/>
-    <SolidColorBrush x:Key="WarningBkgBrush" Color="{StaticResource WarningColorLightBg}"/>
-    <SolidColorBrush x:Key="ErrorBkgBrush" Color="{StaticResource ErrorColorLightBg}"/>
-    <SolidColorBrush x:Key="InfoBkgBrush" Color="{StaticResource InfoColorLightBg}"/>
+    <SolidColorBrush x:Key="SuccessBkgBrush" Color="#ECFDF5"/>
+    <SolidColorBrush x:Key="WarningBkgBrush" Color="#FFFBEB"/>
+    <SolidColorBrush x:Key="ErrorBkgBrush" Color="#FEF2F2"/>
+    <SolidColorBrush x:Key="InfoBkgBrush" Color="#EFF6FF"/>
     
     <!-- Interaction Brushes -->
-    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{StaticResource HoverBackgroundColor}"/>
-    <SolidColorBrush x:Key="PressedBackgroundBrush" Color="{StaticResource PressedBackgroundColor}"/>
-    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{StaticResource DisabledBackgroundColor}"/>
-    <SolidColorBrush x:Key="DisabledTextBrush" Color="{StaticResource DisabledTextColor}"/>
-    <SolidColorBrush x:Key="FocusHighlightBrush" Color="{StaticResource FocusHighlightColor}"/>
+    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="PressedBackgroundBrush" Color="#E5E7EB"/>
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#9CA3AF"/>
+    <SolidColorBrush x:Key="FocusHighlightBrush" Color="#16A34A"/>
     
     <!-- Shadow & Overlay -->
-    <SolidColorBrush x:Key="ShadowBrush" Color="{StaticResource ShadowColorDark}" Opacity="0.15"/>
-    <SolidColorBrush x:Key="OverlayBrush" Color="{StaticResource OverlayColorDimmed}" Opacity="0.5"/>
+    <SolidColorBrush x:Key="ShadowBrush" Color="#000000" Opacity="0.15"/>
+    <SolidColorBrush x:Key="OverlayBrush" Color="#000000" Opacity="0.5"/>
     
     <!--=========================================-->
     <!-- MODERN SHADOW EFFECTS (nested in ThemeControls) -->

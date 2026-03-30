@@ -5,10 +5,29 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- 1. MERGED DICTIONARIES (Must be first in XAML structure) -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ClinicTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- 2. CORE FALLBACK RESOURCES (Direct children override merged dictionaries) -->
+            <SolidColorBrush x:Key="TextBrushPrimary" Color="#111827"/>
+            <SolidColorBrush x:Key="TextBrushSecondary" Color="#6B7280"/>
+            <SolidColorBrush x:Key="TextBrushTertiary" Color="#9CA3AF"/>
+            <SolidColorBrush x:Key="TextBrushWhite" Color="#FFFFFF"/>
+            <sys:Double x:Key="FontScale">1.0</sys:Double>
+            <sys:Double x:Key="FontSizePageTitle">30</sys:Double>
+            <sys:Double x:Key="FontSizeSectionTitle">22</sys:Double>
+            <sys:Double x:Key="FontSizeSubsectionTitle">19</sys:Double>
+            <sys:Double x:Key="FontSizeCardTitle">17</sys:Double>
+            <sys:Double x:Key="FontSizeBody">15</sys:Double>
+            <sys:Double x:Key="FontSizeSmall">14</sys:Double>
+            <sys:Double x:Key="FontSizeXSmall">13</sys:Double>
+            <sys:Double x:Key="FontSizeButton">15</sys:Double>
+            <sys:Double x:Key="FontSizeLabel">14</sys:Double>
+            <sys:Double x:Key="FontSizeHelper">13</sys:Double>
+
+            <!-- 3. CONVERTERS -->
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
             <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
             <conv:NullToVisibilityConverter x:Key="NullToVisibility"/>
@@ -21,114 +40,66 @@
             <conv:PageToBoldConverter x:Key="PageToBold"/>
             <conv:IndexConverter x:Key="IndexConverter"/>
             <conv:PercentageToHeightConverter x:Key="PercentageToHeightConverter"/>
+            <conv:FontSizeConverter x:Key="FontSizeConverter"/>
 
-            <sys:Double x:Key="FontScale">1.0</sys:Double>
-
-            <!-- Base Window Style -->
+            <!-- 4. GLOBAL ELEMENT STYLES -->
+            
+            <!-- BASE WINDOW STYLE -->
             <Style TargetType="Window">
                 <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontSize" Value="{Binding FontScale, Converter={StaticResource FontSizeConverter}, ConverterParameter=15, FallbackValue=15}"/>
+                <Setter Property="Foreground" Value="#111827"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
                 <Setter Property="UseLayoutRounding" Value="True"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
             </Style>
 
-            <SolidColorBrush x:Key="GreenDark" Color="#15803D"/>
-            <SolidColorBrush x:Key="GreenMedium" Color="#16A34A"/>
-            <SolidColorBrush x:Key="GreenLight" Color="#DCFCE7"/>
-            <SolidColorBrush x:Key="GreenBg" Color="#F4F8F6"/>
-            <SolidColorBrush x:Key="SidebarBg" Color="#166534"/>
-            <SolidColorBrush x:Key="SidebarBg2" Color="#14532D"/>
-            <SolidColorBrush x:Key="TextPrimary" Color="#1F2937"/>
-            <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
-            <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
-
+            <!-- GLOBAL TEXTBLOCK STYLE -->
             <Style TargetType="TextBlock">
-                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+                <Setter Property="Foreground" Value="#111827"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
 
-            <Style x:Key="BaseButton" TargetType="Button">
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Padding" Value="0"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <Style x:Key="GreenButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-                <Setter Property="Background" Value="{StaticResource GreenMedium}"/>
+            <!-- 5. SHARED COMPONENT STYLES -->
+            <Style x:Key="GreenButton" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/>
                 <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="FontSize" Value="{StaticResource FontSizeButton}"/>
-                <Setter Property="Padding" Value="16,8"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{StaticResource GreenDark}"/>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
-            <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-                <Setter Property="Background" Value="White"/>
-                <Setter Property="Foreground" Value="{StaticResource GreenDark}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource GreenLight}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="FontSize" Value="{StaticResource FontSizeButton}"/>
-                <Setter Property="Padding" Value="12,6"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="10"
-                                    Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{StaticResource GreenLight}"/>
-                    </Trigger>
-                </Style.Triggers>
+            <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/>
+                <Setter Property="Foreground" Value="#111827"/>
             </Style>
 
-            <Style x:Key="FormLabel" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="{StaticResource FontSizeLabel}"/>
-                <Setter Property="FontWeight" Value="Medium"/>
-                <Setter Property="Foreground" Value="#374151"/>
-                <Setter Property="Margin" Value="0,0,0,6"/>
+            <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource DangerButtonStyle}">
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Style>
+
+            <!-- FORM STYLES -->
+            <Style x:Key="FormLabel" TargetType="TextBlock" BasedOn="{StaticResource FormLabelStyle}">
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeLabel}"/>
+                <Setter Property="Foreground" Value="#111827"/>
             </Style>
 
             <Style x:Key="FormTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}">
-                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-                <Setter Property="Height" Value="40"/>
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+                <Setter Property="Foreground" Value="#111827"/>
             </Style>
 
             <Style x:Key="FormComboBox" TargetType="ComboBox" BasedOn="{StaticResource ModernComboBoxStyle}">
-                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-                <Setter Property="Height" Value="40"/>
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+                <Setter Property="Foreground" Value="#111827"/>
             </Style>
 
-            <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource DangerButtonStyle}"/>
-
-            <Style x:Key="ClinicDataGrid" TargetType="DataGrid">
-                <Setter Property="Background" Value="White"/>
-                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-                <Setter Property="HeadersVisibility" Value="Column"/>
-                <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Style x:Key="ClinicDataGrid" TargetType="DataGrid" BasedOn="{StaticResource ModernDataGridStyle}">
+                <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+                <Setter Property="Foreground" Value="#111827"/>
             </Style>
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

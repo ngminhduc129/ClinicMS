@@ -9,9 +9,9 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        InitializeComponent();
         var vm = new MainViewModel();
         DataContext = vm;
+        InitializeComponent();
 
         vm.Modal.Register(ModalOverlay, ModalHost);
     }

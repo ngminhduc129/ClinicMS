@@ -11,12 +11,6 @@
         WindowStartupLocation="CenterScreen"
         Background="#F6F9FC">
     <Border UseLayoutRounding="True" SnapsToDevicePixels="True">
-        <Border.RenderTransformOrigin>
-            <Point X="0.5" Y="0.5"/>
-        </Border.RenderTransformOrigin>
-        <Border.RenderTransform>
-            <ScaleTransform ScaleX="{Binding FontScale}" ScaleY="{Binding FontScale}"/>
-        </Border.RenderTransform>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>
@@ -32,11 +26,11 @@
             <DockPanel Margin="16,28,16,24">
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,0,8,40">
                     <Border Width="44" Height="44" CornerRadius="10" Margin="0,0,14,0" Background="#16A34A">
-                        <TextBlock Text="+" FontSize="{StaticResource FontSizeSectionTitle}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="+" FontSize="{DynamicResource FontSizeSectionTitle}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="ClinicMS" FontSize="{StaticResource FontSizeSubsectionTitle}" FontWeight="ExtraBold" Foreground="White"/>
-                        <TextBlock Text="Quản lý phòng khám" FontSize="{StaticResource FontSizeXSmall}" Foreground="#86EFAC" Margin="0,2,0,0"/>
+                        <TextBlock Text="ClinicMS" FontSize="{DynamicResource FontSizeSubsectionTitle}" FontWeight="ExtraBold" Foreground="White"/>
+                        <TextBlock Text="Quản lý phòng khám" FontSize="{DynamicResource FontSizeXSmall}" Foreground="#86EFAC" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Margin="0">
@@ -64,6 +58,11 @@
             </DockPanel>
         </Border>
         <Grid Grid.Column="1" Background="#F6F9FC">
+            <!-- Vùng nội dung có khả năng tự co giãn (Scale) -->
+            <Grid.LayoutTransform>
+                <ScaleTransform ScaleX="{Binding FontScale}" ScaleY="{Binding FontScale}"/>
+            </Grid.LayoutTransform>
+            
             <!-- Luôn hiện Dashboard trước để người dùng vào việc ngay -->
             <views:DashboardView Visibility="{Binding IsPageDashboard, Converter={StaticResource BoolToVisibility}}" DataContext="{Binding}"/>
             
@@ -132,7 +131,7 @@
                             </Border>
                         <TextBlock Text="{Binding Message}"
                                    Grid.Column="1"
-                                   Foreground="{Binding Type, Converter={StaticResource ToastTypeToForeground}}"
+                                   Foreground="{Binding Type, Converter={StaticResource ToastTypeToForeground}, FallbackValue=White}"
                                    TextWrapping="Wrap"
                                    FontSize="13"
                                    FontWeight="SemiBold"

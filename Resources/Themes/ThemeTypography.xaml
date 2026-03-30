@@ -38,7 +38,7 @@
     <FontWeight x:Key="FontWeightRegular">Normal</FontWeight>
     <FontWeight x:Key="FontWeightMedium">SemiBold</FontWeight>
     <FontWeight x:Key="FontWeightBold">Bold</FontWeight>
-    <FontWeight x:Key="FontWeightExtraBold">ExtraBlack</FontWeight>
+    <FontWeight x:Key="FontWeightExtraBold">ExtraBold</FontWeight>
 
     <!--=========================================-->
     <!-- PARAGRAPH/LINE HEIGHTS -->
@@ -52,36 +52,36 @@
     <!--=========================================-->
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizePageTitle}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizePageTitle}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="Margin" Value="0,0,0,12"/>
     </Style>
 
     <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSectionTitle}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSectionTitle}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="Margin" Value="0,0,0,8"/>
     </Style>
 
     <Style x:Key="SubsectionTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSubsectionTitle}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSubsectionTitle}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
     </Style>
 
     <Style x:Key="CardTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeCardTitle}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCardTitle}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
@@ -90,34 +90,34 @@
     <!--=========================================-->
     <Style x:Key="BodyTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#111827"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="LineHeight" Value="{StaticResource LineHeightNormal}"/>
     </Style>
 
     <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushSecondary}"/>
+        <Setter Property="Foreground" Value="#4B5563"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <Style x:Key="SmallTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushSecondary}"/>
+        <Setter Property="Foreground" Value="#6B7280"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <Style x:Key="XSmallTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeXSmall}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeXSmall}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushTertiary}"/>
+        <Setter Property="Foreground" Value="#9CA3AF"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
@@ -126,17 +126,17 @@
     <!--=========================================-->
     <Style x:Key="FormLabelStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeLabel}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeLabel}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#374151"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
     </Style>
 
     <Style x:Key="HelperTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeHelper}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeHelper}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightRegular}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushSecondary}"/>
+        <Setter Property="Foreground" Value="#6B7280"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="Margin" Value="0,4,0,0"/>
     </Style>
@@ -146,16 +146,16 @@
     <!--=========================================-->
     <Style x:Key="EmphasisBoldStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrushPrimary}"/>
+        <Setter Property="Foreground" Value="#111827"/>
     </Style>
 
     <Style x:Key="EmphasisColorStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
         <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryGreenBrush}"/>
+        <Setter Property="Foreground" Value="#16A34A"/>
     </Style>
 
 </ResourceDictionary>

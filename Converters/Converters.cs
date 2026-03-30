@@ -145,3 +145,22 @@ public class PercentageToHeightConverter : IMultiValueConverter
     }
     public object[] ConvertBack(object v, Type[] t, object p, CultureInfo c) => throw new NotImplementedException();
 }
+
+/// <summary>Nhân cỡ chữ gốc với hệ số FontScale (để scale cả các cỡ chữ cứng)</summary>
+public class FontSizeConverter : IValueConverter
+{
+    public object Convert(object value, Type t, object p, CultureInfo c)
+    {
+        double baseSize = 14.0;
+        if (p != null) double.TryParse(p.ToString(), out baseSize);
+        else if (value is double d) baseSize = d;
+
+        // Lấy tỉ lệ từ Resource (FontScaleManager đã cập nhật)
+        double scale = 1.0;
+        if (Application.Current != null && Application.Current.Resources.Contains("FontScale"))
+            scale = (double)Application.Current.Resources["FontScale"];
+
+        return baseSize * scale;
+    }
+    public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
+}

@@ -101,6 +101,10 @@ public class MainViewModel : BaseViewModel
     public MainViewModel()
     {
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "dashboard");
+        
+        // Khởi tạo cỡ chữ mặc định ngay lập tức để UI nhận giá trị
+        ApplyFontScale("Medium", save: false);
+        
         _ = InitializeAndLoad();
     }
 

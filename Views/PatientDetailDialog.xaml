@@ -177,7 +177,8 @@
                                                                     <Border CornerRadius="10" Padding="8,2"
                                                                             Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
                                                                         <TextBlock Text="{Binding StatusDisplay}" FontSize="11"
-                                                                                   Foreground="{Binding Status, Converter={StaticResource StatusToBrush}}"/>
+                                                                                   Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
+
                                                                     </Border>
                                                                 </StackPanel>
                                                                 <TextBlock Text="{Binding Diagnosis}" FontSize="12"

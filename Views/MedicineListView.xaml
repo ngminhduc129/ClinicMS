@@ -280,9 +280,9 @@
                                     <StackPanel Margin="16,0">
                                         <Grid>
                                             <TextBlock Text="{Binding StockQuantity}" FontWeight="Bold" Foreground="#111827" FontSize="13"/>
-                                            <TextBlock Text="{Binding StockStatus}" HorizontalAlignment="Right" Foreground="{Binding StockStatusColor}" FontSize="11" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding StockStatus}" HorizontalAlignment="Right" Foreground="{Binding StockStatusColor, FallbackValue=#16A34A}" FontSize="11" FontWeight="Bold"/>
                                         </Grid>
-                                        <ProgressBar Value="{Binding StockPercent, Mode=OneWay}" Height="3" Margin="0,4,0,0" BorderThickness="0" Background="#F3F4F6" Foreground="{Binding StockStatusColor}"/>
+                                        <ProgressBar Value="{Binding StockPercent, Mode=OneWay}" Height="3" Margin="0,4,0,0" BorderThickness="0" Background="#F3F4F6" Foreground="{Binding StockStatusColor, FallbackValue=#16A34A}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

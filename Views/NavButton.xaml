@@ -60,9 +60,10 @@
                                        Width="24"/>
                             <TextBlock x:Name="LabelText"
                                        Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                       FontSize="{StaticResource FontSizeBody}"
+                                       FontSize="{DynamicResource FontSizeBody}"
                                        VerticalAlignment="Center"
                                        FontFamily="Segoe UI"
+                                       FontWeight="Medium"
                                        Foreground="White"
                                        Opacity="0.55"
                                        Margin="10,0,0,0"/>

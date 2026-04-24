@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -99,7 +100,9 @@ public partial class PatientFormDialog : UserControl
         GenderOther.IsChecked = p.Gender != "Nam" && p.Gender != "Nữ" && !string.IsNullOrEmpty(p.Gender);
         var bt = BloodTypeBox.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == p.BloodType);
         if (bt != null) BloodTypeBox.SelectedItem = bt;
-        var (_, contact) = await _vm.GetPatientWithContactAsync(p.PatientId);
+        
+        var result = await _vm.PatientVM.GetPatientWithContactAsync(p.PatientId);
+        Contact? contact = result.contact;
         if (contact != null) { PhoneBox.Text = contact.Phone ?? ""; EmailBox.Text = contact.Email ?? ""; AddressBox.Text = contact.Address ?? ""; }
     }
 
@@ -113,8 +116,8 @@ public partial class PatientFormDialog : UserControl
             DateOfBirth = DobPicker.SelectedDate?.ToString("yyyy-MM-dd"),
             Gender = gender,
             BloodType = (BloodTypeBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "",
-            HeightCm = double.TryParse(HeightBox.Text.Trim(), out var h) ? h : null,
-            WeightKg = double.TryParse(WeightBox.Text.Trim(), out var w) ? w : null,
+            HeightCm = double.TryParse(HeightBox.Text.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var h) ? h : null,
+            WeightKg = double.TryParse(WeightBox.Text.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var w) ? w : null,
             Note = NotesBox.Text.Trim(),
             Phone = PhoneBox.Text.Trim(),
             Email = EmailBox.Text.Trim(),
@@ -168,52 +171,62 @@ public partial class PatientFormDialog : UserControl
     {
         var patient = BuildPatient();
         if (string.IsNullOrWhiteSpace(patient.FullName))
-        { MessageBox.Show("Vui lòng nhập họ tên bệnh nhân.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-        SaveBtn.IsEnabled = false;
-        bool ok = _isEditing ? await _vm.UpdatePatientAsync(patient) : await _vm.AddPatientAsync(patient);
-        if (ok) CloseForm(true);
-        else SaveBtn.IsEnabled = true;
+        { 
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập họ tên bệnh nhân.", "Thiếu thông tin", true));
+            return; 
+        }
+
+        string action = _isEditing ? "Cập nhật" : "Thêm mới";
+        var confirm = new ConfirmDialog(
+            $"{action} bệnh nhân?",
+            $"Bạn có chắc chắn muốn {action.ToLower()} thông tin bệnh nhân \"{patient.FullName}\" không?",
+            _vm);
+
+        _vm.Modal.Show(confirm, async result => {
+            if (result == true)
+            {
+                SaveBtn.IsEnabled = false;
+                bool ok = _isEditing ? await _vm.PatientVM.UpdateAsync(patient) : await _vm.PatientVM.AddAsync(patient);
+                if (ok) CloseForm(true);
+                else SaveBtn.IsEnabled = true;
+            }
+        });
     }
 
     private void Cancel_Click(object s, RoutedEventArgs e)
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Hủy thay đổi?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Hủy thay đổi?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
     private void Close_Click(object s, RoutedEventArgs e)
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Thoát form?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
     private void Overlay_Click(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (e.OriginalSource is not Grid g || g.Name != "Overlay") return;
         
-        // Nếu không có thay đổi gì thì đóng luôn, không cần hỏi
         if (!IsDirty())
         {
             CloseForm();
             return;
         }
 
-        // Nếu có thay đổi, có thể hỏi hoặc chỉ đơn giản là không đóng (ở đây chọn là hỏi để an toàn)
-        var result = MessageBox.Show(
-            "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-            "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes) CloseForm();
+        _vm.Modal.Show(new ConfirmDialog("Thoát form?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
+            if (res == true) CloseForm();
+        });
     }
 }

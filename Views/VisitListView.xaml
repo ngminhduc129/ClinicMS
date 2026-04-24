@@ -8,7 +8,7 @@
 
     <UserControl.Resources>
         <!-- Thêm CollectionViewSource để Grouping và Filtering tự động -->
-        <CollectionViewSource x:Key="VisitsViewSource" Source="{Binding Visits}" Filter="CollectionViewSource_Filter">
+        <CollectionViewSource x:Key="VisitsViewSource" Source="{Binding Visits}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="StatusGroup" />
             </CollectionViewSource.GroupDescriptions>
@@ -544,7 +544,7 @@
 
     </UserControl.Resources>
 
-    <Grid Margin="32,28,32,32">
+    <Grid Margin="32,28,32,32" DataContext="{Binding VisitVM}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -576,8 +576,10 @@
                     <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.06" ShadowDepth="1"/></Border.Effect>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE8EF;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="#16A34A" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock x:Name="TxtTotalCount" FontSize="13" FontWeight="Bold" Foreground="#111827"
-                                   Text="0 lượt khám"/>
+                        <TextBlock x:Name="TxtTotalCount" FontSize="13" FontWeight="Bold" Foreground="#111827">
+                            <Run Text="{Binding Visits.Count, Mode=OneWay}"/>
+                            <Run Text=" lượt khám"/>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
                 <Button Style="{StaticResource IconBtn}" Margin="0,0,10,0" ToolTip="Làm mới" Click="Refresh_Click">
@@ -684,7 +686,7 @@
 
                     <Grid Grid.Row="1">
                         <ListView x:Name="VisitGroupList"
-                                  ItemsSource="{Binding Source={StaticResource VisitsViewSource}}"
+                                  ItemsSource="{Binding Visits}"
                                   Background="White"
                                   BorderThickness="0"
                                   FocusVisualStyle="{x:Null}"
@@ -693,6 +695,7 @@
                                   HorizontalContentAlignment="Stretch"
                                   SelectionMode="Single"
                                   SelectionChanged="VisitGroupList_SelectionChanged"
+                                  ScrollViewer.ScrollChanged="OnScrollChanged"
                                   VirtualizingPanel.IsVirtualizing="True"
                                   VirtualizingPanel.VirtualizationMode="Recycling"
                                   VirtualizingPanel.ScrollUnit="Pixel">
@@ -922,7 +925,28 @@
                                         </Grid>
                                     </Border>
 
-                                    <StackPanel x:Name="MedicineList"/>
+                                    <ItemsControl x:Name="MedicineList" ItemsSource="{Binding SelectedPrescriptionDetails, ElementName=Self}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="16,8,16,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="180"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <TextBlock Text="{Binding Medicine.MedicineName}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="#111827"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="13" VerticalAlignment="Center" Foreground="#374151"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Dosage}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                                    
+                                                    <Button Grid.Column="3" Style="{StaticResource IconBtn}" Width="24" Height="24" Tag="{Binding}" ToolTip="Xóa thuốc này" Click="RemoveMedicineDetail_Click">
+                                                        <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="#EF4444"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                     
                                     <!-- QUICK ADD MEDICINE AREA -->
                                     <Border x:Name="QuickAddMedicineArea" Visibility="Collapsed" Background="#F9FAFB" CornerRadius="8" Padding="12" Margin="0,8,0,0" BorderBrush="#E5E7EB" BorderThickness="1">

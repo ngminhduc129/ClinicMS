@@ -1,7 +1,6 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ClinicMS.Models;
@@ -12,32 +11,28 @@ namespace ClinicMS.Views;
 public partial class MedicineFormDialog : UserControl
 {
     private readonly MainViewModel _vm;
-    private readonly Medicine?     _editing;
+    private readonly Medicine? _editing;
     private bool _isEditing => _editing != null;
 
-    public MedicineFormDialog(MainViewModel vm, Medicine? m = null)
+    public MedicineFormDialog(MainViewModel vm, Medicine? medicine = null)
     {
         InitializeComponent();
-        _vm      = vm;
-        _editing = m;
+        _vm = vm;
+        _editing = medicine;
         Opacity = 0;
 
-        if (_isEditing && m != null)
+        if (_isEditing && medicine != null)
         {
             TitleText.Text = "Sửa Thông Tin Thuốc";
-            SubtitleText.Text = "Cập nhật thông tin dược phẩm";
-            NameBox.Text    = m.MedicineName;
-            UnitBox.Text    = m.Unit         ?? "";
-            PriceBox.Text   = m.Price.ToString();
-            StockBox.Text   = m.StockQuantity.ToString();
-
+            SubtitleText.Text = "Cập nhật đơn giá và số lượng tồn kho";
             Loaded += (_, _) =>
             {
                 if (SaveBtn.Template?.FindName("SaveLabel", SaveBtn) is TextBlock lbl)
                     lbl.Text = "Cập Nhật";
             };
+            LoadData(medicine);
         }
-        
+
         Loaded += (_, _) => AnimateOpen();
     }
 
@@ -54,104 +49,82 @@ public partial class MedicineFormDialog : UserControl
         RenderTransformOrigin = new Point(0.5, 0.5);
         RenderTransform = group;
 
-        BeginAnimation(OpacityProperty,
-            new DoubleAnimation(0, 1, dur) { EasingFunction = ease });
-        translate.BeginAnimation(TranslateTransform.YProperty,
-            new DoubleAnimation(40, 0, dur) { EasingFunction = ease });
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty,
-            new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty,
-            new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
+        BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, dur) { EasingFunction = ease });
+        translate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(40, 0, dur) { EasingFunction = ease });
+        scale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
+        scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
     }
 
-    private void CloseForm(bool? result = null)
+    private void CloseForm(bool? result = null) => _vm.Modal.Close(result);
+
+    private void LoadData(Medicine m)
     {
-        if (DataContext is MainViewModel vm) vm.Modal.Close(result);
-        else _vm.Modal.Close(result);
+        NameBox.Text = m.MedicineName ?? "";
+        UnitBox.Text = m.Unit ?? "";
+        PriceBox.Text = m.Price.ToString();
+        StockBox.Text = m.StockQuantity.ToString();
     }
+
+    private Medicine BuildMedicine() => new()
+    {
+        MedicineId = _editing?.MedicineId ?? 0,
+        MedicineName = NameBox.Text.Trim(),
+        Unit = UnitBox.Text.Trim(),
+        Price = double.TryParse(PriceBox.Text.Trim(), out var p) ? p : 0,
+        StockQuantity = double.TryParse(StockBox.Text.Trim(), out var s) ? (int)s : 0,
+        CreatedAt = _editing?.CreatedAt ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+    };
 
     public bool IsDirty()
     {
-        if (!_isEditing)
-        {
-            return !string.IsNullOrWhiteSpace(NameBox.Text) ||
-                   !string.IsNullOrWhiteSpace(UnitBox.Text) ||
-                   !string.IsNullOrWhiteSpace(PriceBox.Text) ||
-                   !string.IsNullOrWhiteSpace(StockBox.Text);
-        }
-
+        if (!_isEditing) return !string.IsNullOrWhiteSpace(NameBox.Text) || !string.IsNullOrWhiteSpace(UnitBox.Text) || !string.IsNullOrWhiteSpace(PriceBox.Text) || !string.IsNullOrWhiteSpace(StockBox.Text);
         if (_editing == null) return false;
-
-        bool nameChanged = NameBox.Text.Trim() != (_editing.MedicineName ?? "");
-        bool unitChanged = UnitBox.Text.Trim() != (_editing.Unit ?? "");
-        bool priceChanged = PriceBox.Text.Trim() != (_editing.Price.ToString());
-        bool stockChanged = StockBox.Text.Trim() != (_editing.StockQuantity.ToString());
-
-        return nameChanged || unitChanged || priceChanged || stockChanged;
+        return NameBox.Text.Trim() != (_editing.MedicineName ?? "") || UnitBox.Text.Trim() != (_editing.Unit ?? "") || PriceBox.Text.Trim() != _editing.Price.ToString() || StockBox.Text.Trim() != _editing.StockQuantity.ToString();
     }
+
+    public bool HasData() => IsDirty();
 
     private async void Save_Click(object s, RoutedEventArgs e)
     {
-        var name = NameBox.Text.Trim();
-        if (string.IsNullOrEmpty(name)) { MessageBox.Show("Vui lòng nhập tên thuốc.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-        
-        SaveBtn.IsEnabled = false;
-        var m = new Medicine
+        var med = BuildMedicine();
+        if (string.IsNullOrWhiteSpace(med.MedicineName))
         {
-            MedicineId    = _editing?.MedicineId ?? 0,
-            MedicineName  = name,
-            Unit          = UnitBox.Text.Trim(),
-            Price         = double.TryParse(PriceBox.Text.Trim(), out var p) ? p : 0,
-            StockQuantity = int.TryParse(StockBox.Text.Trim(), out var q) ? q : 0
-        };
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập tên thuốc.", "Thiếu thông tin", true));
+            return;
+        }
 
-        bool ok = !_isEditing
-            ? await _vm.AddMedicineAsync(m)
-            : await _vm.UpdateMedicineAsync(m);
+        string action = _isEditing ? "Cập nhật" : "Thêm mới";
+        var confirm = new ConfirmDialog(
+            $"{action} thuốc?",
+            $"Bạn có chắc chắn muốn {action.ToLower()} thông tin thuốc \"{med.MedicineName}\" không?",
+            _vm);
 
-        if (ok) CloseForm(true);
-        else SaveBtn.IsEnabled = true;
+        _vm.Modal.Show(confirm, async result => {
+            if (result == true)
+            {
+                SaveBtn.IsEnabled = false;
+                bool ok = _isEditing ? await _vm.MedicineVM.UpdateAsync(med) : await _vm.MedicineVM.AddAsync(med);
+                if (ok) CloseForm(true);
+                else SaveBtn.IsEnabled = true;
+            }
+        });
     }
 
     private void Cancel_Click(object s, RoutedEventArgs e)
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Hủy thay đổi?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Hủy thay đổi?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
-    private void Close_Click(object s, RoutedEventArgs e)
+    private void Close_Click(object s, RoutedEventArgs e) => Cancel_Click(s, e);
+    
+    private void Overlay_Click(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (IsDirty())
-        {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
-        }
-        CloseForm();
+        if (e.OriginalSource is Grid g && g.Name == "Overlay") Cancel_Click(s, null!);
     }
-
-    private void Overlay_Click(object s, MouseButtonEventArgs e)
-    {
-        if (e.OriginalSource is not Grid g || g.Name != "Overlay") return;
-        
-        if (!IsDirty())
-        {
-            CloseForm();
-            return;
-        }
-
-        var result = MessageBox.Show(
-            "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-            "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes) CloseForm();
-    }
-
-    public bool HasData() => IsDirty();
 }

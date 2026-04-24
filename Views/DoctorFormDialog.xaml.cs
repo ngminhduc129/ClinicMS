@@ -111,35 +111,48 @@ public partial class DoctorFormDialog : UserControl
     {
         var doctor = BuildDoctor();
         if (string.IsNullOrWhiteSpace(doctor.FullName))
-        { MessageBox.Show("Vui lòng nhập họ tên bác sĩ.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-        SaveBtn.IsEnabled = false;
-        bool ok = _isEditing ? await _vm.UpdateDoctorAsync(doctor) : await _vm.AddDoctorAsync(doctor);
-        if (ok) CloseForm(true);
-        else SaveBtn.IsEnabled = true;
+        { 
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập họ tên bác sĩ để tiếp tục.", "Thiếu thông tin", true));
+            return; 
+        }
+
+        string action = _isEditing ? "Cập nhật" : "Thêm mới";
+        var confirm = new ConfirmDialog(
+            $"{action} bác sĩ?",
+            $"Bạn có chắc chắn muốn {action.ToLower()} thông tin bác sĩ \"{doctor.FullName}\" không?",
+            _vm);
+
+        _vm.Modal.Show(confirm, async result => {
+            if (result == true)
+            {
+                SaveBtn.IsEnabled = false;
+                bool ok = _isEditing ? await _vm.DoctorVM.UpdateAsync(doctor) : await _vm.DoctorVM.AddAsync(doctor);
+                if (ok) CloseForm(true);
+                else SaveBtn.IsEnabled = true;
+            }
+        });
     }
 
     private void Cancel_Click(object s, RoutedEventArgs e)
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Hủy thay đổi?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Hủy thay đổi?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
     private void Close_Click(object s, RoutedEventArgs e)
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
     private void Overlay_Click(object s, System.Windows.Input.MouseButtonEventArgs e)
@@ -152,9 +165,8 @@ public partial class DoctorFormDialog : UserControl
             return;
         }
 
-        var result = MessageBox.Show(
-            "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-            "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes) CloseForm();
+        _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
+            if (res == true) CloseForm();
+        });
     }
 }

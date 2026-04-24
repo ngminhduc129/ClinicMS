@@ -63,22 +63,32 @@ public partial class VisitFormDialog : UserControl
             {
                 SetupSearchComboBox(PatientNameBox, _patientNames);
                 SetupSearchComboBox(DoctorNameBox, _doctorNames);
-                SetupSearchComboBox(MedicineCombo, _vm.Medicines.Select(m => m.MedicineName ?? "").ToList());
+                SetupSearchComboBox(MedicineCombo, _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList());
                 _searchSetupDone = true;
             }
 
             // Subscribe to changes to handle data loading after dialog opens
-            _vm.Patients.CollectionChanged += OnPatientsChanged;
-            _vm.Doctors.CollectionChanged += OnDoctorsChanged;
-            _vm.Medicines.CollectionChanged += OnMedicinesChanged;
+            _vm.PatientVM.Patients.CollectionChanged += OnPatientsChanged;
+            _vm.DoctorVM.Doctors.CollectionChanged += OnDoctorsChanged;
+            _vm.MedicineVM.Medicines.CollectionChanged += OnMedicinesChanged;
         };
 
         Unloaded += (_, _) =>
         {
-            _vm.Patients.CollectionChanged -= OnPatientsChanged;
-            _vm.Doctors.CollectionChanged -= OnDoctorsChanged;
-            _vm.Medicines.CollectionChanged -= OnMedicinesChanged;
+            _vm.PatientVM.Patients.CollectionChanged -= OnPatientsChanged;
+            _vm.DoctorVM.Doctors.CollectionChanged -= OnDoctorsChanged;
+            _vm.MedicineVM.Medicines.CollectionChanged -= OnMedicinesChanged;
+            _vm.PropertyChanged -= OnViewModelPropertyChanged;
         };
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Note: These properties are now in MainViewModel but were restored by the generalist
+        if (e.PropertyName == "FullPatientNames")
+            RefreshPatientList();
+        else if (e.PropertyName == "FullDoctorNames")
+            RefreshDoctorList();
     }
 
     private void OnPatientsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshPatientList();
@@ -87,20 +97,19 @@ public partial class VisitFormDialog : UserControl
 
     private void RefreshPatientList()
     {
-        // Dùng cache tên đầy đủ từ ViewModel thay vì danh sách bị giới hạn 50 người
-        _patientNames = BuildNameList(_vm.FullPatientNames);
+        _patientNames = _vm.FullPatientNames.Keys.OrderBy(n => n).ToList();
         UpdateComboSource(PatientNameBox, _patientNames);
     }
 
     private void RefreshDoctorList()
     {
-        _doctorNames = BuildNameList(_vm.FullDoctorNames);
+        _doctorNames = _vm.FullDoctorNames.Keys.OrderBy(n => n).ToList();
         UpdateComboSource(DoctorNameBox, _doctorNames);
     }
 
     private void RefreshMedicineList()
     {
-        var medicines = _vm.Medicines.Select(m => m.MedicineName ?? "").ToList();
+        var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList();
         UpdateComboSource(MedicineCombo, medicines);
     }
 
@@ -132,8 +141,7 @@ public partial class VisitFormDialog : UserControl
 
     private void CloseForm(bool? result = null)
     {
-        if (DataContext is MainViewModel vm) vm.Modal.Close(result);
-        else _vm.Modal.Close(result);
+        _vm.Modal.Close(result);
     }
 
     // ───────────────────────────── DateBorder focus effect ─────────────────────────────
@@ -172,8 +180,8 @@ public partial class VisitFormDialog : UserControl
         _selectedPatientId = v.PatientId;
         _selectedDoctorId = v.DoctorId;
 
-        PatientNameBox.Text = v.Patient?.FullName ?? _vm.Patients.FirstOrDefault(p => p.PatientId == v.PatientId)?.FullName ?? "";
-        DoctorNameBox.Text = v.Doctor?.FullName ?? _vm.Doctors.FirstOrDefault(d => d.DoctorId == v.DoctorId)?.FullName ?? "";
+        PatientNameBox.Text = v.Patient?.FullName ?? _vm.PatientVM.Patients.FirstOrDefault(p => p.PatientId == v.PatientId)?.FullName ?? "";
+        DoctorNameBox.Text = v.Doctor?.FullName ?? _vm.DoctorVM.Doctors.FirstOrDefault(d => d.DoctorId == v.DoctorId)?.FullName ?? "";
 
         if (DateTime.TryParse(v.VisitTime, out var dt))
             VisitDatePicker.SelectedDate = dt;
@@ -187,7 +195,7 @@ public partial class VisitFormDialog : UserControl
         PrescriptionBox.Text = v.PrescriptionText ?? "";
 
         // Load thuốc đã kê
-        var details = await _vm.GetPrescriptionDetailsAsync(v.VisitId);
+        var details = await _vm.VisitVM.GetPrescriptionDetailsAsync(v.VisitId);
         _prescriptionItems.Clear();
         foreach (var d in details) _prescriptionItems.Add(d);
         
@@ -272,8 +280,11 @@ public partial class VisitFormDialog : UserControl
         var name = PatientNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name)) return (0, "Vui lòng nhập tên bệnh nhân.");
 
-        var db = new DatabaseService();
-        var match = await db.GetPatientByNameAsync(name);
+        // Ưu tiên lookup từ danh sách đầy đủ (có kèm ID)
+        if (_vm.FullPatientNames.TryGetValue(name, out var id))
+            return (id, null);
+
+        var match = await _vm.Db.GetPatientByNameAsync(name);
 
         if (match == null) return (0, "Không tìm thấy bệnh nhân trong hệ thống.");
         return (match.PatientId, null);
@@ -286,8 +297,10 @@ public partial class VisitFormDialog : UserControl
         var name = DoctorNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name)) return (0, "Vui lòng nhập tên bác sĩ.");
 
-        var db = new DatabaseService();
-        var match = await db.GetDoctorByNameAsync(name);
+        if (_vm.FullDoctorNames.TryGetValue(name, out var id))
+            return (id, null);
+
+        var match = await _vm.Db.GetDoctorByNameAsync(name);
 
         if (match == null) return (0, "Không tìm thấy bác sĩ trong hệ thống.");
         return (match.DoctorId, null);
@@ -305,20 +318,20 @@ public partial class VisitFormDialog : UserControl
         var medicineName = MedicineCombo.Text.Trim();
         if (string.IsNullOrWhiteSpace(medicineName))
         {
-            MessageBox.Show("Vui lòng chọn thuốc.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn thuốc.", "Thông báo", true));
             return;
         }
 
-        var med = _vm.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
+        var med = _vm.MedicineVM.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
         if (med == null)
         {
-            MessageBox.Show("Không tìm thấy thuốc này trong hệ thống.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _vm.Modal.Show(new MessageDialog(_vm, "Không tìm thấy thuốc này trong hệ thống.", "Thông báo", true));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(MedicineQty.Text))
         {
-            MessageBox.Show("Vui lòng nhập số lượng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập số lượng.", "Thông báo", true));
             return;
         }
 
@@ -379,10 +392,6 @@ public partial class VisitFormDialog : UserControl
         }
 
         if (_editing == null) return false;
-
-        // ... (các so sánh cũ) ...
-        // Thêm kiểm tra đơn thuốc thay đổi (để đơn giản, ta coi như có item là dirty khi sửa)
-        // Trong thực tế cần so sánh danh sách cũ và mới
         return true; 
     }
 
@@ -392,23 +401,23 @@ public partial class VisitFormDialog : UserControl
         {
             var (patientId, patientError) = await TryResolvePatientIdAsync();
             if (patientError != null)
-            { 
-                MessageBox.Show(patientError, "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); 
-                return; 
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, patientError, "Thiếu thông tin", true));
+                return;
             }
 
             var (doctorId, doctorError) = await TryResolveDoctorIdAsync();
             if (doctorError != null)
-            { 
-                MessageBox.Show(doctorError, "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); 
-                return; 
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, doctorError, "Thiếu thông tin", true));
+                return;
             }
 
             SaveBtn.IsEnabled = false;
             var v = BuildVisit(patientId, doctorId);
             
             // Lưu Visit và đơn thuốc đi kèm
-            bool ok = _isEditing ? await _vm.UpdateVisitAsync(v) : await _vm.AddVisitAsync(v);
+            bool ok = _isEditing ? await _vm.VisitVM.UpdateAsync(v) : await _vm.VisitVM.AddAsync(v);
             
             if (ok)
             {
@@ -422,7 +431,7 @@ public partial class VisitFormDialog : UserControl
         catch (Exception ex)
         {
             SaveBtn.IsEnabled = true;
-            MessageBox.Show($"Lỗi khi lưu hồ sơ: {ex.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi lưu hồ sơ: {ex.Message}", "Lỗi hệ thống", true));
         }
     }
 
@@ -430,24 +439,22 @@ public partial class VisitFormDialog : UserControl
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Hủy thay đổi?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Hủy thay đổi?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
     private void Close_Click(object s, RoutedEventArgs e)
     {
         if (IsDirty())
         {
-            var result = MessageBox.Show(
-                "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-                "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+            _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
         }
-        CloseForm();
+        else CloseForm();
     }
 
     // ───────────────────────────── Helpers ─────────────────────────────
@@ -462,17 +469,12 @@ public partial class VisitFormDialog : UserControl
 
     public bool HasData() => IsDirty();
 
-    private static List<string> BuildNameList(IEnumerable<string?> names) =>
-        names.Select(n => n?.Trim()).Where(n => !string.IsNullOrWhiteSpace(n))
-             .Cast<string>().Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(n => n).ToList();
-
     private static void SetupSearchComboBox(ComboBox comboBox, List<string> allItems)
     {
         comboBox.Tag = allItems;
         comboBox.ItemsSource = allItems;
         comboBox.IsTextSearchEnabled = false;
 
-        // Đảm bảo tìm thấy TextBox ngay cả khi Template chưa load xong hoàn toàn
         var tb = comboBox.Template?.FindName("PART_EditableTextBox", comboBox) as TextBox;
         if (tb != null)
         {
@@ -497,11 +499,9 @@ public partial class VisitFormDialog : UserControl
         if (sender is not TextBox tb || tb.TemplatedParent is not ComboBox cb) return;
         if (cb.Tag is not List<string> sourceItems) return;
 
-        // Lưu vị trí con trỏ và text hiện tại
         var text = tb.Text ?? string.Empty;
         var caretIndex = tb.CaretIndex;
 
-        // Reset ID khi người dùng gõ tay đổi tên
         if (cb.Name == "PatientNameBox")
         {
             var parent = FindParent<VisitFormDialog>(cb);
@@ -513,23 +513,17 @@ public partial class VisitFormDialog : UserControl
             if (parent != null) parent._selectedDoctorId = null;
         }
 
-        // Tránh vòng lặp vô tận khi cập nhật ItemsSource
         tb.TextChanged -= EditableComboBox_TextChanged;
 
         try 
         {
-            // Lọc dữ liệu từ danh sách GỐC (sourceItems)
             var filtered = string.IsNullOrWhiteSpace(text)
                 ? sourceItems
                 : sourceItems.Where(n => n.Contains(text, StringComparison.OrdinalIgnoreCase)).Take(MaxSuggestionItems).ToList();
 
-            // Cập nhật nguồn dữ liệu
             cb.ItemsSource = filtered;
-            
-            // Chỉ mở dropdown nếu có kết quả và đang focus
             cb.IsDropDownOpen = filtered.Any() && tb.IsFocused;
 
-            // Khôi phục lại text và con trỏ (vì gán ItemsSource có thể làm mất text)
             tb.Text = text;
             cb.Text = text;
             tb.CaretIndex = caretIndex;
@@ -547,16 +541,15 @@ public partial class VisitFormDialog : UserControl
         cb.Text = selected;
         cb.IsDropDownOpen = false;
 
-        // Cập nhật ID dựa trên tên đã chọn (nếu là Patient/Doctor box)
         if (cb.Name == "PatientNameBox")
         {
-            var p = _vm.Patients.FirstOrDefault(x => x.FullName == selected);
-            if (p != null) _selectedPatientId = p.PatientId;
+            if (_vm.FullPatientNames.TryGetValue(selected, out var pid))
+                _selectedPatientId = pid;
         }
         else if (cb.Name == "DoctorNameBox")
         {
-            var d = _vm.Doctors.FirstOrDefault(x => x.FullName == selected);
-            if (d != null) _selectedDoctorId = d.DoctorId;
+            if (_vm.FullDoctorNames.TryGetValue(selected, out var did))
+                _selectedDoctorId = did;
         }
 
         if (cb.Template.FindName("PART_EditableTextBox", cb) is TextBox tb)
@@ -580,9 +573,8 @@ public partial class VisitFormDialog : UserControl
             return;
         }
 
-        var result = MessageBox.Show(
-            "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?",
-            "Thoát form?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes) CloseForm();
+        _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
+            if (res == true) CloseForm();
+        });
     }
 }

@@ -8,16 +8,17 @@
              SnapsToDevicePixels="True">
     
     <Grid>
-        <!-- MODERN DIALOG CONTAINER -->
-        <Border x:Name="DialogRoot" Style="{StaticResource DialogContainerStyle}" Background="#F9FAFB" ClipToBounds="True">
+        <!-- MODERN DIALOG CONTAINER - Không để Background tại đây để tránh lộ viền -->
+        <Border x:Name="DialogRoot" Style="{StaticResource DialogContainerStyle}" 
+                Background="Transparent" BorderThickness="0" ClipToBounds="True">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- HEADER WITH GRADIENT -->
-                <Border Grid.Row="0" Padding="28,24" CornerRadius="16,16,0,0" IsClippedToBounds="True">
+                <!-- HEADER - Tràn viền, bo 2 góc trên để khớp với Dialog -->
+                <Border Grid.Row="0" Padding="28,24" CornerRadius="18,18,0,0">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#16A34A" Offset="0"/>
@@ -26,7 +27,7 @@
                     </Border.Background>
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <!-- Avatar Circle -->
+                            <!-- Avatar -->
                             <Border Width="64" Height="64" CornerRadius="18" Margin="0,0,18,0">
                                 <Border.Background>
                                     <SolidColorBrush Color="White" Opacity="0.15"/>
@@ -41,7 +42,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- Header Actions -->
+                        <!-- Actions -->
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top">
                             <Button Style="{StaticResource IconButtonStyle}" Click="Edit_Click" ToolTip="Chỉnh sửa thông tin">
                                 <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="White" Opacity="0.9"/>
@@ -53,106 +54,107 @@
                     </Grid>
                 </Border>
 
-                <!-- CONTENT BODY -->
-                <Grid Grid.Row="1">
-                    <!-- LOADING OVERLAY -->
-                    <ProgressBar IsIndeterminate="True" VerticalAlignment="Top" Height="3" 
-                                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
-                                 Foreground="#16A34A" Background="Transparent" BorderThickness="0"/>
+                <!-- CONTENT BODY - Có màu nền riêng và bo 2 góc dưới -->
+                <Border Grid.Row="1" Background="#F9FAFB" CornerRadius="0,0,18,18">
+                    <Grid>
+                        <!-- LOADING OVERLAY -->
+                        <ProgressBar IsIndeterminate="True" VerticalAlignment="Top" Height="3" 
+                                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
+                                     Foreground="#16A34A" Background="Transparent" BorderThickness="0"/>
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                                  Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibility}}">
-                        <StackPanel Margin="28,24">
-                            <!-- CONTACT SECTION -->
-                            <StackPanel Margin="0,0,0,24">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                    <Border Width="3" Height="16" Background="#16A34A" CornerRadius="2" Margin="0,0,10,0"/>
-                                    <TextBlock Text="THÔNG TIN LIÊN HỆ" Style="{StaticResource XSmallTextStyle}" FontWeight="Bold" Foreground="#16A34A"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                      Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibility}}">
+                            <StackPanel Margin="28,24">
+                                <!-- CONTACT SECTION -->
+                                <StackPanel Margin="0,0,0,24">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Border Width="3" Height="16" Background="#16A34A" CornerRadius="2" Margin="0,0,10,0"/>
+                                        <TextBlock Text="THÔNG TIN LIÊN HỆ" Style="{StaticResource XSmallTextStyle}" FontWeight="Bold" Foreground="#16A34A"/>
+                                    </StackPanel>
+
+                                    <Border Style="{StaticResource CardContainerStyle}" Padding="20">
+                                        <UniformGrid Columns="3">
+                                            <local:InfoRow Label="Điện thoại" Value="{Binding Contact.Phone, TargetNullValue='—'}"/>
+                                            <local:InfoRow Label="Email"      Value="{Binding Contact.Email, TargetNullValue='—'}"/>
+                                            <local:InfoRow Label="Địa chỉ"    Value="{Binding Contact.Address, TargetNullValue='—'}"/>
+                                        </UniformGrid>
+                                    </Border>
                                 </StackPanel>
 
-                                <Border Style="{StaticResource CardContainerStyle}" Padding="20">
-                                    <UniformGrid Columns="3">
-                                        <local:InfoRow Label="Điện thoại" Value="{Binding Contact.Phone, TargetNullValue='—'}"/>
-                                        <local:InfoRow Label="Email"      Value="{Binding Contact.Email, TargetNullValue='—'}"/>
-                                        <local:InfoRow Label="Địa chỉ"    Value="{Binding Contact.Address, TargetNullValue='—'}"/>
-                                    </UniformGrid>
-                                </Border>
-                            </StackPanel>
+                                <!-- HEALTH SECTION -->
+                                <StackPanel Margin="0,0,0,24">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Border Width="3" Height="16" Background="#EF4444" CornerRadius="2" Margin="0,0,10,0"/>
+                                        <TextBlock Text="CHỈ SỐ SỨC KHỎE" Style="{StaticResource XSmallTextStyle}" FontWeight="Bold" Foreground="#EF4444"/>
+                                    </StackPanel>
 
-                            <!-- HEALTH SECTION -->
-                            <StackPanel Margin="0,0,0,24">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                    <Border Width="3" Height="16" Background="#EF4444" CornerRadius="2" Margin="0,0,10,0"/>
-                                    <TextBlock Text="CHỈ SỐ SỨC KHỎE" Style="{StaticResource XSmallTextStyle}" FontWeight="Bold" Foreground="#EF4444"/>
+                                    <Border Style="{StaticResource CardContainerStyle}" Padding="20">
+                                        <UniformGrid Columns="4">
+                                            <local:InfoRow Label="Nhóm máu"  Value="{Binding Patient.BloodType, TargetNullValue='—'}"/>
+                                            <local:InfoRow Label="Chiều cao" Value="{Binding Patient.HeightCm, TargetNullValue='—', StringFormat={}{0} cm}"/>
+                                            <local:InfoRow Label="Cân nặng"  Value="{Binding Patient.WeightKg, TargetNullValue='—', StringFormat={}{0} kg}"/>
+                                            <local:InfoRow Label="Ghi chú"   Value="{Binding Patient.Note, TargetNullValue='—'}"/>
+                                        </UniformGrid>
+                                    </Border>
                                 </StackPanel>
 
-                                <Border Style="{StaticResource CardContainerStyle}" Padding="20">
-                                    <UniformGrid Columns="4">
-                                        <local:InfoRow Label="Nhóm máu"  Value="{Binding Patient.BloodType, TargetNullValue='—'}"/>
-                                        <local:InfoRow Label="Chiều cao" Value="{Binding Patient.HeightCm, TargetNullValue='—', StringFormat={}{0} cm}"/>
-                                        <local:InfoRow Label="Cân nặng"  Value="{Binding Patient.WeightKg, TargetNullValue='—', StringFormat={}{0} kg}"/>
-                                        <local:InfoRow Label="Ghi chú"   Value="{Binding Patient.Note, TargetNullValue='—'}"/>
-                                    </UniformGrid>
-                                </Border>
-                            </StackPanel>
+                                <!-- VISIT HISTORY SECTION -->
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Border Width="3" Height="16" Background="#3B82F6" CornerRadius="2" Margin="0,0,10,0"/>
+                                        <TextBlock Text="LỊCH SỬ KHÁM BỆNH" Style="{StaticResource XSmallTextStyle}" FontWeight="Bold" Foreground="#3B82F6"/>
+                                    </StackPanel>
 
-                            <!-- VISIT HISTORY SECTION -->
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                    <Border Width="3" Height="16" Background="#3B82F6" CornerRadius="2" Margin="0,0,10,0"/>
-                                    <TextBlock Text="LỊCH SỬ KHÁM BỆNH" Style="{StaticResource XSmallTextStyle}" FontWeight="Bold" Foreground="#3B82F6"/>
+                                    <Border Style="{StaticResource CardContainerStyle}" Padding="0" MinHeight="150">
+                                        <Grid>
+                                            <TextBlock Text="Chưa có hồ sơ khám nào"
+                                                       Style="{StaticResource BodyTextStyle}" Foreground="#9CA3AF"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,60"
+                                                       Visibility="{Binding Visits.Count, Converter={StaticResource ZeroToVisibility}}"/>
+                                            
+                                            <ItemsControl ItemsSource="{Binding Visits}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="20,16">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="110"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="120"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <!-- Date & Status -->
+                                                                <StackPanel Grid.Column="0">
+                                                                    <TextBlock Text="{Binding VisitTime}" FontSize="13" FontWeight="Bold" Foreground="#16A34A"/>
+                                                                    <Border HorizontalAlignment="Left" Margin="0,6,0,0" CornerRadius="6" Padding="6,2"
+                                                                            Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
+                                                                        <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="SemiBold"
+                                                                                   Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
+                                                                    </Border>
+                                                                </StackPanel>
+
+                                                                <!-- Info -->
+                                                                <StackPanel Grid.Column="1" Margin="12,0">
+                                                                    <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B"/>
+                                                                    <TextBlock Text="{Binding Diagnosis, TargetNullValue='Chưa có chẩn đoán'}" FontSize="13" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                                </StackPanel>
+
+                                                                <!-- Doctor -->
+                                                                <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                                                    <TextBlock Text="{Binding DoctorName}" FontSize="12" FontWeight="Medium" Foreground="#475569" TextAlignment="Right"/>
+                                                                    <TextBlock Text="Bác sĩ điều trị" FontSize="10" Foreground="#94A3B8" TextAlignment="Right" Margin="0,2,0,0"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
                                 </StackPanel>
-
-                                <Border Style="{StaticResource CardContainerStyle}" Padding="0" MinHeight="150">
-                                    <Grid>
-                                        <TextBlock Text="Chưa có hồ sơ khám nào"
-                                                   Style="{StaticResource BodyTextStyle}" Foreground="#9CA3AF"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,60"
-                                                   Visibility="{Binding Visits.Count, Converter={StaticResource ZeroToVisibility}}"/>
-                                        
-                                        <ItemsControl ItemsSource="{Binding Visits}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="20,16">
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="110"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="120"/>
-                                                            </Grid.ColumnDefinitions>
-
-                                                            <!-- Date & Status -->
-                                                            <StackPanel Grid.Column="0">
-                                                                <TextBlock Text="{Binding VisitTime}" FontSize="13" FontWeight="Bold" Foreground="#16A34A"/>
-                                                                <Border HorizontalAlignment="Left" Margin="0,6,0,0" CornerRadius="6" Padding="6,2"
-                                                                        Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
-                                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="SemiBold"
-                                                                               Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
-                                                                </Border>
-                                                            </StackPanel>
-
-                                                            <!-- Info -->
-                                                            <StackPanel Grid.Column="1" Margin="12,0">
-                                                                <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B"/>
-                                                                <TextBlock Text="{Binding Diagnosis, TargetNullValue='Chưa có chẩn đoán'}" FontSize="13" Foreground="#64748B" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                                                            </StackPanel>
-
-                                                            <!-- Doctor -->
-                                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                                <TextBlock Text="{Binding DoctorName}" FontSize="12" FontWeight="Medium" Foreground="#475569" TextAlignment="Right"/>
-                                                                <TextBlock Text="Bác sĩ điều trị" FontSize="10" Foreground="#94A3B8" TextAlignment="Right" Margin="0,2,0,0"/>
-                                                            </StackPanel>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Grid>
-                                </Border>
                             </StackPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
             </Grid>
         </Border>
     </Grid>

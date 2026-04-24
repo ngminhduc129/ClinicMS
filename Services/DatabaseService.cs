@@ -26,10 +26,11 @@ public class DatabaseService
         var startDate = DateTime.Today.AddDays(-daysBack + 1).ToString("yyyy-MM-dd");
         
         var list = await db.Visits
-                           .Where(v => v.VisitTime != null && v.VisitTime.CompareTo(startDate) >= 0)
+                           .Where(v => v.PatientId > 0 && v.VisitTime != null && v.VisitTime.CompareTo(startDate) >= 0)
                            .ToListAsync();
 
-        return list.GroupBy(v => v.VisitTime!.Substring(0, 10))
+        return list.GroupBy(v => v.VisitTime?.Length >= 10 ? v.VisitTime.Substring(0, 10) : "")
+                   .Where(g => !string.IsNullOrEmpty(g.Key))
                    .ToDictionary(g => g.Key, g => g.Count());
     }
 
@@ -84,8 +85,22 @@ public class DatabaseService
             "payment_time TEXT)");
 
         // ═══════════════════════════════════════════════
-        //  DATABASE SCHEMA UPDATES
+        //  DATABASE SCHEMA UPDATES & SAMPLE DATA
         // ═══════════════════════════════════════════════
+        
+        // Thêm thuốc mẫu nếu bảng trống
+        if (!db.Medicines.Any())
+        {
+            db.Medicines.AddRange(new List<Medicine>
+            {
+                new Medicine { MedicineName = "Paracetamol 500mg", Unit = "Viên", Price = 2000, StockQuantity = 100, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
+                new Medicine { MedicineName = "Amoxicillin 500mg", Unit = "Viên", Price = 5000, StockQuantity = 50, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
+                new Medicine { MedicineName = "Siro Ho Prospan", Unit = "Chai", Price = 75000, StockQuantity = 20, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
+                new Medicine { MedicineName = "Vitamin C 1000mg", Unit = "Viên sủi", Price = 5000, StockQuantity = 30, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
+                new Medicine { MedicineName = "Hapacol 250mg", Unit = "Gói", Price = 3000, StockQuantity = 0, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") }
+            });
+            db.SaveChanges();
+        }
     }
 
     private static ClinicDbContext Ctx() => new();
@@ -137,7 +152,41 @@ public class DatabaseService
         return await db.Doctors.Select(d => d.FullName ?? "").Where(n => n != "").OrderBy(n => n).ToListAsync();
     }
 
-    public async Task<List<Patient>> GetPatientsWithContactsAsync(int offset = 0, int limit = 1000)
+    public async Task<Dictionary<string, int>> GetPatientsLookupAsync()
+    {
+        await using var db = Ctx();
+        var list = await db.Patients
+            .Select(p => new { p.PatientId, p.FullName })
+            .OrderBy(p => p.FullName)
+            .ToListAsync();
+            
+        var dict = new Dictionary<string, int>();
+        foreach (var p in list)
+        {
+            var key = $"{p.FullName} (ID: {p.PatientId})";
+            dict[key] = p.PatientId;
+        }
+        return dict;
+    }
+
+    public async Task<Dictionary<string, int>> GetDoctorsLookupAsync()
+    {
+        await using var db = Ctx();
+        var list = await db.Doctors
+            .Select(d => new { d.DoctorId, d.FullName })
+            .OrderBy(d => d.FullName)
+            .ToListAsync();
+            
+        var dict = new Dictionary<string, int>();
+        foreach (var d in list)
+        {
+            var key = $"{d.FullName} (ID: {d.DoctorId})";
+            dict[key] = d.DoctorId;
+        }
+        return dict;
+    }
+
+    public async Task<List<Patient>> GetPatientsWithContactsAsync(int offset = 0, int limit = 50)
     {
         await using var db = Ctx();
         var query = from p in db.Patients
@@ -145,7 +194,7 @@ public class DatabaseService
                     from subPc in contacts.DefaultIfEmpty()
                     join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
                     from subC in finalContacts.DefaultIfEmpty()
-                    orderby p.PatientId descending
+                    orderby p.FullName ascending
                     select new { p, subC };
 
         var results = await query.Skip(offset).Take(limit).ToListAsync();
@@ -165,7 +214,7 @@ public class DatabaseService
         return list;
     }
 
-    public async Task<List<Patient>> SearchPatientsAsync(string searchTerm, int limit = 50)
+    public async Task<List<Patient>> SearchPatientsAsync(string searchTerm, int offset = 0, int limit = 50)
     {
         await using var db = Ctx();
         var query = from p in db.Patients
@@ -179,7 +228,7 @@ public class DatabaseService
                     orderby p.FullName
                     select new { p, subC };
 
-        var results = await query.Take(limit).ToListAsync();
+        var results = await query.Skip(offset).Take(limit).ToListAsync();
         var list = new List<Patient>();
         foreach (var item in results)
         {
@@ -188,6 +237,21 @@ public class DatabaseService
             list.Add(p);
         }
         return list;
+    }
+
+    public async Task<int> GetPatientsSearchCountAsync(string searchTerm)
+    {
+        await using var db = Ctx();
+        var term = (searchTerm ?? "").ToLower();
+        return await (from p in db.Patients
+                      join pc in db.PatientContacts.Where(x => x.IsPrimary == 1) on p.PatientId equals pc.PatientId into contacts
+                      from subPc in contacts.DefaultIfEmpty()
+                      join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
+                      from subC in finalContacts.DefaultIfEmpty()
+                      where string.IsNullOrEmpty(term) || 
+                            p.FullName.ToLower().Contains(term) ||
+                            (subC != null && subC.Phone != null && subC.Phone.Contains(term))
+                      select p).CountAsync();
     }
 
     public async Task<Patient?> GetPatientByNameAsync(string name)
@@ -399,25 +463,81 @@ public class DatabaseService
     public async Task<List<Visit>> GetTodayVisitsAsync()
     {
         await using var db = Ctx();
-        var today = DateTime.Today.ToString("yyyy-MM-dd");
+        var today1 = DateTime.Today.ToString("yyyy-MM-dd");
+        var today2 = DateTime.Today.ToString("dd/MM/yyyy");
         return await db.Visits
                        .Include(v => v.Patient)
                        .Include(v => v.Doctor)
-                       .Where(v => v.VisitTime != null && v.VisitTime.StartsWith(today))
+                       .Where(v => v.PatientId > 0 && v.VisitTime != null && (v.VisitTime.StartsWith(today1) || v.VisitTime.StartsWith(today2)))
                        .OrderByDescending(v => v.VisitTime)
                        .ToListAsync();
     }
 
-    public async Task<List<Visit>> GetVisitsAsync(int offset = 0, int limit = 1000)
+    public async Task<List<Visit>> GetVisitsAsync(int offset = 0, int limit = 50, string? dateFilter = null)
     {
         await using var db = Ctx();
-        return await db.Visits
+        var query = db.Visits
                        .Include(v => v.Patient)
                        .Include(v => v.Doctor)
-                       .OrderByDescending(v => v.VisitTime)
+                       .AsQueryable();
+
+        if (!string.IsNullOrEmpty(dateFilter))
+        {
+            query = query.Where(v => v.VisitTime != null && v.VisitTime.StartsWith(dateFilter));
+        }
+
+        return await query.OrderByDescending(v => v.VisitTime)
                        .Skip(offset)
                        .Take(limit)
                        .ToListAsync();
+    }
+
+    public async Task<List<Visit>> SearchVisitsAsync(string searchTerm, int offset = 0, int limit = 50, string? dateFilter = null)
+    {
+        await using var db = Ctx();
+        var term = (searchTerm ?? "").ToLower();
+        var query = db.Visits
+                       .Include(v => v.Patient)
+                       .Include(v => v.Doctor)
+                       .AsQueryable();
+
+        if (!string.IsNullOrEmpty(dateFilter))
+        {
+            query = query.Where(v => v.VisitTime != null && v.VisitTime.StartsWith(dateFilter));
+        }
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            query = query.Where(v => (v.Patient != null && v.Patient.FullName.ToLower().Contains(term)) ||
+                                     (v.Doctor != null && v.Doctor.FullName.ToLower().Contains(term)) ||
+                                     (v.Diagnosis != null && v.Diagnosis.ToLower().Contains(term)));
+        }
+
+        return await query.OrderByDescending(v => v.VisitTime)
+                       .Skip(offset)
+                       .Take(limit)
+                       .ToListAsync();
+    }
+
+    public async Task<int> GetVisitsSearchCountAsync(string searchTerm, string? dateFilter = null)
+    {
+        await using var db = Ctx();
+        var term = (searchTerm ?? "").ToLower();
+        var query = db.Visits.AsQueryable();
+
+        if (!string.IsNullOrEmpty(dateFilter))
+        {
+            query = query.Where(v => v.VisitTime != null && v.VisitTime.StartsWith(dateFilter));
+        }
+
+        if (!string.IsNullOrEmpty(term))
+        {
+            query = query.Where(v => (v.Patient != null && v.Patient.FullName.ToLower().Contains(term)) ||
+                                     (v.Doctor != null && v.Doctor.FullName.ToLower().Contains(term)) ||
+                                     (v.Diagnosis != null && v.Diagnosis.ToLower().Contains(term)));
+        }
+
+        return await query.CountAsync();
     }
 
     public async Task<int> GetVisitsCountAsync()
@@ -431,7 +551,7 @@ public class DatabaseService
         await using var db = Ctx();
         var today1 = DateTime.Today.ToString("yyyy-MM-dd");
         var today2 = DateTime.Today.ToString("dd/MM/yyyy");
-        return await db.Visits.CountAsync(v => v.VisitTime != null && (v.VisitTime.StartsWith(today1) || v.VisitTime.StartsWith(today2)));
+        return await db.Visits.CountAsync(v => v.PatientId > 0 && v.VisitTime != null && (v.VisitTime.StartsWith(today1) || v.VisitTime.StartsWith(today2)));
     }
 
     public async Task<Visit> AddVisitAsync(Visit v)

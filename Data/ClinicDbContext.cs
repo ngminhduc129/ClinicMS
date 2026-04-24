@@ -31,9 +31,13 @@ public class ClinicDbContext : DbContext
         {
             if (!string.IsNullOrEmpty(OverrideDbPath)) return OverrideDbPath;
 
-            // 1. CHẾ ĐỘ PHÁT TRIỂN (DEBUG): Dùng file tuyệt đối ở gốc dự án
-            string debugPath = @"D:\ClinicMS\clinic_database.db";
+            // 1. CHẾ ĐỘ PHÁT TRIỂN (DEBUG): Dùng file ngay trong thư mục chạy ứng dụng
+            string debugPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "clinic_database.db");
             if (File.Exists(debugPath)) return debugPath;
+
+            // Phụ trợ: Nếu không thấy trong bin, thử tìm ở thư mục gốc dự án (khi chạy từ VS/dotnet run)
+            string rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "clinic_database.db");
+            if (File.Exists(rootPath)) return rootPath;
 
             // 2. CHẾ ĐỘ ĐÃ PUBLISH (RELEASE): Dùng AppData để không bao giờ bị ghi đè
             var appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClinicMS");

@@ -13,64 +13,6 @@
         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"     Color="#DCFCE7"/>
         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#111827"/>
 
-        <!-- Icon Button -->
-        <Style x:Key="IconBtn" TargetType="Button">
-            <Setter Property="Width"  Value="40"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bg" CornerRadius="10" Background="White"
-                                BorderBrush="#D1FAE5" BorderThickness="1">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                            </Border.Effect>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background"  Value="#F0FDF4"/>
-                                <Setter TargetName="Bg" Property="BorderBrush" Value="#6EE7B7"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Outline Button -->
-        <Style x:Key="OutlineBtn" TargetType="Button">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bg" CornerRadius="10" Background="White"
-                                BorderBrush="#D1FAE5" BorderThickness="1">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                            </Border.Effect>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                              Margin="14,0"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background"  Value="#F0FDF4"/>
-                                <Setter TargetName="Bg" Property="BorderBrush" Value="#6EE7B7"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!-- Modern ContextMenu Style -->
         <Style TargetType="ContextMenu">
             <Setter Property="Background" Value="White"/>
@@ -165,7 +107,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="32,28,32,32">
+    <Grid Margin="32,28,32,32" DataContext="{Binding DoctorVM}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -306,7 +248,7 @@
                 <Grid>
                     <!-- Loading -->
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40"
-                                Visibility="{Binding LoadingDoctors, Converter={StaticResource BoolToVisibility}}">
+                                Visibility="{Binding Loading, Converter={StaticResource BoolToVisibility}}">
                         <Border Width="56" Height="56" CornerRadius="10" Background="#F0FDF4"
                                 HorizontalAlignment="Center" Margin="0,0,0,16">
                             <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="24"
@@ -316,11 +258,11 @@
                         <TextBlock Text="Đang tải dữ liệu..." FontSize="13" Foreground="#9CA3AF"
                                    FontFamily="Segoe UI" HorizontalAlignment="Center"/>
                     </StackPanel>
-<!-- DataGrid -->
-<DataGrid x:Name="DoctorGrid"
-          ItemsSource="{Binding Doctors}"
-          Visibility="{Binding LoadingDoctors, Converter={StaticResource InverseBoolToVisibility}}"
 
+                    <!-- DataGrid -->
+                    <DataGrid x:Name="DoctorGrid"
+                              ItemsSource="{Binding Doctors}"
+                              Visibility="{Binding Loading, Converter={StaticResource InverseBoolToVisibility}}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False" CanUserDeleteRows="False"
                               CanUserReorderColumns="False" IsReadOnly="True"

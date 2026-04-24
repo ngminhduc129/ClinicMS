@@ -25,6 +25,6 @@ public partial class DashboardView : UserControl
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        if (_vm != null) await _vm.LoadDashboardDataAsync();
+        if (_vm != null) await _vm.DashboardVM.LoadAsync();
     }
 }

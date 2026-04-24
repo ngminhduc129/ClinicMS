@@ -1,0 +1,102 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Linq;
+using ClinicMS.Models;
+using ClinicMS.Services;
+
+namespace ClinicMS.ViewModels;
+
+public class VisitViewModel : BaseViewModel
+{
+    private readonly DatabaseService _db;
+    private readonly ToastService _toast;
+
+    public ObservableCollection<Visit> Visits { get; } = new();
+    
+    private bool _loading;
+    public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
+
+    private int _offset = 0;
+    private int _totalCount;
+    private bool _hasMore;
+    public bool HasMore { get => _hasMore; set => SetProperty(ref _hasMore, value); }
+
+    private string _searchTerm = "";
+    public string SearchTerm { get => _searchTerm; set => SetProperty(ref _searchTerm, value); }
+
+    private string? _dateFilter = null;
+    public string? DateFilter { get => _dateFilter; set => SetProperty(ref _dateFilter, value); }
+    public string? VisitDateFilter { get => DateFilter; set => DateFilter = value; } // Alias for backward compatibility
+
+    public async Task<List<PrescriptionDetail>> GetPrescriptionDetailsAsync(int visitId) => await _db.GetPrescriptionDetailsAsync(visitId);
+    public async Task SavePrescriptionAsync(int visitId, List<PrescriptionDetail> details) => await _db.SavePrescriptionDetailsAsync(visitId, details);
+
+    private const int PageSize = 50;
+
+    public VisitViewModel(DatabaseService db, ToastService toast)
+    {
+        _db = db;
+        _toast = toast;
+    }
+
+    public async Task LoadAsync()
+    {
+        if (Loading) return;
+        Loading = true;
+        try 
+        {
+            if (_offset == 0)
+            {
+                Visits.Clear();
+                _totalCount = await _db.GetVisitsSearchCountAsync(SearchTerm, DateFilter);
+            }
+
+            var results = await _db.SearchVisitsAsync(SearchTerm, _offset, PageSize, DateFilter);
+            foreach (var v in results) Visits.Add(v);
+            
+            _offset += results.Count;
+            HasMore = Visits.Count < _totalCount;
+        } 
+        catch { }
+        finally { Loading = false; }
+    }
+
+    public async Task SearchAsync(string term)
+    {
+        SearchTerm = term;
+        _offset = 0;
+        await LoadAsync();
+    }
+
+    public async Task SearchByDateAsync(string? date)
+    {
+        DateFilter = date;
+        _offset = 0;
+        await LoadAsync();
+    }
+
+    public async Task LoadMoreAsync()
+    {
+        if (Loading || !HasMore) return;
+        await LoadAsync();
+    }
+
+    public async Task<bool> AddAsync(Visit v)
+    {
+        try { await _db.AddVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); return true; }
+        catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
+    }
+
+    public async Task<bool> UpdateAsync(Visit v)
+    {
+        try { await _db.UpdateVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); return true; }
+        catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
+    }
+
+    public async Task<bool> DeleteAsync(Visit v)
+    {
+        try { await _db.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); return true; }
+        catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
+    }
+}

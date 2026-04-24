@@ -75,15 +75,15 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
         // Nếu có từ khóa, gọi hàm search từ Database
         if (!string.IsNullOrEmpty(search))
         {
-            await _vm.SearchDoctorsAsync(search);
+            await _vm.DoctorVM.SearchAsync(search);
         }
         else
         {
             // Nếu không tìm kiếm, nạp lại toàn bộ bác sĩ
-            await _vm.LoadDoctorsAsync();
+            await _vm.DoctorVM.LoadAsync();
         }
 
-        var q = _vm.Doctors.Where(d => 
+        var q = _vm.DoctorVM.Doctors.Where(d => 
             (string.IsNullOrEmpty(_specialtyFilter) || d.Specialty == _specialtyFilter)
         ).ToList();
         
@@ -100,13 +100,13 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    private async void RefreshButton_Click(object s, RoutedEventArgs e) { if (_vm != null) await _vm.LoadDoctorsAsync(); }
+    private async void RefreshButton_Click(object s, RoutedEventArgs e) { if (_vm != null) await _vm.DoctorVM.LoadAsync(); }
 
     private void AddDoctor_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null) return;
         var form = new DoctorFormDialog(_vm);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadDoctorsAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.DoctorVM.LoadAsync(); }, () => form.HasData());
     }
 
     private void Detail_Click(object s, RoutedEventArgs e)
@@ -120,14 +120,14 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null || (s as Button)?.DataContext is not Doctor d) return;
         var form = new DoctorFormDialog(_vm, d);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadDoctorsAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.DoctorVM.LoadAsync(); }, () => form.HasData());
     }
 
     private void Delete_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null || (s as Button)?.DataContext is not Doctor d) return;
         var confirm = new ConfirmDialog($"Xóa bác sĩ \"{d.FullName}\"?", "Thao tác không thể hoàn tác.", _vm);
-        _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.DeleteDoctorAsync(d); });
+        _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.DoctorVM.DeleteAsync(d); });
     }
 
     private void DoctorGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

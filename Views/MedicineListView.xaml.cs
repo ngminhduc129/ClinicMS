@@ -28,21 +28,26 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
         DataContextChanged += OnDataContextChanged;
         
         Unloaded += (s, e) => {
-            if (_vm?.Medicines != null)
-                _vm.Medicines.CollectionChanged -= OnMedicinesChanged;
+            if (_vm?.MedicineVM?.Medicines != null)
+                _vm.MedicineVM.Medicines.CollectionChanged -= OnMedicinesChanged;
         };
     }
 
     private async void OnDataContextChanged(object s, DependencyPropertyChangedEventArgs e)
     {
         if (e.OldValue is MainViewModel oldVm)
-            oldVm.Medicines.CollectionChanged -= OnMedicinesChanged;
+            oldVm.MedicineVM.Medicines.CollectionChanged -= OnMedicinesChanged;
 
         if (e.NewValue is MainViewModel vm)
         {
             _vm = vm;
-            _vm.Medicines.CollectionChanged += OnMedicinesChanged;
-            try { await _vm.LoadMedicinesAsync(); ApplyFilter(); }
+            _vm.MedicineVM.Medicines.CollectionChanged += OnMedicinesChanged;
+            try 
+            { 
+                await _vm.MedicineVM.LoadAsync(); 
+                ApplyFilter(); 
+                UpdateStats(); // Đảm bảo cập nhật con số thống kê ngay khi nạp xong
+            }
             catch (Exception ex) { _vm.Toast.ShowError($"Lỗi: {ex.Message}"); }
         }
     }
@@ -67,7 +72,7 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
 
         var search = _search?.Trim().ToLower() ?? "";
 
-        var query = _vm.Medicines.Where(m =>
+        var query = _vm.MedicineVM.Medicines.Where(m =>
             (string.IsNullOrEmpty(search) || 
              (m.MedicineName != null && m.MedicineName.ToLower().Contains(search)) ||
              (m.Unit != null && m.Unit.ToLower().Contains(search)))
@@ -95,8 +100,9 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     private void UpdateStats()
     {
         if (_vm == null) return;
-        double totalValue = _vm.Medicines.Sum(m => m.StockValue);
-        int lowStockCount = _vm.Medicines.Count(m => m.StockQuantity > 0 && m.StockQuantity <= 10);
+        double totalValue = _vm.MedicineVM.Medicines.Sum(m => m.StockValue);
+        // Đếm tất cả thuốc có số lượng từ 0 đến 10
+        int lowStockCount = _vm.MedicineVM.Medicines.Count(m => m.StockQuantity <= 10);
         
         if (TxtTotalValue != null) TxtTotalValue.Text = totalValue.ToString("N0") + " ₫";
         if (TxtLowStockCount != null) TxtLowStockCount.Text = lowStockCount.ToString();
@@ -109,7 +115,7 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     private async void Refresh_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null) return;
-        try { await _vm.LoadMedicinesAsync(); _vm.Toast.Show("Đã làm mới dữ liệu"); }
+        try { await _vm.MedicineVM.LoadAsync(); _vm.Toast.Show("Đã làm mới dữ liệu"); }
         catch (Exception ex) { _vm.Toast.ShowError(ex.Message); }
     }
 
@@ -117,14 +123,14 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null) return;
         var form = new MedicineFormDialog(_vm);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadMedicinesAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.MedicineVM.LoadAsync(); }, () => form.HasData());
     }
 
     private void Edit_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null || (s is not FrameworkElement el) || el.DataContext is not Medicine m) return;
         var form = new MedicineFormDialog(_vm, m);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadMedicinesAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.MedicineVM.LoadAsync(); }, () => form.HasData());
     }
 
     private void Delete_Click(object s, RoutedEventArgs e)
@@ -132,7 +138,7 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
         if (_vm == null || (s is not FrameworkElement el) || el.DataContext is not Medicine m) return;
         var confirm = new ConfirmDialog($"Xóa thuốc \"{m.MedicineName}\"?", "Thao tác không thể hoàn tác.", _vm);
         _vm.Modal.Show(confirm, async result => { 
-            if (result == true) { var ok = await _vm.DeleteMedicineAsync(m); if (ok) ApplyFilter(); }
+            if (result == true) { var ok = await _vm.MedicineVM.DeleteAsync(m); if (ok) ApplyFilter(); }
         });
     }
 }

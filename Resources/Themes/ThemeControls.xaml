@@ -6,6 +6,67 @@
     <!-- BUTTONS -->
     <!--=========================================-->
 
+    <!-- ICON BUTTON (Common) -->
+    <Style x:Key="IconBtn" TargetType="Button">
+        <Setter Property="Width"  Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bg" CornerRadius="10" Background="White" BorderBrush="#D1FAE5" BorderThickness="1">
+                        <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000"/></Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background"  Value="#F0FDF4"/><Setter TargetName="Bg" Property="BorderBrush" Value="#6EE7B7"/></Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- OUTLINE BUTTON (Common) -->
+    <Style x:Key="OutlineBtn" TargetType="Button">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bg" CornerRadius="10" Background="White" BorderBrush="#D1FAE5" BorderThickness="1">
+                        <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000"/></Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="14,0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background"  Value="#F0FDF4"/><Setter TargetName="Bg" Property="BorderBrush" Value="#6EE7B7"/></Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- GREEN BUTTON (Common) -->
+    <Style x:Key="GreenBtn" TargetType="Button">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bg" CornerRadius="10" Background="#16A34A">
+                        <Border.Effect><DropShadowEffect Color="#16A34A" BlurRadius="14" ShadowDepth="2" Opacity="0.35" Direction="270"/></Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="18,0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="#15803D"/></Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bg" Property="Background" Value="#166534"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- PRIMARY BUTTON -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="#16A34A"/>

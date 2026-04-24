@@ -51,11 +51,11 @@ public class PatientDetailViewModel : BaseViewModel
         IsLoading = true;
         try
         {
-            var (p, contact) = await _mainVm.GetPatientWithContactAsync(_patient.PatientId);
-            if (p != null)
+            var result = await _mainVm.PatientVM.GetPatientWithContactAsync(_patient.PatientId);
+            if (result.p != null)
             {
-                Patient = p;
-                Contact = contact;
+                Patient = result.p;
+                Contact = result.contact;
                 
                 // Cập nhật các thuộc tính phụ thuộc
                 OnPropertyChanged(nameof(Initials));
@@ -63,7 +63,7 @@ public class PatientDetailViewModel : BaseViewModel
                 OnPropertyChanged(nameof(GenderDob));
             }
 
-            var visits = await _mainVm.GetPatientVisitsAsync(_patient.PatientId);
+            var visits = await _mainVm.PatientVM.GetPatientVisitsAsync(_patient.PatientId);
             Visits.Clear();
             foreach (var v in visits) Visits.Add(v);
         }
@@ -81,7 +81,7 @@ public class PatientDetailViewModel : BaseViewModel
     public void Edit()
     {
         var form = new Views.PatientFormDialog(_mainVm, Patient);
-        _mainVm.Modal.Show(form, async result => 
+        _mainVm.Modal.Show(form, async (result) => 
         { 
             if (result == true) await LoadDataAsync(); 
         }, () => form.HasData());

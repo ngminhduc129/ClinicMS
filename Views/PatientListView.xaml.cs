@@ -16,17 +16,6 @@ namespace ClinicMS.Views;
 public partial class PatientListView : UserControl, INotifyPropertyChanged
 {
     private MainViewModel? _vm;
-    public ObservableCollection<Patient> FilteredPatients { get; } = new();
-
-    public int FilteredCount 
-    {
-        get 
-        {
-            if (_vm != null && string.IsNullOrEmpty(_search) && string.IsNullOrEmpty(_genderFilter))
-                return _vm.TotalPatients;
-            return FilteredPatients.Count;
-        }
-    }
 
     public PatientListView()
     {
@@ -35,12 +24,6 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         this.DataContextChanged += (s, e) => {
             if (e.NewValue is MainViewModel vm) {
                 _vm = vm;
-                _vm.Patients.CollectionChanged += OnPatientsCollectionChanged;
-                _vm.PropertyChanged += (s2, e2) => {
-                    if (e2.PropertyName == nameof(MainViewModel.TotalPatients))
-                        OnPropertyChanged(nameof(FilteredCount));
-                };
-                ApplyFilter();
             }
         };
 
@@ -60,57 +43,23 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         {
             if (_vm != null)
             {
-                await _vm.LoadMorePatientsAsync();
+                await _vm.PatientVM.LoadMoreAsync();
             }
         }
     }
 
-    private bool _isUpdatingCollection = false;
-    private void OnPatientsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    private int _searchRequestCount = 0;
+    private async void Search_TextChanged(object s, TextChangedEventArgs e)
     {
-        if (_isUpdatingCollection) return;
+        if (_vm == null) return;
+        
+        string search = ((TextBox)s).Text.Trim();
+        int currentRequest = ++_searchRequestCount;
+        
+        await Task.Delay(300);
+        if (currentRequest != _searchRequestCount) return;
 
-        Dispatcher.BeginInvoke(() => {
-            _isUpdatingCollection = true;
-            try
-            {
-                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
-                {
-                    var gender = _genderFilter;
-                    foreach (Patient p in e.NewItems)
-                    {
-                        if (!FilteredPatients.Any(x => x.PatientId == p.PatientId))
-                        {
-                            if (string.IsNullOrEmpty(gender) || p.Gender == gender)
-                                FilteredPatients.Add(p);
-                        }
-                    }
-                    OnPropertyChanged(nameof(FilteredCount));
-                }
-                else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
-                {
-                    FilteredPatients.Clear();
-                    ApplyFilter();
-                }
-                else
-                {
-                    ApplyFilter();
-                }
-            }
-            finally
-            {
-                _isUpdatingCollection = false;
-            }
-        });
-    }
-
-    private string _search = "";
-    private string _genderFilter = "";
-
-    private void Search_TextChanged(object s, TextChangedEventArgs e)
-    {
-        _search = ((TextBox)s).Text.Trim().ToLower();
-        ApplyFilter();
+        await _vm.PatientVM.SearchAsync(search);
     }
 
     private void FilterButton_Click(object s, RoutedEventArgs e)
@@ -123,81 +72,11 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void FilterGender_Click(object s, RoutedEventArgs e)
+    private async void FilterGender_Click(object s, RoutedEventArgs e)
     {
-        if (s is MenuItem mi)
+        if (s is MenuItem mi && _vm != null)
         {
-            _genderFilter = mi.Tag?.ToString() ?? "";
-            ApplyFilter();
-        }
-    }
-
-    private int _filterRequestCount = 0;
-    private async void ApplyFilter()
-    {
-        if (_vm == null || _isUpdatingCollection) return;
-        
-        int currentRequest = ++_filterRequestCount;
-        
-        if (!string.IsNullOrEmpty(_search)) {
-            await Task.Delay(300);
-            if (currentRequest != _filterRequestCount) return;
-        }
-
-        var search = _search?.Trim() ?? "";
-        
-        if (!string.IsNullOrEmpty(search))
-        {
-            await _vm.SearchPatientsAsync(search);
-        }
-
-        var gender = _genderFilter;
-        var sourceItems = _vm.Patients.Where(p => 
-            (string.IsNullOrEmpty(gender) || p.Gender == gender)
-        ).ToList();
-
-        if (currentRequest == _filterRequestCount)
-        {
-            SyncCollection(sourceItems);
-        }
-    }
-
-    private void SyncCollection(List<Patient> newItems)
-    {
-        _isUpdatingCollection = true;
-        try
-        {
-            // Kiểm tra xem có thực sự cần cập nhật không
-            if (FilteredPatients.Count == newItems.Count)
-            {
-                bool isSame = true;
-                for (int i = 0; i < newItems.Count; i++) {
-                    if (FilteredPatients[i].PatientId != newItems[i].PatientId) { isSame = false; break; }
-                }
-                if (isSame) return;
-            }
-
-            // 1. Loại bỏ mục cũ (Surgical Remove) - Không làm Reset thanh cuộn
-            var newIds = new HashSet<int>(newItems.Select(x => x.PatientId));
-            for (int i = FilteredPatients.Count - 1; i >= 0; i--)
-            {
-                if (!newIds.Contains(FilteredPatients[i].PatientId))
-                    FilteredPatients.RemoveAt(i);
-            }
-
-            // 2. Thêm mục mới (Surgical Add)
-            var existingIds = new HashSet<int>(FilteredPatients.Select(x => x.PatientId));
-            foreach (var item in newItems)
-            {
-                if (!existingIds.Contains(item.PatientId))
-                    FilteredPatients.Add(item);
-            }
-
-            OnPropertyChanged(nameof(FilteredCount));
-        }
-        finally
-        {
-            _isUpdatingCollection = false;
+            await _vm.PatientVM.SearchAsync(mi.Tag?.ToString() ?? "");
         }
     }
 
@@ -209,14 +88,14 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
 
     private async void RefreshButton_Click(object s, RoutedEventArgs e)
     {
-        if (_vm != null) await _vm.LoadPatientsAsync();
+        if (_vm != null) await _vm.PatientVM.LoadAsync();
     }
 
     private void AddPatient_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null) return;
         var form = new PatientFormDialog(_vm);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadPatientsAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.PatientVM.LoadAsync(); }, () => form.HasData());
     }
 
     private void Detail_Click(object s, RoutedEventArgs e)
@@ -230,7 +109,7 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null || ((Button)s).DataContext is not Patient p) return;
         var form = new PatientFormDialog(_vm, p);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.LoadPatientsAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.PatientVM.LoadAsync(); }, () => form.HasData());
     }
 
     private void Delete_Click(object s, RoutedEventArgs e)
@@ -238,7 +117,7 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         if (_vm == null || ((Button)s).DataContext is not Patient p) return;
         var confirm = new ConfirmDialog($"Xóa bệnh nhân \"{p.FullName}\"?",
             "Thao tác này sẽ xóa tất cả hồ sơ khám liên quan và không thể hoàn tác.", _vm);
-        _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.DeletePatientAsync(p); });
+        _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.PatientVM.DeleteAsync(p); });
     }
 
     private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

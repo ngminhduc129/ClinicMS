@@ -7,9 +7,8 @@ namespace ClinicMS.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(MainViewModel vm)
     {
-        var vm = new MainViewModel();
         DataContext = vm;
         InitializeComponent();
 

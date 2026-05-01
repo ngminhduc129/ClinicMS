@@ -53,7 +53,10 @@ public class PatientViewModel : BaseViewModel
             _offset += results.Count;
             HasMore = Patients.Count < _totalCount;
         } 
-        catch { }
+        catch (Exception ex)
+        {
+            _toast.ShowError($"Lỗi khi tải danh sách bệnh nhân: {ex.Message}");
+        } 
         finally { Loading = false; }
     }
 
@@ -70,19 +73,21 @@ public class PatientViewModel : BaseViewModel
         await LoadAsync();
     }
 
+    public event Action? DataChanged;
+
     public async Task<bool> AddAsync(Patient p)
     {
-        try { await _db.AddPatientAsync(p); _offset = 0; await LoadAsync(); return true; } catch { return false; }
+        try { await _db.AddPatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
     }
 
     public async Task<bool> UpdateAsync(Patient p)
     {
-        try { await _db.UpdatePatientAsync(p); _offset = 0; await LoadAsync(); return true; } catch { return false; }
+        try { await _db.UpdatePatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
     }
 
     public async Task<bool> DeleteAsync(Patient p)
     {
-        try { await _db.DeletePatientAsync(p.PatientId); _offset = 0; await LoadAsync(); return true; } catch { return false; }
+        try { await _db.DeletePatientAsync(p.PatientId); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
     }
 
     public async Task<(Patient? p, Contact? contact)> GetPatientWithContactAsync(int id) => await _db.GetPatientWithContactAsync(id);

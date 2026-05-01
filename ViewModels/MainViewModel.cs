@@ -97,6 +97,10 @@ public class MainViewModel : BaseViewModel
         VisitVM = visitVM;
         MedicineVM = medicineVM;
 
+        PatientVM.DataChanged += () => { _ = LoadLookupsAsync(); _ = DashboardVM.LoadAsync(); };
+        DoctorVM.DataChanged  += () => { _ = LoadLookupsAsync(); _ = DashboardVM.LoadAsync(); };
+        VisitVM.DataChanged   += () => _ = DashboardVM.LoadAsync();
+
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "dashboard");
         
         ApplyFontScale("Medium", save: false);

@@ -92,11 +92,16 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT: CHART & TODAY'S VISITS -->
-            <StackPanel Grid.Column="0">
+            <!-- LEFT: CHART & UPCOMING APPOINTMENTS -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="24"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 
                 <!-- WEEKLY CHART -->
-                <Border Background="White" CornerRadius="16" Padding="24" Margin="0,0,0,24">
+                <Border Grid.Row="0" Background="White" CornerRadius="16" Padding="24">
                     <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
                     <StackPanel>
                         <TextBlock Text="THỐNG KÊ 7 NGÀY QUA" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF" Margin="0,0,0,20"/>
@@ -125,137 +130,136 @@
                     </StackPanel>
                 </Border>
 
-                <!-- TODAY'S VISITS LIST (Styled like Patient List) -->
-                <Border Background="White" CornerRadius="16" Padding="24">
+                <!-- UPCOMING APPOINTMENTS -->
+                <Border Grid.Row="2" Background="White" CornerRadius="16" Padding="24">
                     <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
                     <Grid>
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                        <Grid Grid.Row="0" Margin="0,0,0,20">
-                            <StackPanel>
-                                <TextBlock Text="BỆNH NHÂN KHÁM HÔM NAY" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
-                                <TextBlock Text="Các bệnh nhân đang chờ hoặc đã khám trong ngày" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
-                            </StackPanel>
-                            <Button HorizontalAlignment="Right" Click="Refresh_Click" Cursor="Hand">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#9CA3AF"/>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </Grid>
+                        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                            <TextBlock Text="LỊCH HẸN SẮP TỚI" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
+                            <TextBlock Text="Các bệnh nhân đặt lịch trước" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
+                        </StackPanel>
 
-                        <ListBox Grid.Row="1" ItemsSource="{Binding TodayVisits}" 
-                                 Background="Transparent" BorderThickness="0" 
-                                 MaxHeight="450" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                 HorizontalContentAlignment="Stretch" d:ItemsSource="{d:SampleData ItemCount=4}">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderBrush="#F9FAFB" BorderThickness="0,0,0,1" Padding="0,12">
-                                                    <ContentPresenter/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="#F9FAFB"/></Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <ListBox.ItemTemplate>
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding UpcomingAppointments}">
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Width="70">
-                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center">
-                                                <Ellipse.Style>
-                                                    <Style TargetType="Ellipse">
-                                                        <Setter Property="Fill" Value="#F59E0B"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Status}" Value="In Progress"><Setter Property="Fill" Value="#3B82F6"/></DataTrigger>
-                                                            <DataTrigger Binding="{Binding Status}" Value="Completed"><Setter Property="Fill" Value="#16A34A"/></DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Ellipse.Style>
-                                            </Ellipse>
-                                            <TextBlock Text="{Binding FormattedTime}" FontSize="13" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" Margin="12,0">
-                                            <TextBlock Text="{Binding PatientName, FallbackValue='Bệnh nhân không xác định'}" FontWeight="Bold" FontSize="14" Foreground="#374151"/>
-                                            <TextBlock Text="{Binding Diagnosis, TargetNullValue='Chưa có chẩn đoán'}" FontSize="12" Foreground="#9CA3AF" TextTrimming="CharacterEllipsis"/>
-                                        </StackPanel>
-
-                                        <Border Grid.Column="2" CornerRadius="8" Padding="8,3" VerticalAlignment="Center"
-                                                Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
-                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Medium"
-                                                       Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
-                                        </Border>
-                                    </Grid>
+                                    <Border BorderBrush="#F9FAFB" BorderThickness="0,0,0,1" Padding="0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                            <Border Width="36" Height="36" CornerRadius="8" Background="#FEF3C7" Margin="0,0,12,0">
+                                                <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Patient.FullName}" FontWeight="Bold" FontSize="13" Foreground="#374151"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="{Binding AppointmentTime}" FontSize="11" Foreground="#9CA3AF"/>
+                                                    <TextBlock Text=" • " FontSize="11" Foreground="#D1D5DB"/>
+                                                    <TextBlock Text="{Binding Doctor.FullName}" FontSize="11" Foreground="#16A34A"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <!-- Empty State -->
-                        <TextBlock Grid.Row="1" Text="Hôm nay chưa có lượt khám nào" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <TextBlock Grid.Row="1" Text="Không có lịch hẹn" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers><DataTrigger Binding="{Binding TodayVisits.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    <Style.Triggers><DataTrigger Binding="{Binding UpcomingAppointments.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
                 </Border>
-            </StackPanel>
+            </Grid>
 
-            <!-- RIGHT: UPCOMING APPOINTMENTS -->
+            <!-- RIGHT: TODAY'S VISITS LIST -->
             <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="24">
                 <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                        <TextBlock Text="LỊCH HẸN SẮP TỚI" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
-                        <TextBlock Text="Các bệnh nhân đặt lịch trước" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
-                    </StackPanel>
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="BỆNH NHÂN KHÁM HÔM NAY" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
+                            <TextBlock Text="Đang chờ hoặc đã khám" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" Click="Refresh_Click" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#9CA3AF"/>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
 
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding UpcomingAppointments}">
-                        <ItemsControl.ItemTemplate>
+                    <ListBox Grid.Row="1" ItemsSource="{Binding TodayVisits}" 
+                             Background="Transparent" BorderThickness="0" 
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             HorizontalContentAlignment="Stretch" d:ItemsSource="{d:SampleData ItemCount=4}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Bg" Background="Transparent" CornerRadius="12" Margin="0,0,0,8" Padding="12,10" BorderBrush="Transparent" BorderThickness="1">
+                                                <ContentPresenter/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bg" Property="Background" Value="#F9FAFB"/>
+                                                    <Setter TargetName="Bg" Property="BorderBrush" Value="#F3F4F6"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="#F9FAFB" BorderThickness="0,0,0,1" Padding="0,12">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <Border Width="36" Height="36" CornerRadius="8" Background="#FEF3C7" Margin="0,0,12,0">
-                                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1">
-                                            <TextBlock Text="{Binding Patient.FullName}" FontWeight="Bold" FontSize="13" Foreground="#374151"/>
-                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                                <TextBlock Text="{Binding AppointmentTime}" FontSize="11" Foreground="#9CA3AF"/>
-                                                <TextBlock Text=" • " FontSize="11" Foreground="#D1D5DB"/>
-                                                <TextBlock Text="{Binding Doctor.FullName}" FontSize="11" Foreground="#16A34A"/>
-                                            </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Avatar / Icon based on Gender -->
+                                    <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="{Binding GenderColor}" Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding PatientGenderIcon}" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding PatientName, FallbackValue='Bệnh nhân'}" FontWeight="Bold" FontSize="13" Foreground="#1F2937" TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding FormattedTime}" FontSize="11" Foreground="#6B7280" FontWeight="SemiBold"/>
+                                            <TextBlock Text=" • " FontSize="11" Foreground="#D1D5DB"/>
+                                            <TextBlock Text="{Binding VisitTypeDisplay, FallbackValue='Khám trực tiếp'}" FontSize="11" Foreground="#9CA3AF"/>
                                         </StackPanel>
-                                    </Grid>
-                                </Border>
+                                    </StackPanel>
+
+                                    <!-- Status Badge -->
+                                    <Border Grid.Column="2" CornerRadius="8" Padding="10,4" VerticalAlignment="Center"
+                                            Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
+                                        <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Bold"
+                                                   Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
+                                    </Border>
+                                </Grid>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    
-                    <TextBlock Grid.Row="1" Text="Không có lịch hẹn" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Empty State -->
+                    <TextBlock Grid.Row="1" Text="Trống" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers><DataTrigger Binding="{Binding UpcomingAppointments.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                <Style.Triggers><DataTrigger Binding="{Binding TodayVisits.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>

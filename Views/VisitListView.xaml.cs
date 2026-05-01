@@ -50,6 +50,20 @@ public partial class VisitListView : UserControl
         {
             _vm = vm;
             
+            // Cấu hình Grouping và Sorting cho danh sách
+            var view = (ListCollectionView)CollectionViewSource.GetDefaultView(_vm.VisitVM.Visits);
+            view.GroupDescriptions.Clear();
+            view.GroupDescriptions.Add(new PropertyGroupDescription("StatusGroup"));
+            
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new System.ComponentModel.SortDescription("StatusOrder", System.ComponentModel.ListSortDirection.Ascending));
+            view.SortDescriptions.Add(new System.ComponentModel.SortDescription("VisitTime", System.ComponentModel.ListSortDirection.Descending));
+
+            // Theo dõi thay đổi để ẩn/hiện empty state
+            _vm.VisitVM.Visits.CollectionChanged += (sender, args) => {
+                VisitEmptyState.Visibility = _vm.VisitVM.Visits.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            };
+
             // Đồng bộ bộ lọc ngày hiện tại trên UI vào ViewModel
             if (VisitDateFilter.SelectedDate.HasValue)
             {
@@ -57,6 +71,7 @@ public partial class VisitListView : UserControl
             }
 
             if (_vm.VisitVM.Visits.Count == 0) await _vm.VisitVM.LoadAsync();
+            VisitEmptyState.Visibility = _vm.VisitVM.Visits.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -162,14 +177,17 @@ public partial class VisitListView : UserControl
 
     private void UpdateStatusButtons()
     {
-        Style btnActive = (Style)FindResource("StatusBtn"); // Sử dụng style chung
-        
-        // Reset colors
+        // Reset colors and borders
         BtnWaiting.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF3C7"));
-        BtnInProgress.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE"));
-        BtnCompleted.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1FAE5"));
+        BtnWaiting.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDE68A"));
 
-        // Highlight active
+        BtnInProgress.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE"));
+        BtnInProgress.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BFDBFE"));
+
+        BtnCompleted.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D1FAE5"));
+        BtnCompleted.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBF7D0"));
+
+        // Highlight active with a thicker or distinct border
         if (_currentStatus == "Waiting") BtnWaiting.BorderBrush = Brushes.Orange;
         else if (_currentStatus == "In Progress") BtnInProgress.BorderBrush = Brushes.Blue;
         else if (_currentStatus == "Completed") BtnCompleted.BorderBrush = Brushes.Green;
@@ -244,6 +262,7 @@ public partial class VisitListView : UserControl
         _selectedVisit.Diagnosis = InputDiagnosis.Text.Trim();
         await _vm.VisitVM.UpdateAsync(_selectedVisit);
         _isDirty = false;
+        _vm.Toast.Show("Đã lưu thay đổi.");
     }
 
     private void CancelDetail_Click(object s, RoutedEventArgs e) { _selectedVisit = null; DetailForm.Visibility = Visibility.Collapsed; DetailEmpty.Visibility = Visibility.Visible; _isDirty = false; }
@@ -263,8 +282,19 @@ public partial class VisitListView : UserControl
     private void Edit_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var form = new VisitFormDialog(_vm, _selectedVisit); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => !form.HasData()); }
     private void Delete_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var confirm = new ConfirmDialog("Xóa hồ sơ khám này?", "Thao tác không thể hoàn tác.", _vm); _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.VisitVM.DeleteAsync(_selectedVisit); }); }
 
-    private void SearchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
-    private void SearchComboBox_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e) { }
+    private void SearchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) 
+    {
+        if (sender is ComboBox cb && cb.SelectedItem is string selected)
+        {
+            cb.Text = selected;
+            cb.IsDropDownOpen = false;
+        }
+    }
+
+    private void SearchComboBox_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e) 
+    {
+        if (sender is ComboBox cb) cb.IsDropDownOpen = false;
+    }
 
     private static void SetupSearchComboBox(ComboBox comboBox, List<string> allItems)
     {

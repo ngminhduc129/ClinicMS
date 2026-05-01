@@ -124,7 +124,7 @@
         <!-- ===== STATUS BUTTON ===== -->
         <Style x:Key="StatusBtn" TargetType="Button">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="Padding" Value="14,7"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="1.5"/>
@@ -705,9 +705,25 @@
                                 <GroupStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate>
-                                            <Border Background="#F9FAFB" BorderBrush="#F3F4F6" BorderThickness="0,0,0,1" Padding="16,10">
-                                                <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Bold" Foreground="#9CA3AF"/>
-                                            </Border>
+                                            <StackPanel Margin="16,20,16,8">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Width="3" Height="14" CornerRadius="1.5" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CHỜ KHÁM"><Setter Property="Background" Value="#F59E0B"/></DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="ĐANG KHÁM"><Setter Property="Background" Value="#3B82F6"/></DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="ĐÃ KHÁM"><Setter Property="Background" Value="#16A34A"/></DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}" FontSize="10" FontWeight="ExtraBold" Foreground="{StaticResource C.Gray500}" VerticalAlignment="Center"/>
+                                                    <Border Background="{StaticResource C.Gray100}" CornerRadius="8" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding ItemCount}" FontSize="9" FontWeight="Bold" Foreground="{StaticResource C.Gray400}"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </GroupStyle.HeaderTemplate>
                                 </GroupStyle>
@@ -717,18 +733,22 @@
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="10,2,10,2"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ListViewItem">
-                                                <Border x:Name="Bg" Background="Transparent" Padding="16,12" BorderBrush="#F3F4F6" BorderThickness="0,0,0,1">
+                                                <Border x:Name="Bg" Background="Transparent" CornerRadius="12" Padding="12,10" BorderBrush="Transparent" BorderThickness="1">
                                                     <ContentPresenter/>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Bg" Property="Background" Value="#F0FDF4"/>
+                                                        <Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Gray50}"/>
+                                                        <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource C.Gray100}"/>
                                                     </Trigger>
                                                     <Trigger Property="IsSelected" Value="True">
-                                                        <Setter TargetName="Bg" Property="Background" Value="#DCFCE7"/>
+                                                        <Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Green50}"/>
+                                                        <Setter TargetName="Bg" Property="BorderBrush" Value="#BBF7D0"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -739,16 +759,28 @@
 
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <StackPanel Orientation="Horizontal" Width="75">
-                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{Binding StatusDotColor}"/>
-                                            <TextBlock Text="{Binding FormattedTime}" FontSize="13" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Time & Status Dot -->
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,14,0">
+                                            <TextBlock Text="{Binding FormattedTime}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource C.Gray800}"/>
+                                            <Ellipse Width="6" Height="6" HorizontalAlignment="Left" Margin="1,4,0,0" Fill="{Binding StatusDotColor}"/>
                                         </StackPanel>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding PatientName}" FontSize="13" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="12" Foreground="#9CA3AF"/>
+
+                                        <!-- Patient Info -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding PatientName}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource C.Gray800}"/>
+                                            <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="11" Foreground="{StaticResource C.Gray400}" Margin="0,1,0,0"/>
                                         </StackPanel>
-                                    </StackPanel>
+
+                                        <!-- Go Arrow (visible on hover/select via trigger in parent if we wanted, but keeping simple) -->
+                                        <TextBlock Grid.Column="2" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource C.Gray200}" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>

@@ -58,7 +58,10 @@ public class VisitViewModel : BaseViewModel
             _offset += results.Count;
             HasMore = Visits.Count < _totalCount;
         } 
-        catch { }
+        catch (Exception ex)
+        {
+            _toast.ShowError($"Lỗi khi tải danh sách hồ sơ khám: {ex.Message}");
+        } 
         finally { Loading = false; }
     }
 
@@ -82,21 +85,23 @@ public class VisitViewModel : BaseViewModel
         await LoadAsync();
     }
 
+    public event Action? DataChanged;
+
     public async Task<bool> AddAsync(Visit v)
     {
-        try { await _db.AddVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); return true; }
+        try { await _db.AddVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); DataChanged?.Invoke(); return true; }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 
     public async Task<bool> UpdateAsync(Visit v)
     {
-        try { await _db.UpdateVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); return true; }
+        try { await _db.UpdateVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); DataChanged?.Invoke(); return true; }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 
     public async Task<bool> DeleteAsync(Visit v)
     {
-        try { await _db.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); return true; }
+        try { await _db.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); DataChanged?.Invoke(); return true; }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 }

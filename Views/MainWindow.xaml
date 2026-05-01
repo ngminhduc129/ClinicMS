@@ -146,7 +146,7 @@
         <Grid x:Name="ModalOverlay" Grid.ColumnSpan="2"
               Visibility="Collapsed" Panel.ZIndex="999">
             <Rectangle Fill="#80000000" MouseLeftButtonDown="ModalOverlay_MouseDown"/>
-            <ContentPresenter x:Name="ModalHost" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <Grid x:Name="ModalHost" />
         </Grid>
 
     </Grid>

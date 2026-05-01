@@ -1,5 +1,7 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using ClinicMS.ViewModels;
 
 namespace ClinicMS.Views;
@@ -22,9 +24,24 @@ public partial class ConfirmDialog : UserControl
     {
         InitializeComponent();
         _vm = vm;
+        Opacity = 0;
         TitleTb.Text = title;
         MessageTb.Text = message;
         IsDeleteAction = isDelete;
+
+        Loaded += (_, _) => AnimateOpen();
+    }
+
+    private void AnimateOpen()
+    {
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var dur = TimeSpan.FromSeconds(0.4);
+
+        var animOpacity = new DoubleAnimation(0, 1, dur) { EasingFunction = ease };
+        Timeline.SetDesiredFrameRate(animOpacity, 60);
+        animOpacity.Freeze();
+
+        BeginAnimation(OpacityProperty, animOpacity);
     }
 
     private void Yes_Click(object sender, RoutedEventArgs e) => _vm.Modal.Close(true);

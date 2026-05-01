@@ -476,17 +476,17 @@
                                         <StackPanel Margin="0,0,0,4">
                                             <TextBlock Text="Loại Khám" Style="{StaticResource FormLabel}"/>
                                             <WrapPanel Margin="0,0,0,8">
-                                                <RadioButton x:Name="RbWalkIn" Content="Walk-in" GroupName="VisitType" Style="{StaticResource PillRadio}" IsChecked="True"/>
-                                                <RadioButton x:Name="RbAppt" Content="Appointment" GroupName="VisitType" Style="{StaticResource PillRadio}"/>
-                                                <RadioButton x:Name="RbEmerg" Content="Emergency" GroupName="VisitType" Style="{StaticResource PillRadio}"/>
-                                                <RadioButton x:Name="RbFollow" Content="Follow-up" GroupName="VisitType" Style="{StaticResource PillRadio}"/>
+                                                <RadioButton x:Name="RbWalkIn" Content="Trực tiếp" GroupName="VisitType" Style="{StaticResource PillRadio}" IsChecked="True"/>
+                                                <RadioButton x:Name="RbAppt" Content="Hẹn lịch" GroupName="VisitType" Style="{StaticResource PillRadio}"/>
+                                                <RadioButton x:Name="RbEmerg" Content="Cấp cứu" GroupName="VisitType" Style="{StaticResource PillRadio}"/>
+                                                <RadioButton x:Name="RbFollow" Content="Tái khám" GroupName="VisitType" Style="{StaticResource PillRadio}"/>
                                             </WrapPanel>
 
                                             <TextBlock Text="Trạng Thái" Style="{StaticResource FormLabel}"/>
                                             <WrapPanel>
-                                                <RadioButton x:Name="RbWaiting" Content="Waiting" GroupName="Status" Style="{StaticResource PillRadio}" IsChecked="True"/>
-                                                <RadioButton x:Name="RbProgress" Content="In Progress" GroupName="Status" Style="{StaticResource PillRadio}"/>
-                                                <RadioButton x:Name="RbComplete" Content="Completed" GroupName="Status" Style="{StaticResource PillRadio}"/>
+                                                <RadioButton x:Name="RbWaiting" Content="Chờ khám" GroupName="Status" Style="{StaticResource PillRadio}" IsChecked="True"/>
+                                                <RadioButton x:Name="RbProgress" Content="Đang khám" GroupName="Status" Style="{StaticResource PillRadio}"/>
+                                                <RadioButton x:Name="RbComplete" Content="Đã khám" GroupName="Status" Style="{StaticResource PillRadio}"/>
                                             </WrapPanel>
                                         </StackPanel>
 

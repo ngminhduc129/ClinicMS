@@ -1,6 +1,8 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using ClinicMS.ViewModels;
 
 namespace ClinicMS.Views;
@@ -13,6 +15,7 @@ public partial class MessageDialog : UserControl
     {
         InitializeComponent();
         _vm = vm;
+        Opacity = 0;
         
         TitleTxt.Text = title;
         MessageTxt.Text = message;
@@ -30,6 +33,20 @@ public partial class MessageDialog : UserControl
             IconTxt.Text = "\uE73E"; // Check icon
             IconTxt.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#16A34A"));
         }
+
+        Loaded += (_, _) => AnimateOpen();
+    }
+
+    private void AnimateOpen()
+    {
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var dur = TimeSpan.FromSeconds(0.4);
+
+        var animOpacity = new DoubleAnimation(0, 1, dur) { EasingFunction = ease };
+        Timeline.SetDesiredFrameRate(animOpacity, 60);
+        animOpacity.Freeze();
+
+        BeginAnimation(OpacityProperty, animOpacity);
     }
 
     private void Ok_Click(object sender, RoutedEventArgs e)

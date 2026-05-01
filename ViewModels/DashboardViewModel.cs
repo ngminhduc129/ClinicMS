@@ -10,6 +10,7 @@ namespace ClinicMS.ViewModels;
 public class DashboardViewModel : BaseViewModel
 {
     private readonly DatabaseService _db;
+    private readonly ToastService _toast;
 
     public ObservableCollection<Visit> TodayVisits { get; } = new();
     public ObservableCollection<Appointment> UpcomingAppointments { get; } = new();
@@ -20,9 +21,10 @@ public class DashboardViewModel : BaseViewModel
     private int _totalVisits;   public int TotalVisits   { get => _totalVisits;   set => SetProperty(ref _totalVisits,   value); }        
     private int _visitsToday;   public int VisitsToday   { get => _visitsToday;   set => SetProperty(ref _visitsToday,   value); }        
 
-    public DashboardViewModel(DatabaseService db)
+    public DashboardViewModel(DatabaseService db, ToastService toast)
     {
         _db = db;
+        _toast = toast;
     }
 
     public async Task LoadAsync()
@@ -42,7 +44,11 @@ public class DashboardViewModel : BaseViewModel
             var todayList = await _db.GetTodayVisitsAsync();
             TodayVisits.Clear();
             foreach (var v in todayList) TodayVisits.Add(v);
-        } catch { }
+        } 
+        catch (Exception ex)
+        {
+            _toast.ShowError($"Lỗi khi tải dữ liệu tổng quan: {ex.Message}");
+        }
     }
 
     private async Task LoadWeeklyStatsAsync()

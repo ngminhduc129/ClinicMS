@@ -8,22 +8,32 @@ namespace ClinicMS.ViewModels;
 public class MedicineViewModel : BaseViewModel
 {
     private readonly DatabaseService _db;
+    private readonly ToastService _toast;
 
     public ObservableCollection<Medicine> Medicines { get; } = new();
 
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
-    public MedicineViewModel(DatabaseService db)
+    public MedicineViewModel(DatabaseService db, ToastService toast)
     {
         _db = db;
+        _toast = toast;
     }
 
     public async Task LoadAsync()
     {
         Loading = true;
-        try { var list = await _db.GetMedicinesAsync(); Medicines.Clear(); foreach (var m in list) Medicines.Add(m); }
-        catch { } finally { Loading = false; }
+        try { 
+            var list = await _db.GetMedicinesAsync(); 
+            Medicines.Clear(); 
+            foreach (var m in list) Medicines.Add(m); 
+        }
+        catch (Exception ex)
+        {
+            _toast.ShowError($"Lỗi khi tải danh sách thuốc: {ex.Message}");
+        } 
+        finally { Loading = false; }
     }
 
     public async Task<bool> AddAsync(Medicine m) { try { await _db.AddMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }

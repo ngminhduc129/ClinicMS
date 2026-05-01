@@ -51,6 +51,46 @@ public class Visit
     };
 
     [NotMapped]
+    public int StatusOrder => Status switch
+    {
+        "Waiting"     => 1,
+        "In Progress" => 2,
+        "Completed"   => 3,
+        _             => 1
+    };
+
+    [NotMapped]
+    public string PatientInitials
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(PatientName)) return "?";
+            var parts = PatientName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) return "?";
+            if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
+            return (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpper();
+        }
+    }
+
+    [NotMapped]
+    public string PatientColor
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(PatientName)) return "#9CA3AF";
+            string[] colors = { "#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#6366F1", "#8B5CF6", "#EC4899" };
+            int index = Math.Abs(PatientName.GetHashCode()) % colors.Length;
+            return colors[index];
+        }
+    }
+
+    [NotMapped]
+    public string PatientGenderIcon => Patient?.Gender == "Nữ" ? "\uE8D4" : "\uE77B"; 
+
+    [NotMapped]
+    public string GenderColor => Patient?.Gender == "Nữ" ? "#0D9488" : "#64748B"; // Nữ: Teal (Xanh mòng két), Nam: Slate (Xám xanh)
+
+    [NotMapped]
     public string StatusGroup => Status switch
     {
         "Waiting"     => "CHỜ KHÁM",

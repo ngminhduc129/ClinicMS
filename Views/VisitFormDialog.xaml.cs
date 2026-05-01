@@ -123,7 +123,7 @@ public partial class VisitFormDialog : UserControl
     private void AnimateOpen()
     {
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var dur = TimeSpan.FromSeconds(0.3);
+        var dur = TimeSpan.FromSeconds(0.4);
 
         var translate = new TranslateTransform(0, 30);
         RenderTransformOrigin = new Point(0.5, 0.5);
@@ -478,6 +478,7 @@ public partial class VisitFormDialog : UserControl
             else
             {
                 SaveBtn.IsEnabled = true;
+                _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu hồ sơ khám. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
             }
         }
         catch (Exception ex)

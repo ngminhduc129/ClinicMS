@@ -106,7 +106,7 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null) return;
         var form = new DoctorFormDialog(_vm);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.DoctorVM.LoadAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.DoctorVM.LoadAsync(); }, () => !form.HasData());
     }
 
     private void Detail_Click(object s, RoutedEventArgs e)
@@ -120,7 +120,7 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null || (s as Button)?.DataContext is not Doctor d) return;
         var form = new DoctorFormDialog(_vm, d);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.DoctorVM.LoadAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.DoctorVM.LoadAsync(); }, () => !form.HasData());
     }
 
     private void Delete_Click(object s, RoutedEventArgs e)

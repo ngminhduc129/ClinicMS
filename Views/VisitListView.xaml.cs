@@ -259,8 +259,8 @@ public partial class VisitListView : UserControl
     private void FilterToday_Click(object s, RoutedEventArgs e) { VisitDateFilter.SelectedDate = DateTime.Today; }
     private void FilterAllDate_Click(object s, RoutedEventArgs e) { VisitDateFilter.SelectedDate = null; }
 
-    private void Add_Click(object s, RoutedEventArgs e) { if (_vm == null) return; var form = new VisitFormDialog(_vm); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => form.HasData()); }
-    private void Edit_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var form = new VisitFormDialog(_vm, _selectedVisit); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => form.HasData()); }
+    private void Add_Click(object s, RoutedEventArgs e) { if (_vm == null) return; var form = new VisitFormDialog(_vm); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => !form.HasData()); }
+    private void Edit_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var form = new VisitFormDialog(_vm, _selectedVisit); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => !form.HasData()); }
     private void Delete_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var confirm = new ConfirmDialog("Xóa hồ sơ khám này?", "Thao tác không thể hoàn tác.", _vm); _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.VisitVM.DeleteAsync(_selectedVisit); }); }
 
     private void SearchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { }

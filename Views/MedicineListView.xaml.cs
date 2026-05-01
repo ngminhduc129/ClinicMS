@@ -123,14 +123,14 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null) return;
         var form = new MedicineFormDialog(_vm);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.MedicineVM.LoadAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.MedicineVM.LoadAsync(); }, () => !form.HasData());
     }
 
     private void Edit_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null || (s is not FrameworkElement el) || el.DataContext is not Medicine m) return;
         var form = new MedicineFormDialog(_vm, m);
-        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.MedicineVM.LoadAsync(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) _ = _vm.MedicineVM.LoadAsync(); }, () => !form.HasData());
     }
 
     private void Delete_Click(object s, RoutedEventArgs e)

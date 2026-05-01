@@ -81,9 +81,8 @@ public class PatientDetailViewModel : BaseViewModel
     public void Edit()
     {
         var form = new Views.PatientFormDialog(_mainVm, Patient);
-        _mainVm.Modal.Show(form, async (result) => 
-        { 
-            if (result == true) await LoadDataAsync(); 
-        }, () => form.HasData());
-    }
-}
+        _mainVm.Modal.Show(form, async (result) =>
+        {
+            if (result == true) await LoadDataAsync();
+        }, () => !form.HasData());
+    }}

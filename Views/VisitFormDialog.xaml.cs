@@ -123,20 +123,25 @@ public partial class VisitFormDialog : UserControl
     private void AnimateOpen()
     {
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var dur = TimeSpan.FromSeconds(0.24);
+        var dur = TimeSpan.FromSeconds(0.3);
 
-        var translate = new TranslateTransform(0, 40);
-        var scale = new ScaleTransform(0.96, 0.96);
-        var group = new TransformGroup();
-        group.Children.Add(scale);
-        group.Children.Add(translate);
+        var translate = new TranslateTransform(0, 30);
         RenderTransformOrigin = new Point(0.5, 0.5);
-        RenderTransform = group;
+        RenderTransform = translate;
 
-        BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, dur) { EasingFunction = ease });
-        translate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(40, 0, dur) { EasingFunction = ease });
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease });
+        var animOpacity = new DoubleAnimation(0, 1, dur) { EasingFunction = ease };
+        var animTranslate = new DoubleAnimation(30, 0, dur) { EasingFunction = ease };
+        
+        // Optional: Hint WPF to target higher framerate for this specific animation
+        Timeline.SetDesiredFrameRate(animOpacity, 60);
+        Timeline.SetDesiredFrameRate(animTranslate, 60);
+
+        // Freeze animation to improve performance
+        animOpacity.Freeze();
+        animTranslate.Freeze();
+
+        BeginAnimation(OpacityProperty, animOpacity);
+        translate.BeginAnimation(TranslateTransform.YProperty, animTranslate);
     }
 
     private void CloseForm(bool? result = null)
@@ -196,8 +201,11 @@ public partial class VisitFormDialog : UserControl
 
         // Load thuốc đã kê
         var details = await _vm.VisitVM.GetPrescriptionDetailsAsync(v.VisitId);
+        var detailList = details.ToList();
+        v.PrescriptionDetails = detailList; // Đồng bộ để IsDirty có thể so sánh chính xác
+
         _prescriptionItems.Clear();
-        foreach (var d in details) _prescriptionItems.Add(d);
+        foreach (var d in detailList) _prescriptionItems.Add(d);
         
         // Ensure the list reflects the loaded items
         PrescriptionList.ItemsSource = _prescriptionItems;
@@ -379,6 +387,7 @@ public partial class VisitFormDialog : UserControl
     {
         if (!_isEditing)
         {
+            // Trường hợp tạo mới: Kiểm tra xem có bất kỳ dữ liệu nào được nhập chưa
             return !string.IsNullOrWhiteSpace(PatientNameBox.Text) ||
                    !string.IsNullOrWhiteSpace(DoctorNameBox.Text) ||
                    !string.IsNullOrWhiteSpace(SymptomsBox.Text) ||
@@ -388,11 +397,54 @@ public partial class VisitFormDialog : UserControl
                    !string.IsNullOrWhiteSpace(BPBox.Text) ||
                    !string.IsNullOrWhiteSpace(TempBox.Text) ||
                    !string.IsNullOrWhiteSpace(PrescriptionBox.Text) ||
-                   _prescriptionItems.Any();
+                   _prescriptionItems.Any() ||
+                   RbAppt.IsChecked == true || RbEmerg.IsChecked == true || RbFollow.IsChecked == true ||
+                   RbProgress.IsChecked == true || RbComplete.IsChecked == true ||
+                   (VisitDatePicker.SelectedDate != null && VisitDatePicker.SelectedDate != DateTime.Today);
         }
 
         if (_editing == null) return false;
-        return true; 
+
+        // Trường hợp chỉnh sửa: So sánh giá trị hiện tại với dữ liệu gốc
+        bool patientChanged = PatientNameBox.Text != (_editing.Patient?.FullName ?? _vm.PatientVM.Patients.FirstOrDefault(p => p.PatientId == _editing.PatientId)?.FullName ?? "");
+        bool doctorChanged = DoctorNameBox.Text != (_editing.Doctor?.FullName ?? _vm.DoctorVM.Doctors.FirstOrDefault(d => d.DoctorId == _editing.DoctorId)?.FullName ?? "");
+        
+        DateTime.TryParse(_editing.VisitTime, out var originalDate);
+        bool dateChanged = VisitDatePicker.SelectedDate?.Date != originalDate.Date;
+
+        bool typeChanged = (RbAppt.IsChecked == true && _editing.VisitType != "Appointment") ||
+                          (RbEmerg.IsChecked == true && _editing.VisitType != "Emergency") ||
+                          (RbFollow.IsChecked == true && _editing.VisitType != "Follow-up") ||
+                          (RbWalkIn.IsChecked == true && _editing.VisitType != "Walk-in" && !string.IsNullOrEmpty(_editing.VisitType));
+
+        bool statusChanged = (RbProgress.IsChecked == true && _editing.Status != "In Progress") ||
+                            (RbComplete.IsChecked == true && _editing.Status != "Completed") ||
+                            (RbWaiting.IsChecked == true && _editing.Status != "Waiting" && !string.IsNullOrEmpty(_editing.Status));
+
+        // Kiểm tra chi tiết đơn thuốc
+        bool prescriptionChanged = _prescriptionItems.Count != _editing.PrescriptionDetails.Count;
+        if (!prescriptionChanged && _prescriptionItems.Any())
+        {
+            foreach (var item in _prescriptionItems)
+            {
+                var original = _editing.PrescriptionDetails.FirstOrDefault(pd => pd.MedicineId == item.MedicineId);
+                if (original == null || Math.Abs(original.Quantity - item.Quantity) > 0.0001 || original.Dosage != item.Dosage)
+                {
+                    prescriptionChanged = true;
+                    break;
+                }
+            }
+        }
+
+        return patientChanged || doctorChanged || dateChanged || typeChanged || statusChanged ||
+               SymptomsBox.Text != (_editing.Symptoms ?? "") ||
+               DiagnosisBox.Text != (_editing.Diagnosis ?? "") ||
+               NoteBox.Text != (_editing.Note ?? "") ||
+               PulseBox.Text != (_editing.Pulse ?? "") ||
+               BPBox.Text != (_editing.BloodPressure ?? "") ||
+               TempBox.Text != (_editing.Temperature ?? "") ||
+               PrescriptionBox.Text != (_editing.PrescriptionText ?? "") ||
+               prescriptionChanged;
     }
 
     private async void Save_Click(object s, RoutedEventArgs e)
@@ -565,16 +617,17 @@ public partial class VisitFormDialog : UserControl
 
     private void Overlay_Click(object s, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is not Grid g || g.Name != "Overlay") return;
-        
-        if (!IsDirty())
+        if (e.Source == e.OriginalSource || (e.OriginalSource is FrameworkElement fe && fe.Name != "DialogRoot" && FindParent<Border>(fe)?.Name != "DialogRoot"))
         {
-            CloseForm();
-            return;
-        }
+            if (!IsDirty())
+            {
+                CloseForm();
+                return;
+            }
 
-        _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
-            if (res == true) CloseForm();
-        });
+            _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
+                if (res == true) CloseForm();
+            });
+        }
     }
 }

@@ -71,7 +71,7 @@ public partial class DoctorDetailDialog : UserControl
     private void Edit_Click(object s, RoutedEventArgs e)
     {
         var form = new DoctorFormDialog(_vm, _doctor);
-        _vm.Modal.Show(form, result => { if (result == true) LoadData(); }, () => form.HasData());
+        _vm.Modal.Show(form, result => { if (result == true) LoadData(); }, () => !form.HasData());
     }
 
     private void Close_Click(object s, RoutedEventArgs e)

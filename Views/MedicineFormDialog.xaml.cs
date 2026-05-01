@@ -125,6 +125,17 @@ public partial class MedicineFormDialog : UserControl
     
     private void Overlay_Click(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is Grid g && g.Name == "Overlay") Cancel_Click(s, null!);
+        if (e.Source == e.OriginalSource || (e.OriginalSource is FrameworkElement fe && fe.Name != "DialogRoot" && FindParent<Border>(fe)?.Name != "DialogRoot"))
+        {
+            Cancel_Click(s, null!);
+        }
+    }
+
+    private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+        if (parentObject == null) return null;
+        if (parentObject is T parent) return parent;
+        return FindParent<T>(parentObject);
     }
 }

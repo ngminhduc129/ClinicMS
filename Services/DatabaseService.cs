@@ -46,12 +46,12 @@ public class DatabaseService
 
         // Bổ sung các bảng có thể thiếu trên DB cũ (tránh lỗi "no such table")
         db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS PrescriptionDetails (" +
-            "VisitId INTEGER NOT NULL, " +
-            "MedicineId INTEGER NOT NULL, " +
-            "Quantity REAL DEFAULT 0, " +
-            "Dosage TEXT, " +
-            "PRIMARY KEY (VisitId, MedicineId))");
+            "CREATE TABLE IF NOT EXISTS prescription_details (" +
+            "visit_id INTEGER NOT NULL, " +
+            "medicine_id INTEGER NOT NULL, " +
+            "quantity REAL DEFAULT 0, " +
+            "dosage TEXT, " +
+            "PRIMARY KEY (visit_id, medicine_id))");
         db.Database.ExecuteSqlRaw(
             "CREATE TABLE IF NOT EXISTS prescriptions (" +
             "visit_id INTEGER PRIMARY KEY, " +
@@ -546,6 +546,17 @@ public class DatabaseService
         return await db.Visits.CountAsync();
     }
 
+    public async Task<Visit?> GetVisitDetailsAsync(int visitId)
+    {
+        await using var db = Ctx();
+        return await db.Visits
+                       .Include(v => v.Patient)
+                       .Include(v => v.Doctor)
+                       .Include(v => v.PrescriptionDetails!)
+                           .ThenInclude(pd => pd.Medicine)
+                       .FirstOrDefaultAsync(v => v.VisitId == visitId);
+    }
+
     public async Task<int> GetTodayVisitsCountAsync()
     {
         await using var db = Ctx();
@@ -594,24 +605,42 @@ public class DatabaseService
         await using var transaction = await db.Database.BeginTransactionAsync();
         try
         {
-            // 1. Cập nhật thông tin Visit
-            db.Visits.Update(v);
+            // 1. Tìm bản ghi gốc trong DB
+            var existingVisit = await db.Visits
+                .FirstOrDefaultAsync(x => x.VisitId == v.VisitId);
 
-            // 2. Xóa sạch đơn thuốc cũ và ghi lại mới để đơn giản hóa logic đồng bộ
-            var oldDetails = await db.PrescriptionDetails.Where(pd => pd.VisitId == v.VisitId).ToListAsync();
-            db.PrescriptionDetails.RemoveRange(oldDetails);
+            if (existingVisit == null)
+                throw new Exception($"Không tìm thấy hồ sơ khám ID: {v.VisitId}");
+
+            // 2. Cập nhật các trường thông tin cơ bản
+            db.Entry(existingVisit).CurrentValues.SetValues(v);
+
+            // 3. Xử lý đơn thuốc: Xóa cũ, thêm mới
+            var oldDetails = await db.PrescriptionDetails
+                .Where(pd => pd.VisitId == v.VisitId)
+                .ToListAsync();
+            
+            if (oldDetails.Any())
+                db.PrescriptionDetails.RemoveRange(oldDetails);
+
+            // Lưu bước xóa trước để tránh trùng khóa chính khi thêm lại
             await db.SaveChangesAsync();
 
             if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())
             {
                 foreach (var detail in v.PrescriptionDetails)
                 {
-                    detail.VisitId = v.VisitId;
-                    db.PrescriptionDetails.Add(detail);
+                    db.PrescriptionDetails.Add(new PrescriptionDetail
+                    {
+                        VisitId = v.VisitId,
+                        MedicineId = detail.MedicineId,
+                        Quantity = detail.Quantity,
+                        Dosage = detail.Dosage
+                    });
                 }
-                await db.SaveChangesAsync();
             }
 
+            await db.SaveChangesAsync();
             await transaction.CommitAsync();
         }
         catch (Exception)

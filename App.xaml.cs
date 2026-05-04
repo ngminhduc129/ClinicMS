@@ -11,6 +11,8 @@ using Serilog;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 
+using QuestPDF.Infrastructure;
+
 namespace ClinicMS;
 
 public partial class App : Application
@@ -19,7 +21,10 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        // 0. Khởi tạo Logging
+        // 0. Cấu hình QuestPDF (Community License)
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        // 1. Khởi tạo Logging
         var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClinicMS", "logs", "log-.txt");
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -58,6 +63,7 @@ public partial class App : Application
         services.AddSingleton<DatabaseService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();
+        services.AddSingleton<ClinicMS.Services.PdfExport.PdfExportService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

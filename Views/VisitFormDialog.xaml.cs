@@ -337,6 +337,13 @@ public partial class VisitFormDialog : UserControl
             return;
         }
 
+        // KIỂM TRA TỒN KHO
+        if (med.StockQuantity <= 0)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, $"Thuốc '{med.MedicineName}' đã hết hàng trong kho.", "Hết hàng", true));
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(MedicineQty.Text))
         {
             _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập số lượng.", "Thông báo", true));
@@ -345,6 +352,12 @@ public partial class VisitFormDialog : UserControl
 
         double.TryParse(MedicineQty.Text, out double qty);
         if (qty <= 0) qty = 1;
+
+        if (qty > med.StockQuantity)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, $"Số lượng kê ({qty}) vượt quá số lượng tồn kho hiện có ({med.StockQuantity}).", "Cảnh báo tồn kho", true));
+            return;
+        }
 
         // Kiểm tra xem thuốc đã có trong đơn chưa
         var existing = _prescriptionItems.FirstOrDefault(p => p.MedicineId == med.MedicineId);

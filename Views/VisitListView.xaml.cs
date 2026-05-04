@@ -163,6 +163,7 @@ public partial class VisitListView : UserControl
         if (_vm != null)
         {
             var details = await _vm.VisitVM.GetPrescriptionDetailsAsync(v.VisitId);
+            v.PrescriptionDetails = details; // Đồng bộ dữ liệu vào object gốc
             if (details.Any())
             {
                 MedicineEmpty.Visibility = Visibility.Collapsed;
@@ -236,8 +237,22 @@ public partial class VisitListView : UserControl
         if (string.IsNullOrWhiteSpace(medicineName)) return;
         var med = _vm.MedicineVM.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
         if (med == null) { _vm.Toast.ShowError("Không tìm thấy thuốc này."); return; }
+        
+        // KIỂM TRA TỒN KHO
+        if (med.StockQuantity <= 0)
+        {
+            _vm.Toast.ShowError($"Thuốc '{med.MedicineName}' đã hết hàng.");
+            return;
+        }
+
         double.TryParse(QuickMedicineQty.Text, out double qty);
         if (qty <= 0) qty = 1;
+
+        if (qty > med.StockQuantity)
+        {
+            _vm.Toast.ShowError($"Số lượng kê ({qty}) vượt quá tồn kho ({med.StockQuantity}).");
+            return;
+        }
         var newItem = new PrescriptionDetail { VisitId = _selectedVisit.VisitId, MedicineId = med.MedicineId, Medicine = med, Quantity = qty, Dosage = QuickMedicineDosage.Text.Trim() };
         var currentDetails = await _vm.VisitVM.GetPrescriptionDetailsAsync(_selectedVisit.VisitId);
         var existing = currentDetails.FirstOrDefault(d => d.MedicineId == newItem.MedicineId);
@@ -260,6 +275,10 @@ public partial class VisitListView : UserControl
         _selectedVisit.Symptoms = InputSymptoms.Text.Trim(); 
         _selectedVisit.Note = InputNote.Text.Trim(); 
         _selectedVisit.Diagnosis = InputDiagnosis.Text.Trim();
+
+        // Đảm bảo đơn thuốc được đồng bộ từ UI vào object trước khi lưu
+        _selectedVisit.PrescriptionDetails = SelectedPrescriptionDetails.ToList();
+
         await _vm.VisitVM.UpdateAsync(_selectedVisit);
         _isDirty = false;
         _vm.Toast.Show("Đã lưu thay đổi.");

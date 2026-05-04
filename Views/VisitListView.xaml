@@ -778,8 +778,17 @@
                                             <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="11" Foreground="{StaticResource C.Gray400}" Margin="0,1,0,0"/>
                                         </StackPanel>
 
-                                        <!-- Go Arrow (visible on hover/select via trigger in parent if we wanted, but keeping simple) -->
-                                        <TextBlock Grid.Column="2" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource C.Gray200}" VerticalAlignment="Center"/>
+                                        <!-- Print Actions -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Style="{StaticResource IconBtn}" Width="28" Height="28" Margin="0,0,4,0" 
+                                                    ToolTip="In nhanh đơn thuốc" 
+                                                    Command="{Binding DataContext.VisitVM.ExportPrescriptionCommand, ElementName=Self}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="&#xE9F5;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="#16A34A"/>
+                                            </Button>
+                                            <!-- Go Arrow -->
+                                            <TextBlock Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource C.Gray200}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                        </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -838,10 +847,30 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock x:Name="DetailPatientName" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
-                                        <Button Grid.Column="1" Style="{StaticResource IconBtn}" Width="32" Height="32" 
-                                                Margin="10,0,0,0" ToolTip="Chỉnh sửa chuyên sâu" Click="Edit_Click">
-                                            <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#16A34A"/>
-                                        </Button>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Style="{StaticResource OutlineBtn}" Height="32" Margin="0,0,8,0" 
+                                                    ToolTip="In Bệnh Án (A4)" 
+                                                    Command="{Binding ExportMedicalRecordCommand}"
+                                                    CommandParameter="{Binding SelectedItem, ElementName=VisitGroupList}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="In Bệnh Án" FontSize="11" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Style="{StaticResource GreenBtn}" Height="32" Margin="0,0,8,0" 
+                                                    ToolTip="In Đơn Thuốc (A5)" 
+                                                    Command="{Binding ExportPrescriptionCommand}"
+                                                    CommandParameter="{Binding SelectedItem, ElementName=VisitGroupList}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE9F5;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="In Đơn Thuốc" FontSize="11" Foreground="White" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Style="{StaticResource IconBtn}" Width="32" Height="32" 
+                                                    ToolTip="Chỉnh sửa chuyên sâu" Click="Edit_Click">
+                                                <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#16A34A"/>
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
                                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                         <TextBlock x:Name="DetailPatientGender" FontSize="14" Foreground="#6B7280" Margin="0,0,12,0"/>

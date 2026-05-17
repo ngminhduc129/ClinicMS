@@ -110,22 +110,26 @@
     <SolidColorBrush x:Key="OverlayBrush" Color="#000000" Opacity="0.5"/>
     
     <!--=========================================-->
-    <!-- MODERN SHADOW EFFECTS (nested in ThemeControls) -->
+    <!-- MODERN SHADOW EFFECTS -->
     <!--=========================================-->
-    <!-- Soft subtle shadow for cards -->
+    <!-- Soft subtle shadow for inputs/small elements -->
     <DropShadowEffect x:Key="SoftShadow" x:Shared="False"
-                      Color="#000000" BlurRadius="12" ShadowDepth="1" Opacity="0.08" Direction="270"/>
+                      Color="#000000" BlurRadius="10" ShadowDepth="1" Opacity="0.06" Direction="270"/>
 
-    <!-- Medium shadow for elevated elements -->
+    <!-- Standard shadow for cards and lists -->
     <DropShadowEffect x:Key="StandardShadow" x:Shared="False"
-                      Color="#000000" BlurRadius="16" ShadowDepth="2" Opacity="0.12" Direction="270"/>
+                      Color="#000000" BlurRadius="18" ShadowDepth="2" Opacity="0.06" Direction="270"/>
 
-    <!-- Stronger shadow for modals and overlays -->
+    <!-- Stronger shadow for dialogs and modals -->
     <DropShadowEffect x:Key="ElevatedShadow" x:Shared="False"
-                      Color="#000000" BlurRadius="24" ShadowDepth="4" Opacity="0.16" Direction="270"/>
+                      Color="#000000" BlurRadius="40" ShadowDepth="4" Opacity="0.16" Direction="270"/>
 
-    <!-- Very subtle shadow for inputs -->
-    <DropShadowEffect x:Key="InsetShadow" x:Shared="False"
-                      Color="#000000" BlurRadius="8" ShadowDepth="1" Opacity="0.06" Direction="270"/>
+    <!-- Branding focus shadow -->
+    <DropShadowEffect x:Key="FocusShadow" x:Shared="False"
+                      Color="#16A34A" BlurRadius="12" ShadowDepth="0" Opacity="0.20" Direction="270"/>
+    
+    <!-- Shadow for brand buttons (green glow) -->
+    <DropShadowEffect x:Key="BrandButtonShadow" x:Shared="False"
+                      Color="#16A34A" BlurRadius="14" ShadowDepth="2" Opacity="0.30" Direction="270"/>
     
 </ResourceDictionary>

@@ -214,30 +214,72 @@ public class InvoiceDocument : IDocument
             page.Margin(1, Unit.Centimetre);
             page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
 
-            page.Content().Column(col =>
+            page.Header().Row(row =>
             {
-                col.Item().AlignCenter().Text("HÓA ĐƠN THANH TOÁN").FontSize(16).Bold();
-                col.Item().PaddingTop(10).Text($"Bệnh nhân: {_invoice.Visit?.Patient?.FullName ?? "N/A"}");
-                col.Item().Text($"Ngày lập: {_invoice.CreatedAt ?? DateTime.Now.ToString("dd/MM/yyyy")}");
+                row.RelativeItem().Column(col =>
+                {
+                    col.Item().Text("PHÒNG KHÁM ĐA KHOA CLINICMS").FontSize(12).SemiBold().FontColor(Colors.Green.Medium);
+                    col.Item().Text("HÓA ĐƠN THANH TOÁN").FontSize(14).ExtraBold();
+                });
+                row.ConstantItem(80).Text($"Mã: INV-{_invoice.VisitId}").FontSize(8).Italic();
+            });
+
+            page.Content().PaddingVertical(10).Column(col =>
+            {
+                col.Item().Row(row =>
+                {
+                    row.RelativeItem().Text(t => { t.Span("Bệnh nhân: "); t.Span(_invoice.Visit?.Patient?.FullName ?? "N/A").Bold(); });
+                    row.ConstantItem(100).AlignRight().Text(_invoice.CreatedAt ?? DateTime.Now.ToString("dd/MM/yyyy"));
+                });
                 
                 col.Item().PaddingTop(10).Table(table =>
                 {
                     table.ColumnsDefinition(columns =>
                     {
                         columns.RelativeColumn();
-                        columns.ConstantColumn(80);
+                        columns.ConstantColumn(30);
+                        columns.ConstantColumn(60);
+                        columns.ConstantColumn(70);
                     });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().BorderBottom(1).Text("Nội dung");
+                        header.Cell().BorderBottom(1).AlignCenter().Text("SL");
+                        header.Cell().BorderBottom(1).AlignRight().Text("Đơn giá");
+                        header.Cell().BorderBottom(1).AlignRight().Text("Thành tiền");
+                    });
+
                     var items = _invoice.Items ?? new List<InvoiceItem>();
                     foreach(var item in items)
                     {
-                        table.Cell().Text(item.ItemType == "Medicine" ? "Tiền thuốc" : "Dịch vụ");
-                        table.Cell().AlignRight().Text((item.Quantity * item.UnitPrice).ToString("N0") + " đ");
+                        table.Cell().PaddingVertical(2).Text(item.ItemName);
+                        table.Cell().PaddingVertical(2).AlignCenter().Text(item.Quantity.ToString());
+                        table.Cell().PaddingVertical(2).AlignRight().Text(item.UnitPrice.ToString("N0"));
+                        table.Cell().PaddingVertical(2).AlignRight().Text(item.Subtotal.ToString("N0"));
                     }
-                    table.Cell().BorderTop(1).PaddingTop(5).Text("TỔNG CỘNG").Bold();
-                    table.Cell().BorderTop(1).PaddingTop(5).AlignRight().Text(_invoice.TotalAmount.ToString("N0") + " đ").Bold();
+
+                    table.Cell().ColumnSpan(3).PaddingTop(10).Text("TỔNG CỘNG").Bold();
+                    table.Cell().PaddingTop(10).AlignRight().Text(_invoice.TotalAmount.ToString("N0") + " đ").Bold();
                 });
 
-                col.Item().PaddingTop(20).AlignCenter().Text(_invoice.Status == "Paid" ? "ĐÃ THANH TOÁN" : "CHƯA THANH TOÁN").FontSize(12).Bold().FontColor(_invoice.Status == "Paid" ? Colors.Green.Medium : Colors.Red.Medium);
+                col.Item().PaddingTop(20).Row(row =>
+                {
+                    row.RelativeItem().Column(c => {
+                        c.Item().Text("Lịch sử thanh toán:").Italic().FontSize(9);
+                        foreach(var p in _invoice.Payments ?? new List<Payment>())
+                        {
+                            c.Item().Text($"- {p.PaymentTime}: {p.AmountDisplay} ({p.PaymentMethod})").FontSize(8);
+                        }
+                    });
+                    row.RelativeItem().AlignCenter().Column(c => {
+                        c.Item().PaddingTop(10).Text(_invoice.Status == "Paid" ? "ĐÃ THANH TOÁN" : "CHƯA THANH TOÁN").FontSize(12).Bold().FontColor(_invoice.Status == "Paid" ? Colors.Green.Medium : Colors.Red.Medium);
+                    });
+                });
+            });
+
+            page.Footer().AlignCenter().Text(t => {
+                t.Span("Cảm ơn quý khách đã tin tưởng ClinicMS!").Italic().FontSize(8);
             });
         });
     }

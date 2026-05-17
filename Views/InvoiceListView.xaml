@@ -1,0 +1,310 @@
+<UserControl x:Class="ClinicMS.Views.InvoiceListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:ClinicMS.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Background="#F0FDF4"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True">
+    
+    <UserControl.Resources>
+        <conv:InvoiceStatusToBrushConverter x:Key="StatusBrush"/>
+        <conv:InvoiceStatusToBackgroundConverter x:Key="StatusBg"/>
+        <conv:InverseStatusToVisConverter x:Key="InverseStatusToVis"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="DetailCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BackgroundBrushDark}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="Effect" Value="{StaticResource StandardShadow}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="46" Height="46" CornerRadius="13" Background="{DynamicResource PrimaryGreenBrush}" Margin="0,0,16,0">
+                    <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel>
+                    <TextBlock Text="Quản Lý Hóa Đơn" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                    <TextBlock Text="Theo dõi thanh toán và xuất hóa đơn cho bệnh nhân" FontSize="14" Foreground="{DynamicResource TextBrushSecondary}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Border CornerRadius="12" Background="White" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1" Padding="4" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="FilterAll" Content="Tất cả" IsChecked="True" Style="{StaticResource FilterTabStyle}" Click="Filter_Click" Tag="All"/>
+                        <RadioButton x:Name="FilterUnpaid" Content="Chưa trả" Style="{StaticResource FilterTabStyle}" Click="Filter_Click" Tag="Unpaid"/>
+                        <RadioButton x:Name="FilterPaid" Content="Đã xong" Style="{StaticResource FilterTabStyle}" Click="Filter_Click" Tag="Paid"/>
+                    </StackPanel>
+                </Border>
+                <Button Style="{StaticResource IconBtn}" Width="42" Height="42" Click="Refresh_Click">
+                    <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryGreenBrush}"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: Invoice List -->
+            <Border Grid.Column="0" Background="White" CornerRadius="20" BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
+                <Border.Effect><StaticResource ResourceKey="StandardShadow"/></Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="20,20,0,0" Padding="20,14" BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,0,0,1">
+                        <TextBlock Text="DANH SÁCH HÓA ĐƠN" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}"/>
+                    </Border>
+
+                    <ListView x:Name="InvoiceList" Grid.Row="1" ItemsSource="{Binding InvoiceVM.Invoices}" 
+                              BorderThickness="0" Background="Transparent" Padding="10"
+                              SelectedItem="{Binding InvoiceVM.SelectedInvoice}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,0,8"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <Border x:Name="Bg" CornerRadius="12" Padding="12" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+                                                <ContentPresenter/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bg" Property="Background" Value="#F9FAFB"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Bg" Property="Background" Value="#F0FDF4"/>
+                                                    <Setter TargetName="Bg" Property="BorderBrush" Value="#BBF7D0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding PatientName}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                        <TextBlock Text="{Binding CreatedAt}" FontSize="12" Foreground="{DynamicResource TextBrushSecondary}" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding TotalDisplay}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource PrimaryGreenBrush}" HorizontalAlignment="Right"/>
+                                        <Border CornerRadius="6" Padding="8,2" Margin="0,5,0,0" 
+                                                Background="{Binding Status, Converter={StaticResource StatusBg}}"
+                                                HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="Bold" 
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusBrush}}"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+
+            <!-- RIGHT: Details -->
+            <Border Grid.Column="2" x:Name="DetailPanel" DataContext="{Binding InvoiceVM.SelectedInvoice}" Background="Transparent">
+                <Grid>
+                    <!-- Empty State -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Border Width="90" Height="90" CornerRadius="45" Background="White" Margin="0,0,0,24">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000" Opacity="0.05" BlurRadius="20" ShadowDepth="4"/>
+                            </Border.Effect>
+                            <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" FontSize="40" Foreground="{DynamicResource BorderBrushLight}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Chưa chọn hóa đơn" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Vui lòng chọn một hóa đơn từ danh sách bên trái" FontSize="14" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <!-- Content -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                        <ScrollViewer.Style>
+                            <Style TargetType="ScrollViewer">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ScrollViewer.Style>
+                        
+                        <StackPanel>
+                            <!-- Summary Header -->
+                            <Border Style="{StaticResource DetailCardStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="THÔNG TIN THANH TOÁN" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,16"/>
+                                        <TextBlock Text="{Binding PatientName}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                        <TextBlock Text="{Binding DoctorName, StringFormat='Bác sĩ: {0}'}" FontSize="15" Foreground="{DynamicResource TextBrushSecondary}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource OutlineBtn}" Content="In Hóa Đơn (PDF)" Padding="20,10"
+                                                Command="{Binding DataContext.InvoiceVM.PrintCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Items List -->
+                            <Border Style="{StaticResource DetailCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="CHI TIẾT CÁC KHOẢN PHÍ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,16"/>
+                                    
+                                    <Border Background="{DynamicResource BackgroundBrushLight}" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="120"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="NỘI DUNG" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                            <TextBlock Text="SL" Grid.Column="1" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="ĐƠN GIÁ" Grid.Column="2" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="THÀNH TIỀN" Grid.Column="3" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,0,0,1" Padding="16,14">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="120"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="{Binding ItemName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="14" Foreground="{DynamicResource TextBrushPrimary}" HorizontalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding PriceDisplay}" FontSize="14" Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Right"/>
+                                                        <TextBlock Grid.Column="3" Text="{Binding SubtotalDisplay}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}" HorizontalAlignment="Right"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Border Margin="0,20,0,0" Padding="16,10" Background="#F0FDF4" CornerRadius="12">
+                                        <Grid>
+                                            <TextBlock Text="TỔNG TIỀN HÓA ĐƠN" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding TotalDisplay}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryGreenBrush}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Payment History -->
+                            <Border Style="{StaticResource DetailCardStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="LỊCH SỬ THANH TOÁN" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,16"/>
+                                        <ItemsControl ItemsSource="{Binding Payments}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,0,14">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Width="36" Height="36" CornerRadius="18" Background="{DynamicResource BackgroundBrushLight}" Margin="0,0,12,0">
+                                                            <TextBlock Text="&#xE735;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding PaymentMethod}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                            <TextBlock Text="{Binding PaymentTime}" FontSize="12" Foreground="{DynamicResource TextBrushSecondary}"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="{Binding AmountDisplay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        
+                                        <TextBlock Text="Chưa có lượt thanh toán nào" FontSize="13" Foreground="{DynamicResource TextBrushTertiary}" FontStyle="Italic" Margin="0,8,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Payments.Count}" Value="0">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1" Style="{StaticResource GreenBtn}" VerticalAlignment="Top" Padding="20,0"
+                                            Click="Pay_Click" Visibility="{Binding Status, Converter={StaticResource InverseStatusToVis}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="White"/>
+                                            <TextBlock Text="Thanh Toán Ngay" FontWeight="Bold" VerticalAlignment="Center" Foreground="White" FontSize="13"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

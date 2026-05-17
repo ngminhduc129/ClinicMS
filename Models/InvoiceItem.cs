@@ -9,9 +9,12 @@ public class InvoiceItem
     [Column("visit_id")]    public int    VisitId   { get; set; }
     [Column("item_type")]   public string ItemType  { get; set; } = "";
     [Column("item_id")]     public int    ItemId    { get; set; }
+    [Column("item_name")]   public string ItemName  { get; set; } = "";
     [Column("quantity")]    public int    Quantity  { get; set; }
     [Column("unit_price")]  public double UnitPrice { get; set; }
     [NotMapped] public double Subtotal => Quantity * UnitPrice;
+    [NotMapped] public string PriceDisplay => UnitPrice.ToString("N0") + " ₫";
+    [NotMapped] public string SubtotalDisplay => Subtotal.ToString("N0") + " ₫";
 
     public Invoice? Invoice { get; set; }
 }

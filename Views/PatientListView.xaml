@@ -87,9 +87,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bg" CornerRadius="10" Background="#16A34A">
-                            <Border.Effect>
-                                <DropShadowEffect Color="#16A34A" BlurRadius="14" ShadowDepth="2" Opacity="0.35" Direction="270"/>
-                            </Border.Effect>
+                            <Border.Effect><StaticResource ResourceKey="BrandButtonShadow"/></Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                               Margin="18,0"/>
                         </Border>
@@ -146,9 +144,7 @@
             <Border Grid.Column="1" CornerRadius="10" Background="White"
                     BorderBrush="#D1FAE5" BorderThickness="1"
                     Padding="16,8" VerticalAlignment="Center">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                </Border.Effect>
+                <Border.Effect><StaticResource ResourceKey="SoftShadow"/></Border.Effect>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="14"
                                Foreground="#16A34A" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -174,9 +170,7 @@
             <!-- Search Box -->
             <Border Grid.Column="0" Width="320" Height="40" Background="White"
                     CornerRadius="10" BorderBrush="#D1FAE5" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                </Border.Effect>
+                <Border.Effect><StaticResource ResourceKey="SoftShadow"/></Border.Effect>
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>
@@ -255,9 +249,7 @@
         <Grid Grid.Row="2">
             <!-- Shadow layer -->
             <Border Background="White" CornerRadius="10">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.08" Color="#000"/>
-                </Border.Effect>
+                <Border.Effect><StaticResource ResourceKey="StandardShadow"/></Border.Effect>
             </Border>
             
             <!-- Content layer -->

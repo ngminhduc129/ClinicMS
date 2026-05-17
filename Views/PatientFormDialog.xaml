@@ -7,38 +7,24 @@
 
     <UserControl.Resources>
 
-        <SolidColorBrush x:Key="C.Green700"  Color="#15803D"/>
-        <SolidColorBrush x:Key="C.Green600"  Color="#16A34A"/>
-        <SolidColorBrush x:Key="C.Green500"  Color="#22C55E"/>
-        <SolidColorBrush x:Key="C.Green100"  Color="#DCFCE7"/>
-        <SolidColorBrush x:Key="C.Green50"   Color="#F0FDF4"/>
-        <SolidColorBrush x:Key="C.White"     Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="C.Gray50"    Color="#F9FAFB"/>
-        <SolidColorBrush x:Key="C.Gray100"   Color="#F3F4F6"/>
-        <SolidColorBrush x:Key="C.Gray200"   Color="#E5E7EB"/>
-        <SolidColorBrush x:Key="C.Gray400"   Color="#9CA3AF"/>
-        <SolidColorBrush x:Key="C.Gray600"   Color="#4B5563"/>
-        <SolidColorBrush x:Key="C.Gray800"   Color="#1F2937"/>
-        <SolidColorBrush x:Key="C.Red"       Color="#EF4444"/>
-
         <Style x:Key="FormLabel" TargetType="TextBlock">
             <Setter Property="FontSize"   Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource C.Gray600}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrushSecondary}"/>
             <Setter Property="Margin"     Value="0,0,0,6"/>
         </Style>
 
         <Style x:Key="UnitLabel" TargetType="TextBlock">
             <Setter Property="FontSize"   Value="10"/>
             <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="Foreground" Value="{StaticResource C.Gray400}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrushTertiary}"/>
         </Style>
 
         <Style x:Key="FormTextBox" TargetType="TextBox">
             <Setter Property="FontSize"        Value="13"/>
-            <Setter Property="Foreground"      Value="{StaticResource C.Gray800}"/>
-            <Setter Property="Background"      Value="{StaticResource C.White}"/>
-            <Setter Property="BorderBrush"     Value="{StaticResource C.Gray200}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
+            <Setter Property="Background"      Value="{DynamicResource SurfaceBrushWhite}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrushLight}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="Padding"         Value="12,10"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -47,9 +33,7 @@
                     <ControlTemplate TargetType="TextBox">
                         <Grid>
                             <Border x:Name="FocusShadow" CornerRadius="10" Background="Transparent" Opacity="0">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#22C55E" Opacity="0.20" BlurRadius="10" ShadowDepth="0"/>
-                                </Border.Effect>
+                                <Border.Effect><StaticResource ResourceKey="FocusShadow"/></Border.Effect>
                             </Border>
 
                             <Border x:Name="Root"
@@ -67,9 +51,9 @@
                                 <Setter TargetName="Root" Property="BorderBrush" Value="#86EFAC"/>
                             </Trigger>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource C.Green600}"/>
-                                <Setter TargetName="Root" Property="Background"  Value="{StaticResource C.Green50}"/>
-                                <Setter TargetName="FocusShadow" Property="Background" Value="{StaticResource C.Green50}"/>
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource PrimaryGreenBrush}"/>
+                                <Setter TargetName="Root" Property="Background"  Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
+                                <Setter TargetName="FocusShadow" Property="Background" Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
                                 <Setter TargetName="FocusShadow" Property="Opacity" Value="1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -80,9 +64,9 @@
 
         <Style x:Key="FormComboBox" TargetType="ComboBox">
             <Setter Property="FontSize"        Value="13"/>
-            <Setter Property="Foreground"      Value="{StaticResource C.Gray800}"/>
-            <Setter Property="Background"      Value="{StaticResource C.White}"/>
-            <Setter Property="BorderBrush"     Value="{StaticResource C.Gray200}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
+            <Setter Property="Background"      Value="{DynamicResource SurfaceBrushWhite}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrushLight}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="Height"          Value="40"/>
             <Setter Property="Template">
@@ -113,7 +97,7 @@
                                                       IsHitTestVisible="False"/>
                                     <Path Grid.Column="1"
                                           Data="M 0 0 L 5 5 L 10 0"
-                                          Stroke="{StaticResource C.Gray400}"
+                                          Stroke="{DynamicResource TextBrushTertiary}"
                                           StrokeThickness="1.8"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
@@ -131,7 +115,7 @@
                                 <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                         MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                         Background="#FFFFFF"
-                                        BorderBrush="{StaticResource C.Gray200}"
+                                        BorderBrush="{DynamicResource BorderBrushLight}"
                                         BorderThickness="1.5"
                                         CornerRadius="12"
                                         Margin="0,4,0,0">
@@ -149,9 +133,9 @@
                                 <Setter TargetName="Root" Property="BorderBrush" Value="#86EFAC"/>
                             </Trigger>
                             <Trigger Property="IsDropDownOpen" Value="True">
-                                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource C.Green600}"/>
-                                <Setter TargetName="Root" Property="Background"  Value="{StaticResource C.Green50}"/>
-                                <Setter TargetName="FocusShadow" Property="Background" Value="{StaticResource C.Green50}"/>
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource PrimaryGreenBrush}"/>
+                                <Setter TargetName="Root" Property="Background"  Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
+                                <Setter TargetName="FocusShadow" Property="Background" Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
                                 <Setter TargetName="FocusShadow" Property="Opacity" Value="1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -164,7 +148,7 @@
             <Setter Property="Padding"    Value="12,9"/>
             <Setter Property="Cursor"     Value="Hand"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource C.Gray800}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
             <Setter Property="FontSize"   Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -177,12 +161,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Green50}"/>
-                                <Setter Property="Foreground" Value="{StaticResource C.Green700}"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryGreenDarkBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Green100}"/>
-                                <Setter Property="Foreground" Value="{StaticResource C.Green700}"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource PrimaryGreenLightBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryGreenDarkBrush}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -205,31 +189,31 @@
                             </Border>
 
                             <Border x:Name="Pill"
-                                    Background="{StaticResource C.White}"
-                                    BorderBrush="{StaticResource C.Gray200}"
+                                    Background="{DynamicResource SurfaceBrushWhite}"
+                                    BorderBrush="{DynamicResource BorderBrushLight}"
                                     BorderThickness="1.5"
                                     CornerRadius="10"
                                     Padding="18,9">
                                 <TextBlock x:Name="Lbl"
                                            Text="{TemplateBinding Content}"
                                            FontSize="13" FontWeight="Medium"
-                                           Foreground="{StaticResource C.Gray600}"
+                                           Foreground="{DynamicResource TextBrushSecondary}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Pill" Property="Background"    Value="{StaticResource C.Green100}"/>
-                                <Setter TargetName="Pill" Property="BorderBrush"   Value="{StaticResource C.Green500}"/>
-                                <Setter TargetName="Lbl"  Property="Foreground"    Value="{StaticResource C.Green700}"/>
+                                <Setter TargetName="Pill" Property="Background"    Value="{DynamicResource PrimaryGreenLightBrush}"/>
+                                <Setter TargetName="Pill" Property="BorderBrush"   Value="{DynamicResource PrimaryGreenBrush}"/>
+                                <Setter TargetName="Lbl"  Property="Foreground"    Value="{DynamicResource PrimaryGreenDarkBrush}"/>
                                 <Setter TargetName="Lbl"  Property="FontWeight"    Value="SemiBold"/>
-                                <Setter TargetName="ShadowLayer" Property="Background" Value="{StaticResource C.Green100}"/>
+                                <Setter TargetName="ShadowLayer" Property="Background" Value="{DynamicResource PrimaryGreenLightBrush}"/>
                                 <Setter TargetName="ShadowLayer" Property="Opacity" Value="1"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Pill" Property="BorderBrush" Value="#86EFAC"/>
-                                <Setter TargetName="Pill" Property="Background"  Value="{StaticResource C.Green50}"/>
+                                <Setter TargetName="Pill" Property="Background"  Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -258,7 +242,7 @@
 
         <Style x:Key="FormDatePicker" TargetType="DatePicker">
             <Setter Property="FontSize"        Value="13"/>
-            <Setter Property="Foreground"      Value="{StaticResource C.Gray800}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="Padding"         Value="8,0"/>
@@ -274,7 +258,7 @@
                             <DatePickerTextBox x:Name="PART_TextBox"
                                                Grid.Column="0"
                                                Style="{StaticResource DatePickerTextBox}"
-                                               Foreground="{StaticResource C.Gray800}"
+                                               Foreground="{DynamicResource TextBrushPrimary}"
                                                FontSize="13" Margin="8,0,0,0"
                                                VerticalAlignment="Center"
                                                Background="Transparent" BorderThickness="0"/>
@@ -286,12 +270,12 @@
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="IconBg" CornerRadius="7" Background="Transparent">
                                             <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
-                                                       FontSize="14" Foreground="{StaticResource C.Gray400}"
+                                                       FontSize="14" Foreground="{DynamicResource TextBrushTertiary}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="IconBg" Property="Background" Value="{StaticResource C.Green50}"/>
+                                                <Setter TargetName="IconBg" Property="Background" Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -301,7 +285,7 @@
                                    AllowsTransparency="True" Placement="Bottom"
                                    StaysOpen="False">
                                 <Border Background="White"
-                                        BorderBrush="{StaticResource C.Gray200}"
+                                        BorderBrush="{DynamicResource BorderBrushLight}"
                                         BorderThickness="1.5" CornerRadius="12" Margin="0,4,0,0">
                                     <Border.Effect>
                                         <DropShadowEffect Color="#000000" Opacity="0.10" BlurRadius="20" ShadowDepth="4"/>
@@ -319,13 +303,11 @@
 
     <Grid x:Name="Overlay" Background="#01000000" MouseLeftButtonDown="Overlay_Click">
         <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="950">
-            <Border CornerRadius="20" Background="{StaticResource C.White}">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000000" Opacity="0.20" BlurRadius="60" ShadowDepth="0"/>
-                </Border.Effect>
+            <Border CornerRadius="20" Background="{DynamicResource SurfaceBrushWhite}">
+                <Border.Effect><StaticResource ResourceKey="ElevatedShadow"/></Border.Effect>
             </Border>
 
-            <Border x:Name="DialogRoot" CornerRadius="20" ClipToBounds="True" Background="{StaticResource C.White}">
+            <Border x:Name="DialogRoot" CornerRadius="20" ClipToBounds="True" Background="{DynamicResource SurfaceBrushWhite}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -400,14 +382,14 @@
                             </Grid.ColumnDefinitions>
 
                             <Grid Grid.Column="0">
-                                <Border Background="{StaticResource C.White}" CornerRadius="16">
+                                <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16">
                                     <Border.Effect>
                                         <DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="18" ShadowDepth="3"/>
                                     </Border.Effect>
                                 </Border>
 
-                                <Border Background="{StaticResource C.White}" CornerRadius="16" Padding="20"
-                                        BorderBrush="{StaticResource C.Gray100}" BorderThickness="1">
+                                <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16" Padding="20"
+                                        BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
                                     <StackPanel>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                             <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0">
@@ -419,7 +401,7 @@
                                                 </Border.Background>
                                             </Border>
                                             <TextBlock Text="THÔNG TIN CÁ NHÂN" FontSize="11" FontWeight="Bold"
-                                                       Foreground="{StaticResource C.Gray600}" VerticalAlignment="Center"/>
+                                                       Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
                                         </StackPanel>
 
                                         <Grid Margin="0,0,0,14">
@@ -429,13 +411,13 @@
                                                 <ColumnDefinition Width="1*"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Style="{StaticResource FormLabel}">Họ và Tên<Run Text=" *" Foreground="{StaticResource C.Red}"/></TextBlock>
+                                                <TextBlock Style="{StaticResource FormLabel}">Họ và Tên<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
                                                 <TextBox x:Name="NameBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
-                                                <TextBlock Style="{StaticResource FormLabel}">Ngày Sinh<Run Text=" *" Foreground="{StaticResource C.Red}"/></TextBlock>
-                                                <Border x:Name="DobBorder" CornerRadius="10" BorderBrush="{StaticResource C.Gray200}"
-                                                        BorderThickness="1.5" Background="{StaticResource C.White}" Height="40"
+                                                <TextBlock Style="{StaticResource FormLabel}">Ngày Sinh<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
+                                                <Border x:Name="DobBorder" CornerRadius="10" BorderBrush="{DynamicResource BorderBrushLight}"
+                                                        BorderThickness="1.5" Background="{DynamicResource SurfaceBrushWhite}" Height="40"
                                                         MouseEnter="DobBorder_MouseEnter" MouseLeave="DobBorder_MouseLeave">
                                                     <DatePicker x:Name="DobPicker" Style="{StaticResource FormDatePicker}"
                                                                 GotFocus="DobPicker_GotFocus" LostFocus="DobPicker_LostFocus"/>
@@ -444,7 +426,7 @@
                                         </Grid>
 
                                         <StackPanel Margin="0,0,0,14">
-                                            <TextBlock Style="{StaticResource FormLabel}">Giới Tính<Run Text=" *" Foreground="{StaticResource C.Red}"/></TextBlock>
+                                            <TextBlock Style="{StaticResource FormLabel}">Giới Tính<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
                                             <StackPanel Orientation="Horizontal">
                                                 <RadioButton x:Name="GenderNam"   Content="Nam"  GroupName="Gender" Style="{StaticResource PillRadio}" IsChecked="True"/>
                                                 <RadioButton x:Name="GenderNu"    Content="Nữ"   GroupName="Gender" Style="{StaticResource PillRadio}"/>
@@ -459,7 +441,7 @@
                                                 <ColumnDefinition Width="1.4*"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Style="{StaticResource FormLabel}">Số Điện Thoại<Run Text=" *" Foreground="{StaticResource C.Red}"/></TextBlock>
+                                                <TextBlock Style="{StaticResource FormLabel}">Số Điện Thoại<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
                                                 <TextBox x:Name="PhoneBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
@@ -480,13 +462,13 @@
                             <StackPanel Grid.Column="2">
 
                                 <Grid Margin="0,0,0,14">
-                                    <Border Background="{StaticResource C.White}" CornerRadius="16">
+                                    <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16">
                                         <Border.Effect>
                                             <DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="18" ShadowDepth="3"/>
                                         </Border.Effect>
                                     </Border>
-                                    <Border Background="{StaticResource C.White}" CornerRadius="16" Padding="20"
-                                            BorderBrush="{StaticResource C.Gray100}" BorderThickness="1">
+                                    <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16" Padding="20"
+                                            BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                                 <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0">
@@ -498,12 +480,12 @@
                                                     </Border.Background>
                                                 </Border>
                                                 <TextBlock Text="CHỈ SỐ SỨC KHỎE" FontSize="11" FontWeight="Bold"
-                                                           Foreground="{StaticResource C.Gray600}" VerticalAlignment="Center"/>
+                                                           Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
                                             </StackPanel>
 
                                             <StackPanel Margin="0,0,0,14">
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                    <TextBlock Text="&#xEA37;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{StaticResource C.Red}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                    <TextBlock Text="&#xEA37;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource ErrorBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                                     <TextBlock Text="Nhóm Máu" Style="{StaticResource FormLabel}" Margin="0"/>
                                                 </StackPanel>
                                                 <ComboBox x:Name="BloodTypeBox" Style="{StaticResource FormComboBox}">
@@ -545,13 +527,13 @@
                                 </Grid>
 
                                 <Grid>
-                                    <Border Background="{StaticResource C.White}" CornerRadius="16">
+                                    <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16">
                                         <Border.Effect>
                                             <DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="18" ShadowDepth="3"/>
                                         </Border.Effect>
                                     </Border>
-                                    <Border Background="{StaticResource C.White}" CornerRadius="16" Padding="20"
-                                            BorderBrush="{StaticResource C.Gray100}" BorderThickness="1">
+                                    <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16" Padding="20"
+                                            BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                                 <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0">
@@ -563,7 +545,7 @@
                                                     </Border.Background>
                                                 </Border>
                                                 <TextBlock Text="GHI CHÚ" FontSize="11" FontWeight="Bold"
-                                                           Foreground="{StaticResource C.Gray600}" VerticalAlignment="Center"/>
+                                                           Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <TextBox x:Name="NotesBox" Style="{StaticResource FormTextBox}"
                                                      Height="140" TextWrapping="Wrap" AcceptsReturn="True"
@@ -577,31 +559,31 @@
                         </Grid>
                     </ScrollViewer>
 
-                    <Border Grid.Row="2" Background="{StaticResource C.White}"
-                            BorderBrush="{StaticResource C.Gray100}" BorderThickness="0,1.5,0,0"
+                    <Border Grid.Row="2" Background="{DynamicResource SurfaceBrushWhite}"
+                            BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,1.5,0,0"
                             CornerRadius="0,0,20,20" Padding="26,14">
                         <Grid>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="6" Height="6" Fill="{StaticResource C.Red}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBlock Text="Trường bắt buộc" FontSize="12" Foreground="{StaticResource C.Gray400}" VerticalAlignment="Center"/>
+                                <Ellipse Width="6" Height="6" Fill="{DynamicResource ErrorBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="Trường bắt buộc" FontSize="12" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                 <Button Width="90" Height="38" Margin="0,0,10,0" Cursor="Hand" Click="Cancel_Click">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
-                                            <Border x:Name="Bg" CornerRadius="10" Background="{StaticResource C.White}"
-                                                    BorderBrush="{StaticResource C.Gray200}" BorderThickness="1.5">
+                                            <Border x:Name="Bg" CornerRadius="10" Background="{DynamicResource SurfaceBrushWhite}"
+                                                    BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1.5">
                                                 <TextBlock Text="Hủy" FontSize="13" FontWeight="Medium"
-                                                           Foreground="{StaticResource C.Gray600}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                           Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Gray50}"/>
+                                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BackgroundBrushLight}"/>
                                                     <Setter TargetName="Bg" Property="BorderBrush" Value="#D1D5DB"/>
                                                 </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
-                                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource C.Gray100}"/>
+                                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BackgroundBrushDark}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>

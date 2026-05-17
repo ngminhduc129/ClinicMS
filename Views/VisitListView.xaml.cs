@@ -142,20 +142,6 @@ public partial class VisitListView : UserControl
         DetailLoading.Visibility = Visibility.Collapsed;
         DetailForm.Visibility = Visibility.Visible;
 
-        DetailAvatar.Text = !string.IsNullOrEmpty(v.PatientName) ? v.PatientName[0].ToString().ToUpper() : "?";
-        DetailPatientName.Text = v.PatientName;
-        DetailPatientGender.Text = $"Bác sĩ: {v.DoctorName}";
-        DetailPatientId.Text = $"Ngày: {FormatVisitDate(v.VisitTime)}";
-        DetailPatientAge.Text = $"Loại: {v.VisitTypeDisplay}";
-
-        InputPulse.Text = v.Pulse ?? "";
-        InputBloodPressure.Text = v.BloodPressure ?? "";
-        InputTemperature.Text = v.Temperature ?? "";
-        InputWeight.Text = v.Weight ?? "";
-        InputSymptoms.Text = v.Symptoms ?? "";
-        InputNote.Text = v.Note ?? "";
-        InputDiagnosis.Text = v.Diagnosis ?? "";
-
         _currentStatus = NormalizeStatus(v.Status);
         UpdateStatusButtons();
 
@@ -176,6 +162,11 @@ public partial class VisitListView : UserControl
         }
     }
 
+    private void Input_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _isDirty = true;
+    }
+
     private void UpdateStatusButtons()
     {
         // Reset colors and borders
@@ -194,21 +185,28 @@ public partial class VisitListView : UserControl
         else if (_currentStatus == "Completed") BtnCompleted.BorderBrush = Brushes.Green;
     }
 
-    private void StatusWaiting_Click(object s, RoutedEventArgs e) { _currentStatus = "Waiting"; UpdateStatusButtons(); _isDirty = true; }
-    private void StatusInProgress_Click(object s, RoutedEventArgs e) { _currentStatus = "In Progress"; UpdateStatusButtons(); _isDirty = true; }
-    private void StatusCompleted_Click(object s, RoutedEventArgs e) { _currentStatus = "Completed"; UpdateStatusButtons(); _isDirty = true; }
+    private void StatusWaiting_Click(object s, RoutedEventArgs e) { _currentStatus = "Waiting"; if(_selectedVisit != null) _selectedVisit.Status = "Waiting"; UpdateStatusButtons(); _isDirty = true; }
+    private void StatusInProgress_Click(object s, RoutedEventArgs e) { _currentStatus = "In Progress"; if(_selectedVisit != null) _selectedVisit.Status = "In Progress"; UpdateStatusButtons(); _isDirty = true; }
+    private void StatusCompleted_Click(object s, RoutedEventArgs e) { _currentStatus = "Completed"; if(_selectedVisit != null) _selectedVisit.Status = "Completed"; UpdateStatusButtons(); _isDirty = true; }
 
     private async void RemoveMedicineDetail_Click(object sender, RoutedEventArgs e)
     {
-        if (_vm == null || _selectedVisit == null || sender is not Button btn || btn.Tag is not PrescriptionDetail detail) return;
-        var currentDetails = await _vm.VisitVM.GetPrescriptionDetailsAsync(_selectedVisit.VisitId);
-        var toRemove = currentDetails.FirstOrDefault(d => d.MedicineId == detail.MedicineId);
-        if (toRemove != null)
+        try 
         {
-            currentDetails.Remove(toRemove);
-            await _vm.VisitVM.SavePrescriptionAsync(_selectedVisit.VisitId, currentDetails);
-            ShowDetail(_selectedVisit);
-            _vm.Toast.Show("Đã xóa thuốc khỏi đơn.");
+            if (_vm == null || _selectedVisit == null || sender is not Button btn || btn.Tag is not PrescriptionDetail detail) return;
+            var currentDetails = await _vm.VisitVM.GetPrescriptionDetailsAsync(_selectedVisit.VisitId);
+            var toRemove = currentDetails.FirstOrDefault(d => d.MedicineId == detail.MedicineId);
+            if (toRemove != null)
+            {
+                currentDetails.Remove(toRemove);
+                await _vm.VisitVM.SavePrescriptionAsync(_selectedVisit.VisitId, currentDetails);
+                ShowDetail(_selectedVisit);
+                _vm.Toast.Show("Đã xóa thuốc khỏi đơn.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _vm?.Toast.ShowError($"Lỗi khi xóa thuốc: {ex.Message}");
         }
     }
 
@@ -232,67 +230,92 @@ public partial class VisitListView : UserControl
 
     private async void ConfirmQuickAdd_Click(object sender, RoutedEventArgs e)
     {
-        if (_vm == null || _selectedVisit == null) return;
-        var medicineName = QuickMedicineCombo.Text.Trim();
-        if (string.IsNullOrWhiteSpace(medicineName)) return;
-        var med = _vm.MedicineVM.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
-        if (med == null) { _vm.Toast.ShowError("Không tìm thấy thuốc này."); return; }
-        
-        // KIỂM TRA TỒN KHO
-        if (med.StockQuantity <= 0)
+        try 
         {
-            _vm.Toast.ShowError($"Thuốc '{med.MedicineName}' đã hết hàng.");
-            return;
+            if (_vm == null || _selectedVisit == null) return;
+            var medicineName = QuickMedicineCombo.Text.Trim();
+            if (string.IsNullOrWhiteSpace(medicineName)) return;
+            var med = _vm.MedicineVM.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
+            if (med == null) { _vm.Toast.ShowError("Không tìm thấy thuốc này."); return; }
+            
+            // KIỂM TRA TỒN KHO
+            if (med.AvailableQuantity <= 0)
+            {
+                _vm.Toast.ShowError($"Thuốc '{med.MedicineName}' đã hết hoặc đã bị giữ chỗ hết.");
+                return;
+            }
+
+            double.TryParse(QuickMedicineQty.Text, out double qty);
+            if (qty <= 0) qty = 1;
+
+            if (qty > med.AvailableQuantity)
+            {
+                _vm.Toast.ShowError($"Số lượng kê ({qty}) vượt quá số lượng khả dụng ({med.AvailableQuantity}).");
+                return;
+            }
+            var newItem = new PrescriptionDetail { VisitId = _selectedVisit.VisitId, MedicineId = med.MedicineId, Medicine = med, Quantity = qty, Dosage = QuickMedicineDosage.Text.Trim() };
+            var currentDetails = await _vm.VisitVM.GetPrescriptionDetailsAsync(_selectedVisit.VisitId);
+            var existing = currentDetails.FirstOrDefault(d => d.MedicineId == newItem.MedicineId);
+            if (existing != null) { existing.Quantity += newItem.Quantity; existing.Dosage = newItem.Dosage; }
+            else currentDetails.Add(newItem);
+            await _vm.VisitVM.SavePrescriptionAsync(_selectedVisit.VisitId, currentDetails);
+            CancelQuickAdd_Click(null!, null!);
+            ShowDetail(_selectedVisit); 
+            _vm.Toast.Show("Đã thêm thuốc vào đơn.");
         }
-
-        double.TryParse(QuickMedicineQty.Text, out double qty);
-        if (qty <= 0) qty = 1;
-
-        if (qty > med.StockQuantity)
+        catch (Exception ex)
         {
-            _vm.Toast.ShowError($"Số lượng kê ({qty}) vượt quá tồn kho ({med.StockQuantity}).");
-            return;
+            _vm?.Toast.ShowError($"Lỗi khi thêm thuốc: {ex.Message}");
         }
-        var newItem = new PrescriptionDetail { VisitId = _selectedVisit.VisitId, MedicineId = med.MedicineId, Medicine = med, Quantity = qty, Dosage = QuickMedicineDosage.Text.Trim() };
-        var currentDetails = await _vm.VisitVM.GetPrescriptionDetailsAsync(_selectedVisit.VisitId);
-        var existing = currentDetails.FirstOrDefault(d => d.MedicineId == newItem.MedicineId);
-        if (existing != null) { existing.Quantity += newItem.Quantity; existing.Dosage = newItem.Dosage; }
-        else currentDetails.Add(newItem);
-        await _vm.VisitVM.SavePrescriptionAsync(_selectedVisit.VisitId, currentDetails);
-        CancelQuickAdd_Click(null!, null!);
-        ShowDetail(_selectedVisit); 
-        _vm.Toast.Show("Đã thêm thuốc vào đơn.");
     }
 
     private async void Save_Click(object s, RoutedEventArgs e)
     {
-        if (_vm == null || _selectedVisit == null) return;
-        _selectedVisit.Status = _currentStatus;
-        _selectedVisit.Pulse = InputPulse.Text.Trim(); 
-        _selectedVisit.BloodPressure = InputBloodPressure.Text.Trim(); 
-        _selectedVisit.Temperature = InputTemperature.Text.Trim(); 
-        _selectedVisit.Weight = InputWeight.Text.Trim(); 
-        _selectedVisit.Symptoms = InputSymptoms.Text.Trim(); 
-        _selectedVisit.Note = InputNote.Text.Trim(); 
-        _selectedVisit.Diagnosis = InputDiagnosis.Text.Trim();
+        try 
+        {
+            if (_vm == null || _selectedVisit == null) return;
+            
+            // Với Data Binding, các thuộc tính của _selectedVisit đã được cập nhật tự động từ UI
+            // Đảm bảo đơn thuốc được đồng bộ từ UI vào object trước khi lưu
+            _selectedVisit.PrescriptionDetails = SelectedPrescriptionDetails.ToList();
 
-        // Đảm bảo đơn thuốc được đồng bộ từ UI vào object trước khi lưu
-        _selectedVisit.PrescriptionDetails = SelectedPrescriptionDetails.ToList();
-
-        await _vm.VisitVM.UpdateAsync(_selectedVisit);
-        _isDirty = false;
-        _vm.Toast.Show("Đã lưu thay đổi.");
+            await _vm.VisitVM.UpdateAsync(_selectedVisit);
+            _isDirty = false;
+            _vm.Toast.Show("Đã lưu thay đổi.");
+        }
+        catch (Exception ex)
+        {
+            _vm?.Toast.ShowError($"Lỗi khi lưu: {ex.Message}");
+        }
     }
 
     private void CancelDetail_Click(object s, RoutedEventArgs e) { _selectedVisit = null; DetailForm.Visibility = Visibility.Collapsed; DetailEmpty.Visibility = Visibility.Visible; _isDirty = false; }
     private string FormatVisitDate(string? time) => DateTime.TryParse(time, out var dt) ? dt.ToString("dd/MM/yyyy HH:mm") : (time ?? "--");
     private string NormalizeStatus(string? status) => string.IsNullOrEmpty(status) ? "Waiting" : status;
 
-    private async void Refresh_Click(object s, RoutedEventArgs e) { if (_vm != null) await Task.WhenAll(_vm.PatientVM.LoadAsync(), _vm.DoctorVM.LoadAsync(), _vm.VisitVM.LoadAsync()); }
+    private async void Refresh_Click(object s, RoutedEventArgs e) 
+    { 
+        try 
+        {
+            if (_vm != null) await Task.WhenAll(_vm.PatientVM.LoadAsync(), _vm.DoctorVM.LoadAsync(), _vm.VisitVM.LoadAsync()); 
+        }
+        catch (Exception ex)
+        {
+            _vm?.Toast.ShowError($"Lỗi khi làm mới: {ex.Message}");
+        }
+    }
+
     private async void VisitDateFilter_SelectedDateChanged(object s, SelectionChangedEventArgs e)
     {
-        if (_vm == null) return;
-        await _vm.VisitVM.SearchByDateAsync(VisitDateFilter.SelectedDate?.ToString("yyyy-MM-dd"));
+        try 
+        {
+            if (_vm == null) return;
+            await _vm.VisitVM.SearchByDateAsync(VisitDateFilter.SelectedDate?.ToString("yyyy-MM-dd"));
+        }
+        catch (Exception ex)
+        {
+            _vm?.Toast.ShowError($"Lỗi khi lọc ngày: {ex.Message}");
+        }
     }
     private void FilterToday_Click(object s, RoutedEventArgs e) { VisitDateFilter.SelectedDate = DateTime.Today; }
     private void FilterAllDate_Click(object s, RoutedEventArgs e) { VisitDateFilter.SelectedDate = null; }

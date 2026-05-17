@@ -11,7 +11,8 @@ namespace ClinicMS.ViewModels;
 
 public class VisitViewModel : BaseViewModel
 {
-    private readonly DatabaseService _db;
+    private readonly VisitService _visitService;
+    private readonly InvoiceService _invoiceService;
     private readonly ToastService _toast;
     private readonly PdfExportService _pdf;
 
@@ -37,9 +38,10 @@ public class VisitViewModel : BaseViewModel
     public RelayCommand ExportPrescriptionCommand { get; }
     public RelayCommand ExportMedicalRecordCommand { get; }
 
-    public VisitViewModel(DatabaseService db, ToastService toast, PdfExportService pdf)
+    public VisitViewModel(VisitService visitService, InvoiceService invoiceService, ToastService toast, PdfExportService pdf)
     {
-        _db = db;
+        _visitService = visitService;
+        _invoiceService = invoiceService;
         _toast = toast;
         _pdf = pdf;
 
@@ -47,8 +49,12 @@ public class VisitViewModel : BaseViewModel
         ExportMedicalRecordCommand = new RelayCommand(async p => await DoExportPdf(p, "medical_record"));
     }
 
-    public async Task<List<PrescriptionDetail>> GetPrescriptionDetailsAsync(int visitId) => await _db.GetPrescriptionDetailsAsync(visitId);
-    public async Task SavePrescriptionAsync(int visitId, List<PrescriptionDetail> details) => await _db.SavePrescriptionDetailsAsync(visitId, details);
+    public async Task<List<PrescriptionDetail>> GetPrescriptionDetailsAsync(int visitId) => await _visitService.GetPrescriptionDetailsAsync(visitId);
+    public async Task SavePrescriptionAsync(int visitId, List<PrescriptionDetail> details) 
+    { 
+        await _visitService.SavePrescriptionDetailsAsync(visitId, details);
+        await _invoiceService.GenerateOrUpdateInvoiceAsync(visitId);
+    }
 
     private async Task DoExportPdf(object? p, string type)
     {
@@ -60,7 +66,7 @@ public class VisitViewModel : BaseViewModel
             
             // Nạp đầy đủ dữ liệu trước khi in
             // Đảm bảo nạp lại từ DB để có đầy đủ các liên kết (Include)
-            var fullVisit = await _db.GetVisitDetailsAsync(v.VisitId);
+            var fullVisit = await _visitService.GetVisitDetailsAsync(v.VisitId);
             if (fullVisit == null) {
                 _toast.ShowError("Không tìm thấy dữ liệu hồ sơ khám.");
                 return;
@@ -101,10 +107,10 @@ public class VisitViewModel : BaseViewModel
             if (_offset == 0)
             {
                 Visits.Clear();
-                _totalCount = await _db.GetVisitsSearchCountAsync(SearchTerm, DateFilter);
+                _totalCount = await _visitService.GetVisitsSearchCountAsync(SearchTerm, DateFilter);
             }
 
-            var results = await _db.SearchVisitsAsync(SearchTerm, _offset, PageSize, DateFilter);
+            var results = await _visitService.SearchVisitsAsync(SearchTerm, _offset, PageSize, DateFilter);
             foreach (var v in results) Visits.Add(v);
             
             _offset += results.Count;
@@ -141,19 +147,29 @@ public class VisitViewModel : BaseViewModel
 
     public async Task<bool> AddAsync(Visit v)
     {
-        try { await _db.AddVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); DataChanged?.Invoke(); return true; }
+        try 
+        { 
+            await _visitService.AddVisitAsync(v); 
+            await _invoiceService.GenerateOrUpdateInvoiceAsync(v.VisitId);
+            _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); DataChanged?.Invoke(); return true; 
+        }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 
     public async Task<bool> UpdateAsync(Visit v)
     {
-        try { await _db.UpdateVisitAsync(v); _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); DataChanged?.Invoke(); return true; }
+        try 
+        { 
+            await _visitService.UpdateVisitAsync(v); 
+            await _invoiceService.GenerateOrUpdateInvoiceAsync(v.VisitId);
+            _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); DataChanged?.Invoke(); return true; 
+        }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 
     public async Task<bool> DeleteAsync(Visit v)
     {
-        try { await _db.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); DataChanged?.Invoke(); return true; }
+        try { await _visitService.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); DataChanged?.Invoke(); return true; }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 }

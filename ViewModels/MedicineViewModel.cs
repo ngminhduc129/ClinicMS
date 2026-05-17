@@ -7,7 +7,7 @@ namespace ClinicMS.ViewModels;
 
 public class MedicineViewModel : BaseViewModel
 {
-    private readonly DatabaseService _db;
+    private readonly MedicineService _medicineService;
     private readonly ToastService _toast;
 
     public ObservableCollection<Medicine> Medicines { get; } = new();
@@ -15,9 +15,9 @@ public class MedicineViewModel : BaseViewModel
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
-    public MedicineViewModel(DatabaseService db, ToastService toast)
+    public MedicineViewModel(MedicineService medicineService, ToastService toast)
     {
-        _db = db;
+        _medicineService = medicineService;
         _toast = toast;
     }
 
@@ -25,7 +25,7 @@ public class MedicineViewModel : BaseViewModel
     {
         Loading = true;
         try { 
-            var list = await _db.GetMedicinesAsync(); 
+            var list = await _medicineService.GetMedicinesAsync(); 
             Medicines.Clear(); 
             foreach (var m in list) Medicines.Add(m); 
         }
@@ -36,7 +36,7 @@ public class MedicineViewModel : BaseViewModel
         finally { Loading = false; }
     }
 
-    public async Task<bool> AddAsync(Medicine m) { try { await _db.AddMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }
-    public async Task<bool> UpdateAsync(Medicine m) { try { await _db.UpdateMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }
-    public async Task<bool> DeleteAsync(Medicine m) { try { await _db.DeleteMedicineAsync(m.MedicineId); await LoadAsync(); return true; } catch { return false; } }
+    public async Task<bool> AddAsync(Medicine m) { try { await _medicineService.AddMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }
+    public async Task<bool> UpdateAsync(Medicine m) { try { await _medicineService.UpdateMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }
+    public async Task<bool> DeleteAsync(Medicine m) { try { await _medicineService.DeleteMedicineAsync(m.MedicineId); await LoadAsync(); return true; } catch { return false; } }
 }

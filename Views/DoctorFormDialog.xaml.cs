@@ -40,35 +40,23 @@ public partial class DoctorFormDialog : UserControl
     private void AnimateOpen()
     {
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var dur = TimeSpan.FromSeconds(0.4);
+        var dur = TimeSpan.FromSeconds(0.2);
 
-        var translate = new TranslateTransform(0, 40);
-        var scale = new ScaleTransform(0.96, 0.96);
-        var group = new TransformGroup();
-        group.Children.Add(scale);
-        group.Children.Add(translate);
+        var translate = new TranslateTransform(0, 15);
         RenderTransformOrigin = new Point(0.5, 0.5);
-        RenderTransform = group;
+        RenderTransform = translate;
 
         var animOpacity = new DoubleAnimation(0, 1, dur) { EasingFunction = ease };
-        var animTranslate = new DoubleAnimation(40, 0, dur) { EasingFunction = ease };
-        var animScaleX = new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease };
-        var animScaleY = new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease };
+        var animTranslate = new DoubleAnimation(15, 0, dur) { EasingFunction = ease };
 
         Timeline.SetDesiredFrameRate(animOpacity, 60);
         Timeline.SetDesiredFrameRate(animTranslate, 60);
-        Timeline.SetDesiredFrameRate(animScaleX, 60);
-        Timeline.SetDesiredFrameRate(animScaleY, 60);
 
         animOpacity.Freeze();
         animTranslate.Freeze();
-        animScaleX.Freeze();
-        animScaleY.Freeze();
 
         BeginAnimation(OpacityProperty, animOpacity);
         translate.BeginAnimation(TranslateTransform.YProperty, animTranslate);
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty, animScaleX);
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty, animScaleY);
     }
 
     private void CloseForm(bool? result = null)

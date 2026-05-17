@@ -9,6 +9,7 @@ namespace ClinicMS.ViewModels;
 public class MainViewModel : BaseViewModel
 {
     public DatabaseService Db { get; }
+    private readonly CoreDatabaseService _coreDb;
     public ToastService Toast { get; }
     public ModalService Modal { get; }
 
@@ -18,6 +19,8 @@ public class MainViewModel : BaseViewModel
     public DoctorViewModel DoctorVM { get; }
     public VisitViewModel VisitVM { get; }
     public MedicineViewModel MedicineVM { get; }
+    public ServiceViewModel ServiceVM { get; }
+    public InvoiceViewModel InvoiceVM { get; }
 
     public Dictionary<string, int> FullPatientNames { get; private set; } = new();
     public Dictionary<string, int> FullDoctorNames { get; private set; } = new();
@@ -30,6 +33,17 @@ public class MainViewModel : BaseViewModel
         {
             if (!SetProperty(ref _fontSizeLevel, value)) return;
             ApplyFontScale(value, save: true);
+        }
+    }
+
+    private string _selectedTheme = "Light";
+    public string SelectedTheme
+    {
+        get => _selectedTheme;
+        set
+        {
+            if (!SetProperty(ref _selectedTheme, value)) return;
+            ApplyTheme(value, save: true);
         }
     }
 
@@ -53,6 +67,7 @@ public class MainViewModel : BaseViewModel
                 OnPropertyChanged(nameof(IsPageDoctors));
                 OnPropertyChanged(nameof(IsPageVisits));
                 OnPropertyChanged(nameof(IsPageMedicines));
+                OnPropertyChanged(nameof(IsPageServices));
                 OnPropertyChanged(nameof(IsPageInvoices));
                 OnPropertyChanged(nameof(IsPageSettings));
 
@@ -62,6 +77,8 @@ public class MainViewModel : BaseViewModel
                     "doctors"   => DoctorVM.LoadAsync(),
                     "visits"    => VisitVM.LoadAsync(),
                     "medicines" => MedicineVM.LoadAsync(),
+                    "services"  => ServiceVM.LoadAsync(),
+                    "invoices"  => InvoiceVM.LoadAsync(),
                     "dashboard" => DashboardVM.LoadAsync(),
                     _           => Task.CompletedTask
                 };
@@ -73,6 +90,7 @@ public class MainViewModel : BaseViewModel
     public bool IsPageDoctors   => CurrentPage == "doctors";
     public bool IsPageVisits    => CurrentPage == "visits";
     public bool IsPageMedicines => CurrentPage == "medicines";
+    public bool IsPageServices  => CurrentPage == "services";
     public bool IsPageInvoices  => CurrentPage == "invoices";
     public bool IsPageSettings  => CurrentPage == "settings";
 
@@ -80,15 +98,19 @@ public class MainViewModel : BaseViewModel
 
     public MainViewModel(
         DatabaseService db, 
+        CoreDatabaseService coreDb,
         ToastService toast, 
         ModalService modal,
         DashboardViewModel dashboardVM,
         PatientViewModel patientVM,
         DoctorViewModel doctorVM,
         VisitViewModel visitVM,
-        MedicineViewModel medicineVM)
+        MedicineViewModel medicineVM,
+        ServiceViewModel serviceVM,
+        InvoiceViewModel invoiceVM)
     {
         Db = db;
+        _coreDb = coreDb;
         Toast = toast;
         Modal = modal;
         DashboardVM = dashboardVM;
@@ -96,10 +118,13 @@ public class MainViewModel : BaseViewModel
         DoctorVM = doctorVM;
         VisitVM = visitVM;
         MedicineVM = medicineVM;
+        ServiceVM = serviceVM;
+        InvoiceVM = invoiceVM;
 
-        PatientVM.DataChanged += () => { _ = LoadLookupsAsync(); _ = DashboardVM.LoadAsync(); };
-        DoctorVM.DataChanged  += () => { _ = LoadLookupsAsync(); _ = DashboardVM.LoadAsync(); };
-        VisitVM.DataChanged   += () => _ = DashboardVM.LoadAsync();
+        PatientVM.DataChanged += async () => { try { await LoadLookupsAsync(); await DashboardVM.LoadAsync(); } catch { } };
+        DoctorVM.DataChanged  += async () => { try { await LoadLookupsAsync(); await DashboardVM.LoadAsync(); } catch { } };
+        VisitVM.DataChanged   += async () => { try { await DashboardVM.LoadAsync(); } catch { } };
+        ServiceVM.DataChanged += async () => { try { await DashboardVM.LoadAsync(); } catch { } };
 
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "dashboard");
         
@@ -112,7 +137,7 @@ public class MainViewModel : BaseViewModel
         try 
         {
             await Task.Delay(50);
-            await Task.Run(() => DatabaseService.Initialize());
+            await Task.Run(() => CoreDatabaseService.Initialize());
             await LoadSettingsAsync();
             await LoadLookupsAsync();
             await DashboardVM.LoadAsync();
@@ -135,8 +160,12 @@ public class MainViewModel : BaseViewModel
     {
         try
         {
-            var level = await Db.GetSettingAsync("FontSizeLevel");
+            var level = await _coreDb.GetSettingAsync("FontSizeLevel");
             if (!string.IsNullOrWhiteSpace(level)) { _fontSizeLevel = level; ApplyFontScale(level, save: false); }
+            
+            var theme = await _coreDb.GetSettingAsync("AppTheme");
+            if (!string.IsNullOrWhiteSpace(theme)) { _selectedTheme = theme; ApplyTheme(theme, save: false); }
+            else ApplyTheme("Light", save: false);
         } catch { }
     }
 
@@ -145,6 +174,12 @@ public class MainViewModel : BaseViewModel
         var scale = level switch { "Small" => 0.85, "Large" => 1.20, _ => 1.00 };
         FontScale = scale;
         FontScaleManager.UpdateApplicationScale(scale);
-        if (save) _ = Db.SetSettingAsync("FontSizeLevel", level);
+        if (save) _ = _coreDb.SetSettingAsync("FontSizeLevel", level);
+    }
+
+    private void ApplyTheme(string theme, bool save)
+    {
+        ThemeManager.ApplyTheme(theme == "Dark" ? ThemeManager.AppTheme.Dark : ThemeManager.AppTheme.Light);
+        if (save) _ = _coreDb.SetSettingAsync("AppTheme", theme);
     }
 }

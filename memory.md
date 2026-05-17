@@ -61,5 +61,26 @@ Tài liệu này ghi lại các thay đổi quan trọng về cấu trúc Databa
 4.  `Views\PatientListView.xaml.cs`: Sửa lỗi đồng bộ danh sách bệnh nhân.
 5.  `BUGS.md`: Tài liệu rà soát các lỗi tồn đọng và hướng khắc phục.
 
+## 7. CẢI THIỆN GIAO DIỆN TAB HỒ SƠ KHÁM (VISIT LIST UI)
+*   **Vấn đề:** 
+    - Các nút "In Bệnh Án" và "In Đơn Thuốc" hiển thị icon không phù hợp và màu sắc gây rối (quá nhiều nút màu xanh).
+    - Người dùng phải cuộn xuống cuối trang mới nhấn được nút "Lưu".
+    - Icon "In nhanh" trong danh sách làm rối giao diện.
+*   **Giải pháp:** 
+    - Loại bỏ các icon gây nhầm lẫn trong các nút In; chuyển nút "In Đơn Thuốc" sang dạng Outline để tập trung sự chú ý vào nút Lưu.
+    - Thêm nút **Lưu (Save icon)** nhanh màu xanh lá cây ở vị trí ưu tiên nhất (góc trên cùng bên phải).
+    - Hoán đổi vị trí nút Lưu và Chỉnh sửa để nút Lưu nằm ngoài cùng, dễ thao tác nhất.
+    - Loại bỏ icon "In nhanh" khỏi danh sách bệnh nhân để giao diện tối giản và hiện đại.
+*   **Kết quả:** Giao diện chuyên nghiệp, phân cấp thị giác rõ ràng (chỉ nút Lưu có màu xanh nổi bật), thao tác lưu dữ liệu cực kỳ nhanh chóng.
+
+## 8. HOÀN THIỆN TAB DỊCH VỤ & NÂNG CẤP GIAO DIỆN (UI/UX)
+*   **Triển khai Tab Dịch Vụ:**
+    - Xây dựng đầy đủ tính năng CRUD (Thêm, Sửa, Xóa, Liệt kê) cho danh mục dịch vụ.
+    - Đồng bộ giao diện theo tông màu Xanh lá (Green Theme) của hệ thống.
+*   **Cải thiện hiển thị bảng dữ liệu:**
+    - Áp dụng **Bo góc (CornerRadius: 10)** và **ClipToBounds** cho tất cả các bảng (DataGrid) tại tab Thuốc và Dịch vụ.
+    - Khắc phục lỗi nội dung bảng bị tràn ra ngoài các góc bo, giúp giao diện trông hiện đại và tinh tế hơn.
+*   **Kết quả:** Hệ thống đạt độ nhất quán cao về thẩm mỹ, các bảng dữ liệu hiển thị mượt mà với hiệu ứng bo góc chuyên nghiệp.
+
 ---
 *Ghi chú: Cấu trúc Database hiện tại đã rất "sạch" và chuẩn theo Model. Mọi thay đổi về Model sau này cần được cập nhật tương ứng vào Database.*

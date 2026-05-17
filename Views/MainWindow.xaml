@@ -9,7 +9,7 @@
         MinHeight="600" MinWidth="900"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
-        Background="#F6F9FC">
+        Background="{DynamicResource BackgroundBrushLight}">
     <Border UseLayoutRounding="True" SnapsToDevicePixels="True">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -49,6 +49,9 @@
                     <!-- Medicines: Health icon (Thuốc) -->
                     <views:NavButton Label="Thuốc" PageKey="medicines" Icon="&#xEADF;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="medicines"/>
                     
+                    <!-- Services: Medical services icon (Dịch vụ) -->
+                    <views:NavButton Label="Dịch Vụ" PageKey="services" Icon="&#xE734;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="services"/>
+
                     <!-- Invoices: Receipt icon (Hóa đơn) -->
                     <views:NavButton Label="Hóa Đơn" PageKey="invoices" Icon="&#xE8C7;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="invoices"/>
                     
@@ -70,11 +73,10 @@
             <views:DoctorListView Visibility="{Binding IsPageDoctors, Converter={StaticResource BoolToVisibility}}"/>
             <views:VisitListView Visibility="{Binding IsPageVisits, Converter={StaticResource BoolToVisibility}}"/>
             <views:MedicineListView Visibility="{Binding IsPageMedicines, Converter={StaticResource BoolToVisibility}}"/>
+            <views:ServiceListView Visibility="{Binding IsPageServices, Converter={StaticResource BoolToVisibility}}"/>
+            <views:InvoiceListView Visibility="{Binding IsPageInvoices, Converter={StaticResource BoolToVisibility}}"/>
             <views:SettingsView Visibility="{Binding IsPageSettings, Converter={StaticResource BoolToVisibility}}"/>
 
-            <Border Visibility="{Binding IsPageInvoices, Converter={StaticResource BoolToVisibility}}" Padding="32">
-                <TextBlock Text="[I] Quản Lý Hóa Đơn (Coming Soon)" FontSize="20" FontWeight="SemiBold" Foreground="#166534" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
         </Grid>
 
         <!-- TOASTS -->

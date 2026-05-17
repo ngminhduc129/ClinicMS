@@ -48,7 +48,7 @@
             <Style TargetType="Window">
                 <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="FontSize" Value="{Binding FontScale, Converter={StaticResource FontSizeConverter}, ConverterParameter=15, FallbackValue=15}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
                 <Setter Property="UseLayoutRounding" Value="True"/>
@@ -58,7 +58,7 @@
             <!-- GLOBAL TEXTBLOCK STYLE -->
             <Style TargetType="TextBlock">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
@@ -71,7 +71,7 @@
 
             <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
             </Style>
 
             <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource DangerButtonStyle}">
@@ -82,22 +82,22 @@
             <!-- FORM STYLES -->
             <Style x:Key="FormLabel" TargetType="TextBlock" BasedOn="{StaticResource FormLabelStyle}">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeLabel}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
             </Style>
 
             <Style x:Key="FormTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
             </Style>
 
             <Style x:Key="FormComboBox" TargetType="ComboBox" BasedOn="{StaticResource ModernComboBoxStyle}">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
             </Style>
 
             <Style x:Key="ClinicDataGrid" TargetType="DataGrid" BasedOn="{StaticResource ModernDataGridStyle}">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
-                <Setter Property="Foreground" Value="#111827"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
             </Style>
             
         </ResourceDictionary>

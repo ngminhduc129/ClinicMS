@@ -7,7 +7,7 @@ namespace ClinicMS.ViewModels;
 
 public class DoctorViewModel : BaseViewModel
 {
-    private readonly DatabaseService _db;
+    private readonly DoctorService _doctorService;
     private readonly ToastService _toast;
 
     public ObservableCollection<Doctor> Doctors { get; } = new();
@@ -15,9 +15,9 @@ public class DoctorViewModel : BaseViewModel
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
-    public DoctorViewModel(DatabaseService db, ToastService toast)
+    public DoctorViewModel(DoctorService doctorService, ToastService toast)
     {
-        _db = db;
+        _doctorService = doctorService;
         _toast = toast;
     }
 
@@ -26,7 +26,7 @@ public class DoctorViewModel : BaseViewModel
         Loading = true;
         try 
         { 
-            var list = await _db.GetDoctorsAsync(); 
+            var list = await _doctorService.GetDoctorsAsync(); 
             Doctors.Clear(); 
             foreach (var d in list) Doctors.Add(d); 
         }
@@ -41,7 +41,7 @@ public class DoctorViewModel : BaseViewModel
     {
         Loading = true;
         try {
-            var results = await _db.SearchDoctorsAsync(term);
+            var results = await _doctorService.SearchDoctorsAsync(term);
             Doctors.Clear();
             foreach (var d in results) Doctors.Add(d);
         }
@@ -54,7 +54,7 @@ public class DoctorViewModel : BaseViewModel
 
     public event Action? DataChanged;
 
-    public async Task<bool> AddAsync(Doctor d) { try { await _db.AddDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
-    public async Task<bool> UpdateAsync(Doctor d) { try { await _db.UpdateDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
-    public async Task<bool> DeleteAsync(Doctor d) { try { await _db.DeleteDoctorAsync(d.DoctorId); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
+    public async Task<bool> AddAsync(Doctor d) { try { await _doctorService.AddDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
+    public async Task<bool> UpdateAsync(Doctor d) { try { await _doctorService.UpdateDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
+    public async Task<bool> DeleteAsync(Doctor d) { try { await _doctorService.DeleteDoctorAsync(d.DoctorId); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
 }

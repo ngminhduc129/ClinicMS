@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Microsoft.EntityFrameworkCore;
 using ClinicMS.Models;
 using ClinicMS.ViewModels;
 using ClinicMS.Services;
@@ -46,18 +47,15 @@ public partial class VisitFormDialog : UserControl
         else
             VisitDatePicker.SelectedDate = DateTime.Today;
 
-        // Xử lý chống giật lag khi mở form: Cho hiệu ứng bay ra trước, Load data sau
-        Loaded += async (_, _) =>
+        // Tải trước dữ liệu tĩnh để tránh giật lag khi đang chạy animation
+        RefreshPatientList();
+        RefreshDoctorList();
+        RefreshMedicineList();
+
+        Loaded += (_, _) =>
         {
             AnimateOpen();
             HookDateBorderFocus();
-
-            // Chờ 150ms để animation mượt mà hoàn tất
-            await Task.Delay(150);
-
-            RefreshPatientList();
-            RefreshDoctorList();
-            RefreshMedicineList();
 
             if (!_searchSetupDone)
             {
@@ -67,7 +65,7 @@ public partial class VisitFormDialog : UserControl
                 _searchSetupDone = true;
             }
 
-            // Subscribe to changes to handle data loading after dialog opens
+            // Subscribe to changes
             _vm.PatientVM.Patients.CollectionChanged += OnPatientsChanged;
             _vm.DoctorVM.Doctors.CollectionChanged += OnDoctorsChanged;
             _vm.MedicineVM.Medicines.CollectionChanged += OnMedicinesChanged;
@@ -123,14 +121,14 @@ public partial class VisitFormDialog : UserControl
     private void AnimateOpen()
     {
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var dur = TimeSpan.FromSeconds(0.4);
+        var dur = TimeSpan.FromSeconds(0.2);
 
-        var translate = new TranslateTransform(0, 30);
+        var translate = new TranslateTransform(0, 15);
         RenderTransformOrigin = new Point(0.5, 0.5);
         RenderTransform = translate;
 
         var animOpacity = new DoubleAnimation(0, 1, dur) { EasingFunction = ease };
-        var animTranslate = new DoubleAnimation(30, 0, dur) { EasingFunction = ease };
+        var animTranslate = new DoubleAnimation(15, 0, dur) { EasingFunction = ease };
         
         // Optional: Hint WPF to target higher framerate for this specific animation
         Timeline.SetDesiredFrameRate(animOpacity, 60);
@@ -292,10 +290,14 @@ public partial class VisitFormDialog : UserControl
         if (_vm.FullPatientNames.TryGetValue(name, out var id))
             return (id, null);
 
-        var match = await _vm.Db.GetPatientByNameAsync(name);
+        // Nếu người dùng chỉ nhập tên, kiểm tra xem có bao nhiêu người trùng tên
+        await using var db = new ClinicMS.Data.ClinicDbContext();
+        var matches = await db.Patients.Where(p => p.FullName == name).ToListAsync();
 
-        if (match == null) return (0, "Không tìm thấy bệnh nhân trong hệ thống.");
-        return (match.PatientId, null);
+        if (matches.Count == 0) return (0, "Không tìm thấy bệnh nhân trong hệ thống.");
+        if (matches.Count > 1) return (0, $"Có {matches.Count} bệnh nhân tên '{name}'. Vui lòng chọn chính xác từ danh sách gợi ý (có kèm mã ID).");
+        
+        return (matches[0].PatientId, null);
     }
 
     private async Task<(int id, string? error)> TryResolveDoctorIdAsync()
@@ -308,10 +310,13 @@ public partial class VisitFormDialog : UserControl
         if (_vm.FullDoctorNames.TryGetValue(name, out var id))
             return (id, null);
 
-        var match = await _vm.Db.GetDoctorByNameAsync(name);
+        await using var db = new ClinicMS.Data.ClinicDbContext();
+        var matches = await db.Doctors.Where(d => d.FullName == name).ToListAsync();
 
-        if (match == null) return (0, "Không tìm thấy bác sĩ trong hệ thống.");
-        return (match.DoctorId, null);
+        if (matches.Count == 0) return (0, "Không tìm thấy bác sĩ trong hệ thống.");
+        if (matches.Count > 1) return (0, $"Có {matches.Count} bác sĩ tên '{name}'. Vui lòng chọn chính xác từ danh sách gợi ý.");
+        
+        return (matches[0].DoctorId, null);
     }
     // ───────────────────────────── Prescription Logic ─────────────────────────────
 
@@ -323,74 +328,88 @@ public partial class VisitFormDialog : UserControl
 
     private void ConfirmAddMedicine_Click(object sender, RoutedEventArgs e)
     {
-        var medicineName = MedicineCombo.Text.Trim();
-        if (string.IsNullOrWhiteSpace(medicineName))
+        try 
         {
-            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn thuốc.", "Thông báo", true));
-            return;
-        }
-
-        var med = _vm.MedicineVM.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
-        if (med == null)
-        {
-            _vm.Modal.Show(new MessageDialog(_vm, "Không tìm thấy thuốc này trong hệ thống.", "Thông báo", true));
-            return;
-        }
-
-        // KIỂM TRA TỒN KHO
-        if (med.StockQuantity <= 0)
-        {
-            _vm.Modal.Show(new MessageDialog(_vm, $"Thuốc '{med.MedicineName}' đã hết hàng trong kho.", "Hết hàng", true));
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(MedicineQty.Text))
-        {
-            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập số lượng.", "Thông báo", true));
-            return;
-        }
-
-        double.TryParse(MedicineQty.Text, out double qty);
-        if (qty <= 0) qty = 1;
-
-        if (qty > med.StockQuantity)
-        {
-            _vm.Modal.Show(new MessageDialog(_vm, $"Số lượng kê ({qty}) vượt quá số lượng tồn kho hiện có ({med.StockQuantity}).", "Cảnh báo tồn kho", true));
-            return;
-        }
-
-        // Kiểm tra xem thuốc đã có trong đơn chưa
-        var existing = _prescriptionItems.FirstOrDefault(p => p.MedicineId == med.MedicineId);
-        if (existing != null)
-        {
-            existing.Quantity += qty;
-            existing.Dosage = MedicineDosage.Text;
-            // Refresh ListView
-            PrescriptionList.Items.Refresh();
-        }
-        else
-        {
-            _prescriptionItems.Add(new PrescriptionDetail
+            var medicineName = MedicineCombo.Text.Trim();
+            if (string.IsNullOrWhiteSpace(medicineName))
             {
-                MedicineId = med.MedicineId,
-                Medicine = med,
-                Quantity = qty,
-                Dosage = MedicineDosage.Text
-            });
-        }
+                _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn thuốc.", "Thông báo", true));
+                return;
+            }
 
-        // Reset input
-        MedicineCombo.Text = "";
-        MedicineQty.Clear();
-        MedicineDosage.Clear();
-        MedicineInputArea.Visibility = Visibility.Collapsed;
+            var med = _vm.MedicineVM.Medicines.FirstOrDefault(m => m.MedicineName?.Equals(medicineName, StringComparison.OrdinalIgnoreCase) == true);
+            if (med == null)
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, "Không tìm thấy thuốc này trong hệ thống.", "Thông báo", true));
+                return;
+            }
+
+            // KIỂM TRA TỒN KHO
+            if (med.StockQuantity <= 0)
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, $"Thuốc '{med.MedicineName}' đã hết hàng trong kho.", "Hết hàng", true));
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(MedicineQty.Text))
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập số lượng.", "Thông báo", true));
+                return;
+            }
+
+            double.TryParse(MedicineQty.Text, out double qty);
+            if (qty <= 0) qty = 1;
+
+            if (qty > med.StockQuantity)
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, $"Số lượng kê ({qty}) vượt quá số lượng tồn kho hiện có ({med.StockQuantity}).", "Cảnh báo tồn kho", true));
+                return;
+            }
+
+            // Kiểm tra xem thuốc đã có trong đơn chưa
+            var existing = _prescriptionItems.FirstOrDefault(p => p.MedicineId == med.MedicineId);
+            if (existing != null)
+            {
+                existing.Quantity += qty;
+                existing.Dosage = MedicineDosage.Text;
+                // Refresh ListView
+                PrescriptionList.Items.Refresh();
+            }
+            else
+            {
+                _prescriptionItems.Add(new PrescriptionDetail
+                {
+                    MedicineId = med.MedicineId,
+                    Medicine = med,
+                    Quantity = qty,
+                    Dosage = MedicineDosage.Text
+                });
+            }
+
+            // Reset input
+            MedicineCombo.Text = "";
+            MedicineQty.Clear();
+            MedicineDosage.Clear();
+            MedicineInputArea.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi thêm thuốc: {ex.Message}", "Lỗi", true));
+        }
     }
 
     private void RemoveMedicine_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is PrescriptionDetail detail)
+        try 
         {
-            _prescriptionItems.Remove(detail);
+            if (sender is Button btn && btn.Tag is PrescriptionDetail detail)
+            {
+                _prescriptionItems.Remove(detail);
+            }
+        }
+        catch (Exception ex)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi xóa thuốc: {ex.Message}", "Lỗi", true));
         }
     }
 

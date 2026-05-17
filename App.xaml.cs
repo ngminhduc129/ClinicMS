@@ -61,6 +61,14 @@ public partial class App : Application
     {
         // Services
         services.AddSingleton<DatabaseService>();
+        services.AddSingleton<CoreDatabaseService>();
+        services.AddTransient<MedicineService>();
+        services.AddTransient<DoctorService>();
+        services.AddTransient<PatientService>();
+        services.AddTransient<VisitService>();
+        services.AddTransient<ServiceCatalogService>();
+        services.AddTransient<InvoiceService>();
+        services.AddTransient<DashboardService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();
         services.AddSingleton<ClinicMS.Services.PdfExport.PdfExportService>();
@@ -72,6 +80,8 @@ public partial class App : Application
         services.AddTransient<DoctorViewModel>();
         services.AddTransient<VisitViewModel>();
         services.AddTransient<MedicineViewModel>();
+        services.AddTransient<ServiceViewModel>();
+        services.AddTransient<InvoiceViewModel>();
 
         // Windows/Views
         services.AddSingleton<MainWindow>();

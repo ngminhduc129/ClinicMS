@@ -8,7 +8,7 @@ namespace ClinicMS.ViewModels;
 
 public class PatientViewModel : BaseViewModel
 {
-    private readonly DatabaseService _db;
+    private readonly PatientService _patientService;
     private readonly ToastService _toast;
 
     public ObservableCollection<Patient> Patients { get; } = new();
@@ -28,9 +28,9 @@ public class PatientViewModel : BaseViewModel
 
     private const int PageSize = 50;
 
-    public PatientViewModel(DatabaseService db, ToastService toast)
+    public PatientViewModel(PatientService patientService, ToastService toast)
     {
-        _db = db;
+        _patientService = patientService;
         _toast = toast;
     }
 
@@ -43,11 +43,11 @@ public class PatientViewModel : BaseViewModel
             if (_offset == 0)
             {
                 Patients.Clear();
-                _totalCount = await _db.GetPatientsSearchCountAsync(SearchTerm);
+                _totalCount = await _patientService.GetPatientsSearchCountAsync(SearchTerm);
                 OnPropertyChanged(nameof(TotalPatientsCount));
             }
 
-            var results = await _db.SearchPatientsAsync(SearchTerm, _offset, PageSize);
+            var results = await _patientService.SearchPatientsAsync(SearchTerm, _offset, PageSize);
             foreach (var p in results) Patients.Add(p);
             
             _offset += results.Count;
@@ -77,19 +77,28 @@ public class PatientViewModel : BaseViewModel
 
     public async Task<bool> AddAsync(Patient p)
     {
-        try { await _db.AddPatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
+        try { await _patientService.AddPatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
     }
 
     public async Task<bool> UpdateAsync(Patient p)
     {
-        try { await _db.UpdatePatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
+        try { await _patientService.UpdatePatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
     }
 
     public async Task<bool> DeleteAsync(Patient p)
     {
-        try { await _db.DeletePatientAsync(p.PatientId); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
+        try { await _patientService.DeletePatientAsync(p.PatientId); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
     }
 
-    public async Task<(Patient? p, Contact? contact)> GetPatientWithContactAsync(int id) => await _db.GetPatientWithContactAsync(id);
-    public async Task<List<Visit>> GetPatientVisitsAsync(int id) => await _db.GetPatientVisitsAsync(id);
+    public async Task<(Patient? p, Contact? contact)> GetPatientWithContactAsync(int id) => await _patientService.GetPatientWithContactAsync(id);
+    
+    // This will be updated later when VisitService is ready, for now it's still in DatabaseService
+    public async Task<List<Visit>> GetPatientVisitsAsync(int id) 
+    {
+        // For temporary compatibility, we use the old Db from MainViewModel if needed, 
+        // but let's just move it to PatientService to be clean.
+        // I will add GetPatientVisitsAsync to PatientService in the next step.
+        // Wait, I already added it to DatabaseService, I should move it to PatientService.
+        return await _patientService.GetPatientVisitsAsync(id);
+    }
 }

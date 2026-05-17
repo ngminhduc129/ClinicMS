@@ -1,0 +1,114 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!--=========================================-->
+    <!-- DARK MODE PRIMARY COLORS -->
+    <!--=========================================-->
+    <Color x:Key="PrimaryGreenColor">#22C55E</Color>
+    <Color x:Key="PrimaryGreenDarkColor">#16A34A</Color>
+    <Color x:Key="PrimaryGreenLightColor">#064E3B</Color>
+    <Color x:Key="PrimaryGreenVeryLightColor">#022C22</Color>
+    
+    <!--=========================================-->
+    <!-- BACKGROUND COLORS (Dark) -->
+    <!--=========================================-->
+    <Color x:Key="BackgroundColorLight">#111827</Color>
+    <Color x:Key="BackgroundColorDark">#0F172A</Color>
+    <Color x:Key="SurfaceColorWhite">#1F2937</Color>
+    
+    <!--=========================================-->
+    <!-- BORDER & DIVIDER COLORS -->
+    <!--=========================================-->
+    <Color x:Key="BorderColorLight">#374151</Color>
+    <Color x:Key="BorderColorMedium">#4B5563</Color>
+    <Color x:Key="DividerColor">#374151</Color>
+    
+    <!--=========================================-->
+    <!-- TEXT COLORS (Inverse for Dark Mode) -->
+    <!--=========================================-->
+    <Color x:Key="TextPrimaryColor">#F9FAFB</Color>
+    <Color x:Key="TextSecondaryColor">#9CA3AF</Color>
+    <Color x:Key="TextTertiaryColor">#6B7280</Color>
+    <Color x:Key="TextWhiteColor">#FFFFFF</Color>
+    
+    <!--=========================================-->
+    <!-- STATUS COLORS (Subdued for Dark Mode) -->
+    <!--=========================================-->
+    <Color x:Key="SuccessColorGreen">#34D399</Color>
+    <Color x:Key="WarningColorAmber">#FBBF24</Color>
+    <Color x:Key="ErrorColorRed">#F87171</Color>
+    <Color x:Key="InfoColorBlue">#60A5FA</Color>
+    
+    <!-- Dark variants for backgrounds -->
+    <Color x:Key="SuccessColorLightBg">#064E3B</Color>
+    <Color x:Key="WarningColorLightBg">#78350F</Color>
+    <Color x:Key="ErrorColorLightBg">#7F1D1D</Color>
+    <Color x:Key="InfoColorLightBg">#1E3A8A</Color>
+    
+    <!--=========================================-->
+    <!-- INTERACTION COLORS -->
+    <!--=========================================-->
+    <Color x:Key="HoverBackgroundColor">#374151</Color>
+    <Color x:Key="PressedBackgroundColor">#4B5563</Color>
+    <Color x:Key="DisabledBackgroundColor">#1F2937</Color>
+    <Color x:Key="DisabledTextColor">#4B5563</Color>
+    
+    <!--=========================================-->
+    <!-- SOLID COLOR BRUSHES -->
+    <!--=========================================-->
+    <SolidColorBrush x:Key="PrimaryGreenBrush" Color="#22C55E"/>
+    <SolidColorBrush x:Key="PrimaryGreenDarkBrush" Color="#16A34A"/>
+    <SolidColorBrush x:Key="PrimaryGreenLightBrush" Color="#064E3B"/>
+    <SolidColorBrush x:Key="PrimaryGreenVeryLightBrush" Color="#022C22"/>
+    
+    <SolidColorBrush x:Key="BackgroundBrushLight" Color="#111827"/>
+    <SolidColorBrush x:Key="BackgroundBrushDark" Color="#0F172A"/>
+    <SolidColorBrush x:Key="SurfaceBrushWhite" Color="#1F2937"/>
+    
+    <SolidColorBrush x:Key="BorderBrushLight" Color="#374151"/>
+    <SolidColorBrush x:Key="BorderBrushMedium" Color="#4B5563"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="#374151"/>
+    
+    <SolidColorBrush x:Key="TextBrushPrimary" Color="#F9FAFB"/>
+    <SolidColorBrush x:Key="TextBrushSecondary" Color="#9CA3AF"/>
+    <SolidColorBrush x:Key="TextBrushTertiary" Color="#6B7280"/>
+    <SolidColorBrush x:Key="TextBrushWhite" Color="#FFFFFF"/>
+    
+    <SolidColorBrush x:Key="SuccessBrush" Color="#34D399"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#FBBF24"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="#F87171"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="#60A5FA"/>
+    
+    <SolidColorBrush x:Key="SuccessBkgBrush" Color="#064E3B"/>
+    <SolidColorBrush x:Key="WarningBkgBrush" Color="#78350F"/>
+    <SolidColorBrush x:Key="ErrorBkgBrush" Color="#7F1D1D"/>
+    <SolidColorBrush x:Key="InfoBkgBrush" Color="#1E3A8A"/>
+    
+    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#374151"/>
+    <SolidColorBrush x:Key="PressedBackgroundBrush" Color="#4B5563"/>
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#1F2937"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#4B5563"/>
+    <SolidColorBrush x:Key="FocusHighlightBrush" Color="#22C55E"/>
+    
+    <SolidColorBrush x:Key="ShadowBrush" Color="#000000" Opacity="0.4"/>
+    <SolidColorBrush x:Key="OverlayBrush" Color="#000000" Opacity="0.7"/>
+
+    <!--=========================================-->
+    <!-- SHADOWS (Deeper for Dark Mode) -->
+    <!--=========================================-->
+    <DropShadowEffect x:Key="SoftShadow" x:Shared="False"
+                      Color="#000000" BlurRadius="12" ShadowDepth="1" Opacity="0.2" Direction="270"/>
+
+    <DropShadowEffect x:Key="StandardShadow" x:Shared="False"
+                      Color="#000000" BlurRadius="24" ShadowDepth="4" Opacity="0.3" Direction="270"/>
+
+    <DropShadowEffect x:Key="ElevatedShadow" x:Shared="False"
+                      Color="#000000" BlurRadius="60" ShadowDepth="12" Opacity="0.5" Direction="270"/>
+
+    <DropShadowEffect x:Key="FocusShadow" x:Shared="False"
+                      Color="#22C55E" BlurRadius="12" ShadowDepth="0" Opacity="0.25" Direction="270"/>
+    
+    <DropShadowEffect x:Key="BrandButtonShadow" x:Shared="False"
+                      Color="#22C55E" BlurRadius="14" ShadowDepth="2" Opacity="0.40" Direction="270"/>
+
+</ResourceDictionary>

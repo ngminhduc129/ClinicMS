@@ -1,0 +1,225 @@
+<UserControl x:Class="ClinicMS.Views.ServiceFormDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="500"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display">
+
+    <UserControl.Resources>
+
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="FontSize"   Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrushSecondary}"/>
+            <Setter Property="Margin"     Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="FormTextBox" TargetType="TextBox">
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
+            <Setter Property="Background"      Value="{DynamicResource SurfaceBrushWhite}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrushLight}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding"         Value="12,10"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <Border x:Name="FocusShadow" CornerRadius="10" Background="Transparent" Opacity="0">
+                                <Border.Effect><StaticResource ResourceKey="FocusShadow"/></Border.Effect>
+                            </Border>
+
+                            <Border x:Name="Root"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              Padding="{TemplateBinding Padding}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="#86EFAC"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource PrimaryGreenBrush}"/>
+                                <Setter TargetName="Root" Property="Background"  Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
+                                <Setter TargetName="FocusShadow" Property="Background" Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
+                                <Setter TargetName="FocusShadow" Property="Opacity" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="Overlay" Background="#01000000" MouseLeftButtonDown="Overlay_Click">
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="500">
+            <Border CornerRadius="20" Background="{DynamicResource SurfaceBrushWhite}">
+                <Border.Effect><StaticResource ResourceKey="ElevatedShadow"/></Border.Effect>
+            </Border>
+
+            <Border x:Name="DialogRoot" CornerRadius="20" ClipToBounds="True" Background="{DynamicResource SurfaceBrushWhite}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Border Grid.Row="0" CornerRadius="20,20,0,0" Padding="26,18">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#15803D" Offset="0"/>
+                                <GradientStop Color="#16A34A" Offset="0.5"/>
+                                <GradientStop Color="#22C55E" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Ellipse Width="120" Height="120"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top"
+                                     Margin="0,-40,-30,0" Opacity="0.08" Fill="White"/>
+
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="46" Height="46" CornerRadius="13" Margin="0,0,14,0">
+                                        <Border.Background>
+                                            <SolidColorBrush Color="White" Opacity="0.15"/>
+                                        </Border.Background>
+                                        <TextBlock Text="&#xE734;" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="20" Foreground="White"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="TitleText" Text="Thêm Dịch Vụ Mới"
+                                                   FontSize="17" FontWeight="Bold" Foreground="White"/>
+                                        <TextBlock x:Name="SubtitleText" Text="Quản lý danh mục dịch vụ khám và xét nghiệm"
+                                                   FontSize="12" Foreground="#BBF7D0" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        Width="32" Height="32" Cursor="Hand" Click="Close_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Bg" CornerRadius="9" Background="#26FFFFFF">
+                                                <TextBlock Text="✕" FontSize="12" FontWeight="SemiBold"
+                                                           Foreground="#ECFDF5"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bg" Property="Background" Value="#3AFFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Body -->
+                    <Border Grid.Row="1" Background="#EDEEF0" Padding="20">
+                        <Border Background="{DynamicResource SurfaceBrushWhite}" CornerRadius="16" Padding="20"
+                                BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#16A34A" Offset="0"/>
+                                                <GradientStop Color="#22C55E" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                    <TextBlock Text="THÔNG TIN DỊCH VỤ" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,14">
+                                    <TextBlock Style="{StaticResource FormLabel}">Tên Dịch Vụ<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
+                                    <TextBox x:Name="NameBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"/>
+                                </StackPanel>
+
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FormLabel}">Đơn Giá (₫)<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
+                                    <TextBox x:Name="PriceBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Border>
+
+                    <!-- Footer -->
+                    <Border Grid.Row="2" Background="{DynamicResource SurfaceBrushWhite}"
+                            BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,1.5,0,0"
+                            CornerRadius="0,0,20,20" Padding="26,14">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button Width="90" Height="38" Margin="0,0,10,0" Cursor="Hand" Click="Cancel_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bg" CornerRadius="10" Background="{DynamicResource SurfaceBrushWhite}"
+                                                BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1.5">
+                                            <TextBlock Text="Hủy" FontSize="13" FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BackgroundBrushLight}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <Button x:Name="SaveBtn" Height="38" Padding="22,0" Cursor="Hand" Click="Save_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Grid x:Name="RootGrid">
+                                            <Border CornerRadius="10">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#16A34A" Offset="0"/>
+                                                        <GradientStop Color="#22C55E" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="#16A34A" Opacity="0.38" BlurRadius="14" ShadowDepth="2"/>
+                                                </Border.Effect>
+                                            </Border>
+
+                                            <Border CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#16A34A" Offset="0"/>
+                                                        <GradientStop Color="#22C55E" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets"
+                                                               FontSize="13" Foreground="White" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                                                    <TextBlock x:Name="SaveLabel" Text="Lưu Dịch Vụ"
+                                                               FontSize="13" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="RootGrid" Property="Opacity" Value="0.88"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

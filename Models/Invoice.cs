@@ -10,6 +10,7 @@ public class Invoice
     [Key][Column("visit_id")]     public int     VisitId     { get; set; }
     [Column("total_amount")]      public double  TotalAmount { get; set; }
     [Column("status")]            public string  Status      { get; set; } = "Unpaid";
+    [Column("is_deducted")]       public int     IsDeducted  { get; set; } = 0;
     [Column("created_at")]        public string? CreatedAt   { get; set; }
 
     public Visit?             Visit    { get; set; }

@@ -69,6 +69,43 @@ public class StatusToBrushConverter : IValueConverter
     public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
 }
 
+public class InvoiceStatusToBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type t, object p, CultureInfo c)
+    {
+        return value?.ToString() switch
+        {
+            "Unpaid" => new SolidColorBrush(Color.FromRgb(220, 38, 38)), // Red 600
+            "Partial" => new SolidColorBrush(Color.FromRgb(217, 119, 6)), // Amber 600
+            "Paid" => new SolidColorBrush(Color.FromRgb(5, 150, 105)), // Emerald 600
+            _ => Brushes.Gray
+        };
+    }
+    public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
+}
+
+public class InvoiceStatusToBackgroundConverter : IValueConverter
+{
+    public object Convert(object value, Type t, object p, CultureInfo c)
+    {
+        return value?.ToString() switch
+        {
+            "Unpaid" => new SolidColorBrush(Color.FromRgb(254, 226, 226)), // Red 100
+            "Partial" => new SolidColorBrush(Color.FromRgb(254, 243, 199)), // Amber 100
+            "Paid" => new SolidColorBrush(Color.FromRgb(209, 250, 229)), // Emerald 100
+            _ => Brushes.Transparent
+        };
+    }
+    public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
+}
+
+public class InverseStatusToVisConverter : IValueConverter
+{
+    public object Convert(object value, Type t, object p, CultureInfo c)
+        => value?.ToString() == "Paid" ? Visibility.Collapsed : Visibility.Visible;
+    public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
+}
+
 /// <summary>Status string → background color (light)</summary>
 public class StatusToBackgroundConverter : IValueConverter
 {

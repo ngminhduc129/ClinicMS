@@ -39,8 +39,7 @@
                 <ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
+            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
                     <Border Width="44" Height="44" CornerRadius="10" Background="#ECFDF5" HorizontalAlignment="Left" Margin="0,0,0,14">
                         <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669"/>
@@ -50,8 +49,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
+            <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
                     <Border Width="44" Height="44" CornerRadius="10" Background="#F0FDF4" HorizontalAlignment="Left" Margin="0,0,0,14">
                         <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#16A34A"/>
@@ -61,8 +59,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="4" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
+            <Border Grid.Column="4" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
                     <Border Width="44" Height="44" CornerRadius="10" Background="#FEF3C7" HorizontalAlignment="Left" Margin="0,0,0,14">
                         <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#D97706"/>
@@ -72,8 +69,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="6" Background="White" CornerRadius="10" Padding="22,18">
-                <Border.Effect><DropShadowEffect Color="#000" Opacity="0.06" BlurRadius="16" ShadowDepth="2"/></Border.Effect>
+            <Border Grid.Column="6" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
                     <Border Width="44" Height="44" CornerRadius="10" Background="#FCE7F3" HorizontalAlignment="Left" Margin="0,0,0,14">
                         <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#BE185D"/>
@@ -101,8 +97,7 @@
                 </Grid.RowDefinitions>
                 
                 <!-- WEEKLY CHART -->
-                <Border Grid.Row="0" Background="White" CornerRadius="16" Padding="24">
-                    <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
+                <Border Grid.Row="0" Background="White" CornerRadius="16" Padding="24" Effect="{StaticResource StandardShadow}">
                     <StackPanel>
                         <TextBlock Text="THỐNG KÊ 7 NGÀY QUA" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF" Margin="0,0,0,20"/>
                         <ItemsControl ItemsSource="{Binding WeeklyStats}" Height="160">
@@ -131,8 +126,7 @@
                 </Border>
 
                 <!-- UPCOMING APPOINTMENTS -->
-                <Border Grid.Row="2" Background="White" CornerRadius="16" Padding="24">
-                    <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
+                <Border Grid.Row="2" Background="White" CornerRadius="16" Padding="24" Effect="{StaticResource StandardShadow}">
                     <Grid>
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Margin="0,0,0,20">
@@ -176,8 +170,7 @@
             </Grid>
 
             <!-- RIGHT: TODAY'S VISITS LIST -->
-            <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="24">
-                <Border.Effect><DropShadowEffect BlurRadius="20" Opacity="0.06" ShadowDepth="0"/></Border.Effect>
+            <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="24" Effect="{StaticResource StandardShadow}">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,0,0,20">

@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using ClinicMS.Models;
 using ClinicMS.ViewModels;
 
@@ -117,6 +118,14 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
         if (_vm == null) return;
         try { await _vm.MedicineVM.LoadAsync(); _vm.Toast.Show("Đã làm mới dữ liệu"); }
         catch (Exception ex) { _vm.Toast.ShowError(ex.Message); }
+    }
+
+    private void TableCard_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (sender is Border b)
+        {
+            b.Clip = new RectangleGeometry(new Rect(0, 0, b.ActualWidth, b.ActualHeight), 10, 10);
+        }
     }
 
     private void Add_Click(object s, RoutedEventArgs e)

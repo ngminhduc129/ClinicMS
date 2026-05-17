@@ -4,9 +4,7 @@
              Width="400">
     
     <Border Background="White" CornerRadius="16" BorderBrush="#F3F4F6" BorderThickness="1">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Opacity="0.15" Color="#000"/>
-        </Border.Effect>
+        <Border.Effect><StaticResource ResourceKey="ElevatedShadow"/></Border.Effect>
         
         <StackPanel Margin="24">
             <!-- Icon -->

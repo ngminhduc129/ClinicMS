@@ -23,9 +23,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bg" CornerRadius="10" Background="White"
                                 BorderBrush="#D1FAE5" BorderThickness="1">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                            </Border.Effect>
+                            <Border.Effect><StaticResource ResourceKey="SoftShadow"/></Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -48,9 +46,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bg" CornerRadius="10" Background="White"
                                 BorderBrush="#D1FAE5" BorderThickness="1">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                            </Border.Effect>
+                            <Border.Effect><StaticResource ResourceKey="SoftShadow"/></Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                               Margin="14,0"/>
                         </Border>
@@ -73,9 +69,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bg" CornerRadius="10" Background="#16A34A">
-                            <Border.Effect>
-                                <DropShadowEffect Color="#16A34A" BlurRadius="14" ShadowDepth="2" Opacity="0.35" Direction="270"/>
-                            </Border.Effect>
+                            <Border.Effect><StaticResource ResourceKey="BrandButtonShadow"/></Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                               Margin="18,0"/>
                         </Border>
@@ -119,15 +113,13 @@
 
             <!-- Stats section -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border CornerRadius="10" Background="White" BorderBrush="#D1FAE5" BorderThickness="1" Padding="16,8" Margin="0,0,12,0">
-                    <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.06" ShadowDepth="1"/></Border.Effect>
+                <Border CornerRadius="10" Background="White" BorderBrush="#D1FAE5" BorderThickness="1" Padding="16,8" Margin="0,0,12,0" Effect="{StaticResource SoftShadow}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE109;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="#16A34A" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock x:Name="TxtTotalValue" FontSize="13" FontWeight="Bold" Foreground="#111827" Text="0 ₫"/>
                     </StackPanel>
                 </Border>
-                <Border CornerRadius="10" Background="White" BorderBrush="#FEE2E2" BorderThickness="1" Padding="16,8">
-                    <Border.Effect><DropShadowEffect BlurRadius="10" Opacity="0.06" ShadowDepth="1"/></Border.Effect>
+                <Border CornerRadius="10" Background="White" BorderBrush="#FEE2E2" BorderThickness="1" Padding="16,8" Effect="{StaticResource SoftShadow}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock x:Name="TxtLowStockCount" FontSize="13" FontWeight="Bold" Foreground="#B91C1C" Text="0"/>
@@ -149,9 +141,7 @@
             <!-- Search Box -->
             <Border Grid.Column="0" Width="320" Height="40" Background="White"
                     CornerRadius="10" BorderBrush="#D1FAE5" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.06" Color="#000"/>
-                </Border.Effect>
+                <Border.Effect><StaticResource ResourceKey="SoftShadow"/></Border.Effect>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -192,10 +182,8 @@
 
         <!-- ══════════════════ TABLE CARD ══════════════════ -->
         <Border Grid.Row="2" Background="White" CornerRadius="10" BorderBrush="#F3F4F6" BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.08" Color="#000"/>
-            </Border.Effect>
-            <Border x:Name="TableCard" Background="White" CornerRadius="10" MinHeight="400">
+            <Border.Effect><StaticResource ResourceKey="StandardShadow"/></Border.Effect>
+            <Border x:Name="TableCard" Background="White" CornerRadius="10" MinHeight="400" SizeChanged="TableCard_SizeChanged">
                 <DataGrid ItemsSource="{Binding Medicines}"
                           Visibility="{Binding Loading, Converter={StaticResource InverseBoolToVisibility}}"
                           AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"

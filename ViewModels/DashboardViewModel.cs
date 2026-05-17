@@ -9,7 +9,10 @@ namespace ClinicMS.ViewModels;
 
 public class DashboardViewModel : BaseViewModel
 {
-    private readonly DatabaseService _db;
+    private readonly DashboardService _dashboardService;
+    private readonly PatientService _patientService;
+    private readonly DoctorService _doctorService;
+    private readonly VisitService _visitService;
     private readonly ToastService _toast;
 
     public ObservableCollection<Visit> TodayVisits { get; } = new();
@@ -21,27 +24,35 @@ public class DashboardViewModel : BaseViewModel
     private int _totalVisits;   public int TotalVisits   { get => _totalVisits;   set => SetProperty(ref _totalVisits,   value); }        
     private int _visitsToday;   public int VisitsToday   { get => _visitsToday;   set => SetProperty(ref _visitsToday,   value); }        
 
-    public DashboardViewModel(DatabaseService db, ToastService toast)
+    public DashboardViewModel(
+        DashboardService dashboardService, 
+        PatientService patientService, 
+        DoctorService doctorService, 
+        VisitService visitService, 
+        ToastService toast)
     {
-        _db = db;
+        _dashboardService = dashboardService;
+        _patientService = patientService;
+        _doctorService = doctorService;
+        _visitService = visitService;
         _toast = toast;
     }
 
     public async Task LoadAsync()
     {
         try {
-            TotalPatients = await _db.GetPatientsCountAsync();
-            TotalDoctors = await _db.GetDoctorsCountAsync();
-            TotalVisits = await _db.GetVisitsCountAsync();
-            VisitsToday = await _db.GetTodayVisitsCountAsync();
+            TotalPatients = await _patientService.GetPatientsCountAsync();
+            TotalDoctors = await _doctorService.GetDoctorsCountAsync();
+            TotalVisits = await _visitService.GetVisitsCountAsync();
+            VisitsToday = await _visitService.GetTodayVisitsCountAsync();
 
-            var appointments = await _db.GetUpcomingAppointmentsAsync(5);
+            var appointments = await _dashboardService.GetUpcomingAppointmentsAsync(5);
             UpcomingAppointments.Clear();
             foreach (var a in appointments) UpcomingAppointments.Add(a);
 
             await LoadWeeklyStatsAsync();
 
-            var todayList = await _db.GetTodayVisitsAsync();
+            var todayList = await _visitService.GetTodayVisitsAsync();
             TodayVisits.Clear();
             foreach (var v in todayList) TodayVisits.Add(v);
         } 
@@ -53,7 +64,7 @@ public class DashboardViewModel : BaseViewModel
 
     private async Task LoadWeeklyStatsAsync()
     {
-        var data = await _db.GetVisitCountByDayAsync(7);
+        var data = await _dashboardService.GetVisitCountByDayAsync(7);
         WeeklyStats.Clear();
         int max = data.Values.Any() ? data.Values.Max() : 1;
         if (max < 5) max = 5;

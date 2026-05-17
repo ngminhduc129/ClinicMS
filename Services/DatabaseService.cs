@@ -574,17 +574,24 @@ public class DatabaseService
             if (string.IsNullOrEmpty(v.VisitTime))
                 v.VisitTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            // 1. Lưu thông tin Visit trước để lấy VisitId
+            // Tách đơn thuốc để tránh tracking conflict
+            var details = v.PrescriptionDetails?.ToList() ?? new List<PrescriptionDetail>();
+            v.PrescriptionDetails = new List<PrescriptionDetail>();
+
             db.Visits.Add(v);
             await db.SaveChangesAsync();
 
-            // 2. Lưu chi tiết đơn thuốc nếu có
-            if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())
+            if (details.Any())
             {
-                foreach (var detail in v.PrescriptionDetails)
+                foreach (var detail in details)
                 {
-                    detail.VisitId = v.VisitId; // Đảm bảo đúng VisitId mới sinh
-                    db.PrescriptionDetails.Add(detail);
+                    db.PrescriptionDetails.Add(new PrescriptionDetail
+                    {
+                        VisitId = v.VisitId,
+                        MedicineId = detail.MedicineId,
+                        Quantity = detail.Quantity,
+                        Dosage = detail.Dosage
+                    });
                 }
                 await db.SaveChangesAsync();
             }
@@ -623,7 +630,6 @@ public class DatabaseService
             if (oldDetails.Any())
                 db.PrescriptionDetails.RemoveRange(oldDetails);
 
-            // Lưu bước xóa trước để tránh trùng khóa chính khi thêm lại
             await db.SaveChangesAsync();
 
             if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())

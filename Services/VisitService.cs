@@ -120,14 +120,25 @@ public class VisitService
             if (string.IsNullOrEmpty(v.VisitTime))
                 v.VisitTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
+            // Tách riêng đơn thuốc để tránh lỗi tracking navigation property
+            var details = v.PrescriptionDetails?.ToList() ?? new List<PrescriptionDetail>();
+            v.PrescriptionDetails = new List<PrescriptionDetail>();
+
             db.Visits.Add(v);
             await db.SaveChangesAsync();
 
-            if (v.PrescriptionDetails.Any())
+            if (details.Any())
             {
-                foreach (var detail in v.PrescriptionDetails)
-                    detail.VisitId = v.VisitId;
-                db.PrescriptionDetails.AddRange(v.PrescriptionDetails);
+                foreach (var d in details)
+                {
+                    db.PrescriptionDetails.Add(new PrescriptionDetail 
+                    {
+                        VisitId = v.VisitId,
+                        MedicineId = d.MedicineId,
+                        Quantity = d.Quantity,
+                        Dosage = d.Dosage
+                    });
+                }
                 await db.SaveChangesAsync();
             }
 
@@ -146,17 +157,26 @@ public class VisitService
             var existingVisit = await db.Visits.FirstOrDefaultAsync(x => x.VisitId == v.VisitId);
             if (existingVisit == null) throw new Exception($"Không tìm thấy hồ sơ khám ID: {v.VisitId}");
 
+            // Cập nhật các trường scalar (shallow update)
             db.Entry(existingVisit).CurrentValues.SetValues(v);
 
+            // Xử lý đơn thuốc: Xóa cũ, thêm mới
             var oldDetails = await db.PrescriptionDetails.Where(pd => pd.VisitId == v.VisitId).ToListAsync();
             db.PrescriptionDetails.RemoveRange(oldDetails);
+            await db.SaveChangesAsync(); // Lưu bước xóa để tránh trùng khóa chính khi thêm lại
 
-            if (v.PrescriptionDetails.Any())
+            if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())
             {
                 foreach (var detail in v.PrescriptionDetails)
                 {
-                    detail.VisitId = v.VisitId;
-                    db.PrescriptionDetails.Add(detail);
+                    // Tạo mới object detail để tránh tracking conflict với 'v'
+                    db.PrescriptionDetails.Add(new PrescriptionDetail
+                    {
+                        VisitId = v.VisitId,
+                        MedicineId = detail.MedicineId,
+                        Quantity = detail.Quantity,
+                        Dosage = detail.Dosage
+                    });
                 }
             }
 

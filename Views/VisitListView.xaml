@@ -54,7 +54,7 @@
             <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
             <Setter Property="Background"      Value="{DynamicResource SurfaceBrushWhite}"/>
             <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrushLight}"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding"         Value="12,10"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
@@ -62,7 +62,9 @@
                     <ControlTemplate TargetType="TextBox">
                         <Grid>
                             <Border x:Name="FocusShadow" CornerRadius="10" Background="Transparent" Opacity="0">
-                                <Border.Effect><StaticResource ResourceKey="FocusShadow"/></Border.Effect>
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#22C55E" Opacity="0.12" BlurRadius="8" ShadowDepth="0"/>
+                                </Border.Effect>
                             </Border>
 
                             <Border x:Name="Root"
@@ -81,8 +83,8 @@
                             </Trigger>
                             <Trigger Property="IsFocused" Value="True">
                                 <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource PrimaryGreenBrush}"/>
-                                <Setter TargetName="Root" Property="Background"  Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
-                                <Setter TargetName="FocusShadow" Property="Background" Value="{DynamicResource PrimaryGreenVeryLightBrush}"/>
+                                <Setter TargetName="Root" Property="Background"  Value="White"/>
+                                <Setter TargetName="FocusShadow" Property="Background" Value="White"/>
                                 <Setter TargetName="FocusShadow" Property="Opacity" Value="1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -474,51 +476,67 @@
             <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
             <Setter Property="Background"      Value="{DynamicResource SurfaceBrushWhite}"/>
             <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrushLight}"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
-            <Setter Property="Height"          Value="32"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height"          Value="38"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
                             <Border x:Name="FocusShadow" CornerRadius="10" Background="Transparent" Opacity="0">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="#22C55E" Opacity="0.18" BlurRadius="10" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="#22C55E" Opacity="0.12" BlurRadius="8" ShadowDepth="0"/>
                                 </Border.Effect>
                             </Border>
                             <Border x:Name="Root" Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="10">
                                 <Grid>
-                                    <ToggleButton x:Name="PART_DropDownToggle" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="36"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ToggleButton x:Name="PART_DropDownToggle" Grid.ColumnSpan="2"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   Focusable="False" ClickMode="Press" Background="Transparent" BorderThickness="0">
                                         <ToggleButton.Template>
                                             <ControlTemplate TargetType="ToggleButton">
                                                 <Border Background="Transparent">
                                                     <Path Data="M 0 0 L 4 4 L 8 0" Stroke="{DynamicResource TextBrushTertiary}" StrokeThickness="1.5" 
-                                                          HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                          HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                                 </Border>
                                             </ControlTemplate>
                                         </ToggleButton.Template>
                                     </ToggleButton>
-                                    <TextBox x:Name="PART_EditableTextBox" Margin="10,0,26,0" Background="Transparent" BorderThickness="0"
-                                             Foreground="{DynamicResource TextBrushPrimary}" FontSize="12" VerticalAlignment="Center" Visibility="Hidden"/>
-                                    <ContentPresenter x:Name="ContentSite" Content="{TemplateBinding SelectionBoxItem}" Margin="10,0,26,0"
+                                    <TextBox x:Name="PART_EditableTextBox" Margin="12,0,0,0" Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource TextBrushPrimary}" FontSize="13" VerticalAlignment="Center" Visibility="Hidden"/>
+                                    <ContentPresenter x:Name="ContentSite" Content="{TemplateBinding SelectionBoxItem}" Margin="12,0,0,0"
                                                       VerticalAlignment="Center" IsHitTestVisible="False"/>
                                 </Grid>
                             </Border>
-                            <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" PopupAnimation="Slide">
-                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ComboBox}}" MaxHeight="200"
-                                        Background="White" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1" CornerRadius="8" Margin="0,4,0,0">
-                                    <ScrollViewer Padding="4"><ItemsPresenter/></ScrollViewer>
+                            <Popup x:Name="PART_Popup" 
+                                   IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                   Placement="Bottom" 
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                   AllowsTransparency="True" 
+                                   PopupAnimation="Slide"
+                                   VerticalOffset="2">
+                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ComboBox}}" MaxHeight="180"
+                                        Background="White" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1" CornerRadius="12" Margin="0,4,0,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="2" Opacity="0.1"/>
+                                    </Border.Effect>
+                                    <ScrollViewer Padding="6"><ItemsPresenter/></ScrollViewer>
                                 </Border>
-                            </Popup>
-                        </Grid>
+                            </Popup>                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEditable" Value="True">
                                 <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/><Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
                             </Trigger>
                             <Trigger Property="IsDropDownOpen" Value="True">
                                 <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource PrimaryGreenBrush}"/><Setter TargetName="FocusShadow" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="#86EFAC"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -996,7 +1014,12 @@
                                     </ItemsControl>
                                     
                                     <!-- QUICK ADD MEDICINE AREA -->
-                                    <Border x:Name="QuickAddMedicineArea" Visibility="Collapsed" Background="#F9FAFB" CornerRadius="8" Padding="12" Margin="0,8,0,0" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <Border x:Name="QuickAddMedicineArea" Visibility="Collapsed" Background="White" 
+                                            CornerRadius="12" Padding="20" Margin="0,8,0,0" 
+                                            BorderThickness="1" BorderBrush="{DynamicResource BorderBrushLight}">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                                        </Border.Effect>
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
@@ -1004,45 +1027,65 @@
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="100"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             
-                                            <StackPanel Margin="0,0,8,0">
-                                                <TextBlock Text="Chọn thuốc" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" Margin="0,0,0,4"/>
-                                                <ComboBox x:Name="QuickMedicineCombo" Height="32"
+                                            <StackPanel Margin="0,0,12,0">
+                                                <TextBlock Text="Chọn thuốc" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
+                                                <ComboBox x:Name="QuickMedicineCombo" Style="{StaticResource FormComboBox}" Height="38"
                                                           IsEditable="True" IsTextSearchEnabled="False"
-                                                          StaysOpenOnEdit="True"
-                                                          SelectionChanged="SearchComboBox_SelectionChanged"
-                                                          LostKeyboardFocus="SearchComboBox_LostKeyboardFocus">
-                                                    <ComboBox.Resources>
-                                                        <Style TargetType="TextBox">
-                                                            <Setter Property="Padding" Value="8,0"/>
-                                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                                            <Setter Property="FontSize" Value="12"/>
-                                                        </Style>
-                                                    </ComboBox.Resources>
-                                                </ComboBox>
+                                                          StaysOpenOnEdit="True"/>
                                             </StackPanel>
                                             
-                                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                                <TextBlock Text="Số lượng" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" Margin="0,0,0,4"/>
-                                                <TextBox x:Name="QuickMedicineQty" Height="32" VerticalContentAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                <TextBlock Text="Số lượng" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
+                                                <TextBox x:Name="QuickMedicineQty" Style="{StaticResource InputField}" Height="38" Padding="12,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                                             </StackPanel>
 
-                                            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,8,0">
-                                                <TextBlock Text="Cách dùng / Liều dùng" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" Margin="0,0,0,4"/>
-                                                <TextBox x:Name="QuickMedicineDosage" Height="32" VerticalContentAlignment="Center"/>
+                                            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0">
+                                                <TextBlock Text="Cách dùng / Liều dùng" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
+                                                <TextBox x:Name="QuickMedicineDosage" Style="{StaticResource InputField}" Height="38" Padding="12,0" VerticalContentAlignment="Center"/>
                                             </StackPanel>
 
-                                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                                <Button Content="Hủy" Click="CancelQuickAdd_Click" Style="{StaticResource OutlineBtn}" Height="32" Padding="12,0" Margin="0,0,4,0"/>
-                                                <Button Content="Lưu" Click="ConfirmQuickAdd_Click" Style="{StaticResource GreenBtn}" Height="32" Padding="16,0"/>
+                                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="12,0,0,0">
+                                                <Button Width="70" Height="36" Margin="0,0,8,0" 
+                                                        Click="CancelQuickAdd_Click" Cursor="Hand">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="Bg" CornerRadius="10" Background="White" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1">
+                                                                <TextBlock Text="Hủy" FontSize="12" FontWeight="SemiBold" 
+                                                                         Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BackgroundBrushLight}"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                                <Button Width="70" Height="36" 
+                                                        Click="ConfirmQuickAdd_Click" Cursor="Hand">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="Bg" CornerRadius="10" Background="{DynamicResource PrimaryGreenBrush}">
+                                                                <TextBlock Text="Lưu" FontSize="12" FontWeight="Bold" 
+                                                                         Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bg" Property="Opacity" Value="0.9"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
 
-                                    <TextBlock x:Name="MedicineEmpty" Text="Chưa có đơn thuốc nào." FontSize="13" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" Margin="0,16,0,8" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="MedicineEmpty" Text="Chưa có đơn thuốc nào." FontSize="13" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" Margin="0,24,0,16" Visibility="Collapsed"/>
                                 </StackPanel>
                             </Border>
 

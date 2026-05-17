@@ -82,5 +82,30 @@ Tài liệu này ghi lại các thay đổi quan trọng về cấu trúc Databa
     - Khắc phục lỗi nội dung bảng bị tràn ra ngoài các góc bo, giúp giao diện trông hiện đại và tinh tế hơn.
 *   **Kết quả:** Hệ thống đạt độ nhất quán cao về thẩm mỹ, các bảng dữ liệu hiển thị mượt mà với hiệu ứng bo góc chuyên nghiệp.
 
+## 9. NÂNG CẤP GIAO DIỆN ĐƠN THUỐC & HỆ THỐNG GỢI Ý (PRESCRIPTION UI & AUTOCOMPLETE)
+*   **Vấn đề:** 
+    - Giao diện kê đơn cũ đơn điệu, không chuyên nghiệp.
+    - Ô nhập tên thuốc không có tính năng gợi ý (suggest) giống như khi tìm bệnh nhân, gây bất tiện khi nhập liệu.
+    - Menu gợi ý thường xuyên bị nhảy ngược lên trên hoặc không lọc đúng nội dung đang gõ.
+*   **Giải pháp:** 
+    - **Đồng bộ giao diện hiện đại:** Thiết kế lại mục ĐƠN THUỐC với thanh điểm nhấn màu hồng, bảng tiêu đề xám nhạt và ô nhập liệu dạng thẻ trắng có bóng đổ (Shadow effect).
+    - **Hệ thống gợi ý thông minh (Smart Suggest):** 
+        - Triển khai logic lọc theo thời gian thực (Real-time filtering) cho danh sách thuốc.
+        - Sử dụng `Dispatcher` và `ApplyTemplate` để đảm bảo menu gợi ý luôn mở đúng lúc, đúng vị trí.
+        - Giới hạn số lượng gợi ý (10 dòng) và chiều cao menu (`180px`) để tránh tình trạng menu bị lật ngược (flip) lên trên ô nhập liệu.
+    - **Tối ưu trải nghiệm gõ:** Giữ nguyên vị trí con trỏ chuột (Caret position) khi danh sách gợi ý đang thay đổi, giúp việc gõ tên thuốc mượt mà, không bị gián đoạn.
+    - **Tự động nạp dữ liệu:** Hệ thống tự động tải danh sách thuốc từ Database ngay khi nhấn nút "+ Thêm thuốc", đảm bảo luôn có dữ liệu để gợi ý.
+*   **Kết quả:** Việc kê đơn thuốc hiện tại cực kỳ nhanh chóng và thẩm mỹ, mang lại cảm giác chuyên nghiệp như các ứng dụng SaaS hiện đại.
+
+## 10. KHẮC PHỤC LỖI XUNG ĐỘT TRACKING (EF CORE TRACKING CONFLICT)
+*   **Vấn đề:** 
+    - Lỗi `The instance of entity type 'Visit' cannot be tracked because another instance with the same key value is already being tracked`.
+    - Lỗi này xảy ra khi cập nhật hồ sơ khám, do EF Core cố gắng theo dõi nhiều đối tượng có cùng ID trong cùng một phiên làm việc (DbContext context).
+*   **Giải pháp:** 
+    - **Tách biệt đối tượng (Entity Detachment):** Trong `VisitService.cs` và `DatabaseService.cs`, khi thực hiện `AddVisitAsync` và `UpdateVisitAsync`, hệ thống hiện tại sẽ tạo ra các bản ghi `PrescriptionDetail` mới hoàn toàn từ dữ liệu đầu vào thay vì đính kèm trực tiếp các đối tượng cũ.
+    - **Xử lý thuộc tính điều hướng (Navigation Property):** Gán `v.PrescriptionDetails = new List<PrescriptionDetail>()` tạm thời trước khi lưu `Visit` để tránh việc EF Core tự động cố gắng tracking các thực thể liên quan gây xung đột.
+    - **Đồng bộ thông báo UI:** Sửa logic trong `VisitListView.xaml.cs` để thông báo "Đã lưu thay đổi" chỉ xuất hiện sau khi hàm `UpdateAsync` trả về `true` (thành công thực sự).
+*   **Kết quả:** Sửa triệt để lỗi crash/đỏ khi nhấn Lưu bệnh án. Dữ liệu được lưu an toàn và thông báo trên giao diện hoàn toàn chính xác.
+
 ---
 *Ghi chú: Cấu trúc Database hiện tại đã rất "sạch" và chuẩn theo Model. Mọi thay đổi về Model sau này cần được cập nhật tương ứng vào Database.*

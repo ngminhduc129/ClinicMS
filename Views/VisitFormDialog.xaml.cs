@@ -324,6 +324,19 @@ public partial class VisitFormDialog : UserControl
     {
         MedicineInputArea.Visibility = MedicineInputArea.Visibility == Visibility.Visible 
             ? Visibility.Collapsed : Visibility.Visible;
+        if (MedicineInputArea.Visibility == Visibility.Visible)
+        {
+            MedicineCombo.ApplyTemplate();
+            MedicineCombo.Focus();
+        }
+    }
+
+    private void CancelAddMedicine_Click(object sender, RoutedEventArgs e)
+    {
+        MedicineCombo.Text = "";
+        MedicineQty.Clear();
+        MedicineDosage.Clear();
+        MedicineInputArea.Visibility = Visibility.Collapsed;
     }
 
     private void ConfirmAddMedicine_Click(object sender, RoutedEventArgs e)
@@ -603,11 +616,23 @@ public partial class VisitFormDialog : UserControl
         try 
         {
             var filtered = string.IsNullOrWhiteSpace(text)
-                ? sourceItems
+                ? sourceItems.Take(MaxSuggestionItems).ToList()
                 : sourceItems.Where(n => n.Contains(text, StringComparison.OrdinalIgnoreCase)).Take(MaxSuggestionItems).ToList();
 
             cb.ItemsSource = filtered;
-            cb.IsDropDownOpen = filtered.Any() && tb.IsFocused;
+            
+            if (filtered.Any() && tb.IsFocused)
+            {
+                cb.IsDropDownOpen = true;
+                // Force open dropdown if it closed due to items change
+                await cb.Dispatcher.InvokeAsync(() => {
+                    if (tb.IsFocused && filtered.Any()) cb.IsDropDownOpen = true;
+                }, System.Windows.Threading.DispatcherPriority.Input);
+            }
+            else
+            {
+                cb.IsDropDownOpen = false;
+            }
 
             tb.Text = text;
             cb.Text = text;

@@ -210,13 +210,20 @@ public partial class VisitListView : UserControl
         }
     }
 
-    private void AddMedicineDetail_Click(object sender, RoutedEventArgs e) 
+    private const int MaxSuggestionItems = 10;
+
+    private async void AddMedicineDetail_Click(object sender, RoutedEventArgs e) 
     { 
         QuickAddMedicineArea.Visibility = Visibility.Visible;
         if (_vm != null)
         {
-            var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList();
+            if (_vm.MedicineVM.Medicines.Count == 0) await _vm.MedicineVM.LoadAsync();
+            var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").OrderBy(n => n).ToList();
+            
+            // Đảm bảo template được áp dụng trước khi tìm PART_EditableTextBox
+            QuickMedicineCombo.ApplyTemplate();
             SetupSearchComboBox(QuickMedicineCombo, medicines);
+            QuickMedicineCombo.Focus();
         }
     }
 
@@ -279,9 +286,12 @@ public partial class VisitListView : UserControl
             // Đảm bảo đơn thuốc được đồng bộ từ UI vào object trước khi lưu
             _selectedVisit.PrescriptionDetails = SelectedPrescriptionDetails.ToList();
 
-            await _vm.VisitVM.UpdateAsync(_selectedVisit);
-            _isDirty = false;
-            _vm.Toast.Show("Đã lưu thay đổi.");
+            bool success = await _vm.VisitVM.UpdateAsync(_selectedVisit);
+            if (success)
+            {
+                _isDirty = false;
+                _vm.Toast.Show("Đã lưu thay đổi.");
+            }
         }
         catch (Exception ex)
         {
@@ -297,7 +307,7 @@ public partial class VisitListView : UserControl
     { 
         try 
         {
-            if (_vm != null) await Task.WhenAll(_vm.PatientVM.LoadAsync(), _vm.DoctorVM.LoadAsync(), _vm.VisitVM.LoadAsync()); 
+            if (_vm != null) await Task.WhenAll(_vm.PatientVM.LoadAsync(), _vm.DoctorVM.LoadAsync(), _vm.VisitVM.LoadAsync(), _vm.MedicineVM.LoadAsync()); 
         }
         catch (Exception ex)
         {
@@ -342,13 +352,55 @@ public partial class VisitListView : UserControl
     {
         comboBox.Tag = allItems;
         comboBox.ItemsSource = allItems;
+        comboBox.IsTextSearchEnabled = false;
+
         var tb = comboBox.Template?.FindName("PART_EditableTextBox", comboBox) as TextBox;
-        if (tb != null) { tb.TextChanged += (s, ev) => {
-            var text = tb.Text;
-            comboBox.ItemsSource = allItems.Where(n => n.Contains(text, StringComparison.OrdinalIgnoreCase)).ToList();
-            comboBox.IsDropDownOpen = true;
+        if (tb != null)
+        {
+            tb.TextChanged -= QuickMedicine_TextChanged;
+            tb.TextChanged += QuickMedicine_TextChanged;
+        }
+        else
+        {
+            comboBox.Loaded += (s, e) =>
+            {
+                if (comboBox.Template?.FindName("PART_EditableTextBox", comboBox) is TextBox tb2)
+                {
+                    tb2.TextChanged -= QuickMedicine_TextChanged;
+                    tb2.TextChanged += QuickMedicine_TextChanged;
+                }
+            };
+        }
+    }
+
+    private static void QuickMedicine_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not TextBox tb || tb.TemplatedParent is not ComboBox cb) return;
+        if (cb.Tag is not List<string> allItems) return;
+
+        var text = tb.Text;
+        var caretIndex = tb.CaretIndex;
+
+        tb.TextChanged -= QuickMedicine_TextChanged;
+        try
+        {
+            var filtered = string.IsNullOrWhiteSpace(text) 
+                ? allItems.Take(MaxSuggestionItems).ToList()
+                : allItems.Where(n => n.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0).Take(MaxSuggestionItems).ToList();
+            
+            cb.ItemsSource = filtered;
+            
+            // Khôi phục text vì ItemsSource thay đổi làm mất trạng thái
             tb.Text = text;
-            tb.CaretIndex = text.Length;
-        };}
+            cb.Text = text;
+            tb.CaretIndex = caretIndex;
+
+            // Ép dropdown mở xuống dưới khi có kết quả
+            cb.IsDropDownOpen = filtered.Any() && tb.IsFocused;
+        }
+        finally
+        {
+            tb.TextChanged += QuickMedicine_TextChanged;
+        }
     }
 }

@@ -25,7 +25,7 @@ public class ClinicDbContext : DbContext
     public static string? OverrideDbPath { get; set; }
 
     // Dùng đúng file DB của người dùng
-    private static string DbPath
+    public static string DbPath
     {
         get
         {
@@ -73,7 +73,6 @@ public class ClinicDbContext : DbContext
         mb.Entity<Medicine>().ToTable("medicines");
         mb.Entity<Contact>().ToTable("contacts");
         mb.Entity<PatientContact>().ToTable("patient_contacts");
-        mb.Entity<Visit>().ToTable("visits");
         mb.Entity<Service>().ToTable("services");
         mb.Entity<ServiceOrder>().ToTable("service_orders");
         mb.Entity<Invoice>().ToTable("invoices");

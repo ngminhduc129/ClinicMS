@@ -19,7 +19,7 @@
     <!--=========================================-->
     <!-- BORDER & DIVIDER COLORS -->
     <!--=========================================-->
-    <Color x:Key="BorderColorLight">#E5E7EB</Color>
+    <Color x:Key="BorderColorLight">#D1D5DB</Color>
     <Color x:Key="BorderColorMedium">#D1D5DB</Color>
     <Color x:Key="DividerColor">#E5E7EB</Color>
     
@@ -28,7 +28,7 @@
     <!--=========================================-->
     <Color x:Key="TextPrimaryColor">#111827</Color>
     <Color x:Key="TextSecondaryColor">#6B7280</Color>
-    <Color x:Key="TextTertiaryColor">#9CA3AF</Color>
+    <Color x:Key="TextTertiaryColor">#6B7280</Color>
     <Color x:Key="TextWhiteColor">#FFFFFF</Color>
     
     <!--=========================================-->
@@ -76,14 +76,14 @@
     <SolidColorBrush x:Key="SurfaceBrushWhite" Color="#FFFFFF"/>
     
     <!-- Border Brushes -->
-    <SolidColorBrush x:Key="BorderBrushLight" Color="#E5E7EB"/>
+    <SolidColorBrush x:Key="BorderBrushLight" Color="#D1D5DB"/>
     <SolidColorBrush x:Key="BorderBrushMedium" Color="#D1D5DB"/>
     <SolidColorBrush x:Key="DividerBrush" Color="#E5E7EB"/>
     
     <!-- Text Brushes -->
     <SolidColorBrush x:Key="TextBrushPrimary" Color="#111827"/>
     <SolidColorBrush x:Key="TextBrushSecondary" Color="#4B5563"/>
-    <SolidColorBrush x:Key="TextBrushTertiary" Color="#9CA3AF"/>
+    <SolidColorBrush x:Key="TextBrushTertiary" Color="#6B7280"/>
     <SolidColorBrush x:Key="TextBrushWhite" Color="#FFFFFF"/>
     
     <!-- Status Brushes -->

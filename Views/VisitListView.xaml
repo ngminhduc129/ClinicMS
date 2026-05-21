@@ -17,7 +17,7 @@
         <!-- ===== FORM LABEL ===== -->
         <Style x:Key="FormLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Foreground" Value="{DynamicResource TextBrushSecondary}"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
@@ -51,7 +51,7 @@
         <!-- ===== INPUT FIELD ===== -->
         <Style x:Key="InputField" TargetType="TextBox">
             <Setter Property="FontSize"        Value="13"/>
-            <Setter Property="Foreground"      Value="{DynamicResource TextBrushPrimary}"/>
+            <Setter Property="Foreground"      Value="#374151"/>
             <Setter Property="Background"      Value="{DynamicResource SurfaceBrushWhite}"/>
             <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrushLight}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -105,10 +105,10 @@
         <!-- ===== STATUS BUTTON ===== -->
         <Style x:Key="StatusBtn" TargetType="Button">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="14,7"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -213,6 +213,53 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bg" Property="Background"  Value="#F0FDF4"/>
                                 <Setter TargetName="Bg" Property="BorderBrush" Value="#6EE7B7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ===== FLAT TAB CONTROL STYLE ===== -->
+        <Style x:Key="FlatTabControlStyle" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <!-- ===== FLAT TAB ITEM STYLE ===== -->
+        <Style x:Key="FlatTabItemStyle" TargetType="TabItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrushSecondary}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid x:Name="Panel">
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0,0,0,3"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter x:Name="ContentSite"
+                                                  ContentSource="Header"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#F0FDF4"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryGreenBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryGreenBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryGreenBrush}"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -443,6 +490,27 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="RootGrid" Property="Opacity" Value="0.88"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ===== DANGER GHOST BUTTON ===== -->
+        <Style x:Key="DangerGhostBtn" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" CornerRadius="10" Background="#FEF2F2" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#FEE2E2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -820,7 +888,6 @@
                     <!-- EMPTY STATE -->
                     <StackPanel x:Name="DetailEmpty" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Border Width="80" Height="80" CornerRadius="24" Background="White" Margin="0,0,0,24" HorizontalAlignment="Center">
-                            
                             <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets" FontSize="36" Foreground="#4ADE80" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="Chưa chọn bệnh án" FontSize="20" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Center"/>
@@ -833,287 +900,522 @@
                         <TextBlock Text="Đang tải..." FontSize="14" Foreground="#9CA3AF" Margin="0,10,0,0" HorizontalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- DETAIL FORM -->
-                    <ScrollViewer x:Name="DetailForm" Visibility="Collapsed" DataContext="{Binding SelectedItem, ElementName=VisitGroupList}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="28,24">
-                        <StackPanel>
+                    <!-- DETAIL FORM (Now a TabControl) -->
+                    <TabControl x:Name="DetailForm" Visibility="Collapsed" Style="{StaticResource FlatTabControlStyle}" DataContext="{Binding SelectedItem, ElementName=VisitGroupList}" Margin="0">
+                        
+                        <!-- TAB 1: KHÁM BỆNH HIỆN TẠI -->
+                        <TabItem Header="Khám bệnh hiện tại" Style="{StaticResource FlatTabItemStyle}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="28,24" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                                <StackPanel>
 
-                            <!-- Patient header -->
-                            <Grid Margin="0,0,0,24">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Width="60" Height="60" CornerRadius="14" Background="#DCFCE7" Margin="0,0,16,0" VerticalAlignment="Top">
-                                    <TextBlock x:Name="DetailAvatar" Text="{Binding PatientInitials}" FontSize="24" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <Grid>
+                                    <!-- Patient header -->
+                                    <Grid Margin="0,0,0,24">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock x:Name="DetailPatientName" Text="{Binding PatientName}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <Button Style="{StaticResource OutlineBtn}" Height="32" Margin="0,0,8,0" 
-                                                    ToolTip="In Bệnh Án (A4)" 
-                                                    Command="{Binding DataContext.VisitVM.ExportMedicalRecordCommand, ElementName=Self}"
-                                                    CommandParameter="{Binding}">
-                                                <TextBlock Text="In Bệnh Án" FontSize="11" VerticalAlignment="Center"/>
-                                            </Button>
-                                            <Button Style="{StaticResource OutlineBtn}" Height="32" Margin="0,0,8,0" 
-                                                    ToolTip="In Đơn Thuốc (A5)" 
-                                                    Command="{Binding DataContext.VisitVM.ExportPrescriptionCommand, ElementName=Self}"
-                                                    CommandParameter="{Binding}">
-                                                <TextBlock Text="In Đơn Thuốc" FontSize="11" VerticalAlignment="Center"/>
-                                            </Button>
-                                            <Button Style="{StaticResource IconBtn}" Width="32" Height="32" Margin="0,0,8,0"
-                                                    ToolTip="Chỉnh sửa chuyên sâu" Click="Edit_Click">
-                                                <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#16A34A"/>
-                                            </Button>
-                                            <Button Style="{StaticResource GreenIconBtn}"
-                                                    ToolTip="Lưu Bệnh Án" Click="Save_Click">
-                                                <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="White"/>
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
-                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                        <TextBlock x:Name="DetailPatientGender" Text="{Binding DoctorName, StringFormat='Bác sĩ: {0}'}" FontSize="14" Foreground="#6B7280" Margin="0,0,12,0"/>
-                                        <TextBlock x:Name="DetailPatientAge" Text="{Binding VisitTypeDisplay, StringFormat='Loại: {0}'}" FontSize="14" Foreground="#6B7280" Margin="0,0,12,0"/>
-                                        <TextBlock x:Name="DetailPatientId" Text="{Binding VisitTime, StringFormat='Ngày: {0}'}" FontSize="14" Foreground="#9CA3AF"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Grid>
-
-                            <Border Height="1.5" Background="#F3F4F6" Margin="0,0,0,20"/>
-
-                            <!-- STATUS SELECTOR -->
-                            <Border Style="{StaticResource DetailCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                        <Border Width="4" Height="18" CornerRadius="3" Background="#16A34A" Margin="0,0,10,0"/>
-                                        <TextBlock Text="TRẠNG THÁI" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button x:Name="BtnWaiting" Style="{StaticResource StatusBtn}" Background="#FEF3C7" BorderBrush="#FDE68A" Foreground="#92400E" Content="Chờ khám" Margin="0,0,10,0" Click="StatusWaiting_Click"/>
-                                        <Button x:Name="BtnInProgress" Style="{StaticResource StatusBtn}" Background="#DBEAFE" BorderBrush="#BFDBFE" Foreground="#1D4ED8" Content="Đang khám" Margin="0,0,10,0" Click="StatusInProgress_Click"/>
-                                        <Button x:Name="BtnCompleted" Style="{StaticResource StatusBtn}" Background="#D1FAE5" BorderBrush="#BBF7D0" Foreground="#166534" Content="Đã khám" Click="StatusCompleted_Click"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- VITALS -->
-                            <Border Style="{StaticResource DetailCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                        <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0">
-                                            <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#EF4444" Offset="0"/><GradientStop Color="#F97316" Offset="1"/></LinearGradientBrush></Border.Background>
+                                        <Border Width="48" Height="48" CornerRadius="12" Background="#DCFCE7" Margin="0,0,14,0" VerticalAlignment="Top">
+                                            <TextBlock x:Name="DetailAvatar" Text="{Binding PatientInitials}" FontSize="18" FontWeight="SemiBold" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
-                                        <TextBlock Text="SINH HIỆU" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                <TextBlock Text="Mạch" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (l/p)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock x:Name="DetailPatientName" Text="{Binding PatientName}" FontSize="20" FontWeight="Bold" Foreground="#111827"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                    <Button Style="{StaticResource OutlineBtn}" Height="32" Margin="0,0,8,0" 
+                                                            ToolTip="In Bệnh Án (A4)" 
+                                                            Command="{Binding DataContext.VisitVM.ExportMedicalRecordCommand, ElementName=Self}"
+                                                            CommandParameter="{Binding}">
+                                                        <TextBlock Text="In Bệnh Án" FontSize="11" VerticalAlignment="Center" FontWeight="DemiBold"/>
+                                                    </Button>
+                                                    <Button Style="{StaticResource OutlineBtn}" Height="32" Margin="0,0,8,0" 
+                                                            ToolTip="In Đơn Thuốc (A5)" 
+                                                            Command="{Binding DataContext.VisitVM.ExportPrescriptionCommand, ElementName=Self}"
+                                                            CommandParameter="{Binding}">
+                                                        <TextBlock Text="In Đơn Thuốc" FontSize="11" VerticalAlignment="Center" FontWeight="DemiBold"/>
+                                                    </Button>
+                                                    <Button Style="{StaticResource IconBtn}" Width="32" Height="32" Margin="0,0,8,0"
+                                                            ToolTip="Chỉnh sửa chuyên sâu" Click="Edit_Click">
+                                                        <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#16A34A"/>
+                                                    </Button>
+                                                    <Button Style="{StaticResource DangerGhostBtn}" Margin="0,0,8,0"
+                                                            ToolTip="Xóa bệnh án này" Click="Delete_Click">
+                                                        <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#EF4444"/>
+                                                    </Button>
+                                                    <Button Style="{StaticResource GreenIconBtn}"
+                                                            ToolTip="Lưu Bệnh Án" Click="Save_Click">
+                                                        <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="White"/>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock x:Name="DetailPatientGender" Text="{Binding DoctorName, StringFormat='Bác sĩ: {0}'}" FontSize="13" Foreground="#6B7280" Margin="0,0,12,0"/>
+                                                <TextBlock x:Name="DetailPatientAge" Text="{Binding VisitTypeDisplay, StringFormat='Loại: {0}'}" FontSize="13" Foreground="#6B7280" Margin="0,0,12,0"/>
+                                                <TextBlock x:Name="DetailPatientId" Text="{Binding VisitTime, StringFormat='Ngày: {0}'}" FontSize="13" Foreground="#9CA3AF"/>
                                             </StackPanel>
-                                            <TextBox x:Name="InputPulse" Text="{Binding Pulse, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="2">
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                <TextBlock Text="HA" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (mmHg)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
-                                            </StackPanel>
-                                            <TextBox x:Name="InputBloodPressure" Text="{Binding BloodPressure, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="4">
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                <TextBlock Text="Nhiệt Độ" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (°C)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
-                                            </StackPanel>
-                                            <TextBox x:Name="InputTemperature" Text="{Binding Temperature, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="6">
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                                <TextBlock Text="Cân Nặng" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (kg)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
-                                            </StackPanel>
-                                            <TextBox x:Name="InputWeight" Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
                                         </StackPanel>
                                     </Grid>
-                                </StackPanel>
-                            </Border>
 
-                            <!-- SYMPTOMS -->
-                            <Border Style="{StaticResource DetailCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                        <Border Width="4" Height="18" CornerRadius="3" Background="#F59E0B" Margin="0,0,10,0"/>
-                                        <TextBlock Text="TRIỆU CHỨNG" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <TextBox x:Name="InputSymptoms" Text="{Binding Symptoms, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultiLineField}" TextChanged="Input_TextChanged"/>
-                                </StackPanel>
-                            </Border>
+                                    <Border Height="1.5" Background="#F3F4F6" Margin="0,0,0,20"/>
 
-                            <!-- DIAGNOSIS -->
-                            <Border Style="{StaticResource DetailCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                        <Border Width="4" Height="18" CornerRadius="3" Background="#3B82F6" Margin="0,0,10,0"/>
-                                        <TextBlock Text="CHẨN ĐOÁN" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <TextBox x:Name="InputDiagnosis" Text="{Binding Diagnosis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultiLineField}" TextChanged="Input_TextChanged"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- MEDICINE LIST -->
-                            <Border Style="{StaticResource DetailCardStyle}">
-                                <StackPanel>
-                                    <Grid Margin="0,0,0,16">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border Width="4" Height="18" CornerRadius="3" Background="#EC4899" Margin="0,0,10,0"/>
-                                            <TextBlock Text="ĐƠN THUỐC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                        <Button Grid.Column="1" Style="{StaticResource OutlineBtn}" Height="34" Padding="14,0"
-                                                Click="AddMedicineDetail_Click">
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <TextBlock Text="+" FontSize="16" FontWeight="SemiBold" Foreground="#16A34A" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Thêm thuốc" FontSize="12" FontWeight="SemiBold" Foreground="#16A34A" VerticalAlignment="Center"/>
+                                    <!-- STATUS SELECTOR -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                                <Border Width="4" Height="18" CornerRadius="3" Background="#16A34A" Margin="0,0,10,0"/>
+                                                <TextBlock Text="TRẠNG THÁI" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
                                             </StackPanel>
-                                        </Button>
-                                    </Grid>
-
-                                    <!-- Medicine table header -->
-                                    <Border Background="#F9FAFB" CornerRadius="10" Padding="16,10" Margin="0,0,0,8">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="80"/><ColumnDefinition Width="180"/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions>
-                                            <TextBlock Text="TÊN THUỐC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
-                                            <TextBlock Text="SL" Grid.Column="1" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
-                                            <TextBlock Text="GHI CHÚ" Grid.Column="2" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
-                                        </Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="BtnWaiting" Style="{StaticResource StatusBtn}" Background="#FEF3C7" BorderBrush="#FDE68A" Foreground="#92400E" Content="Chờ khám" Margin="0,0,10,0" Click="StatusWaiting_Click"/>
+                                                <Button x:Name="BtnInProgress" Style="{StaticResource StatusBtn}" Background="#DBEAFE" BorderBrush="#BFDBFE" Foreground="#1D4ED8" Content="Đang khám" Margin="0,0,10,0" Click="StatusInProgress_Click"/>
+                                                <Button x:Name="BtnCompleted" Style="{StaticResource StatusBtn}" Background="#D1FAE5" BorderBrush="#BBF7D0" Foreground="#166534" Content="Đã khám" Click="StatusCompleted_Click"/>
+                                            </StackPanel>
+                                        </StackPanel>
                                     </Border>
 
-                                    <ItemsControl x:Name="MedicineList" ItemsSource="{Binding SelectedPrescriptionDetails, ElementName=Self}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="16,8,16,8">
+                                    <!-- VITALS -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                                <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0">
+                                                    <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#EF4444" Offset="0"/><GradientStop Color="#F97316" Offset="1"/></LinearGradientBrush></Border.Background>
+                                                </Border>
+                                                <TextBlock Text="SINH HIỆU" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <TextBlock Text="Mạch" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (l/p)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                    </StackPanel>
+                                                    <TextBox x:Name="InputPulse" Text="{Binding Pulse, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <TextBlock Text="HA" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (mmHg)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                    </StackPanel>
+                                                    <TextBox x:Name="InputBloodPressure" Text="{Binding BloodPressure, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="4">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <TextBlock Text="Nhiệt Độ" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (°C)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                    </StackPanel>
+                                                    <TextBox x:Name="InputTemperature" Text="{Binding Temperature, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="6">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <TextBlock Text="Cân Nặng" Style="{StaticResource FormLabel}" Margin="0"/><TextBlock Text=" (kg)" Style="{StaticResource UnitLabel}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                    </StackPanel>
+                                                    <TextBox x:Name="InputWeight" Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Height="40" Padding="12,0" TextChanged="Input_TextChanged"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- SYMPTOMS -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                                <Border Width="4" Height="18" CornerRadius="3" Background="#F59E0B" Margin="0,0,10,0"/>
+                                                <TextBlock Text="TRIỆU CHỨNG" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="InputSymptoms" Text="{Binding Symptoms, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultiLineField}" TextChanged="Input_TextChanged"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- SERVICE ORDERS LIST -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <Grid Margin="0,0,0,16">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Width="4" Height="18" CornerRadius="3" Background="#6366F1" Margin="0,0,10,0"/>
+                                                    <TextBlock Text="CHỈ ĐỊNH DỊCH VỤ" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Service table header -->
+                                            <Border Background="#F9FAFB" CornerRadius="10" Padding="16,10" Margin="0,0,0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/><ColumnDefinition Width="180"/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions>
+                                                    <TextBlock Text="TÊN DỊCH VỤ" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                    <TextBlock Text="ĐƠN GIÁ" Grid.Column="1" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                    <TextBlock Text="KẾT QUẢ" Grid.Column="2" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <ItemsControl x:Name="ServiceOrderList" ItemsSource="{Binding SelectedServiceOrders, ElementName=Self}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="16,8,16,8">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="100"/>
+                                                                <ColumnDefinition Width="180"/>
+                                                                <ColumnDefinition Width="40"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            
+                                                            <TextBlock Text="{Binding Service.ServiceName}" FontSize="13" FontWeight="Normal" VerticalAlignment="Center" Foreground="#111827"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Service.PriceDisplay}" FontSize="13" VerticalAlignment="Center" Foreground="#374151"/>
+                                                            <TextBlock Grid.Column="2" Text="{Binding Result}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                                            
+                                                            <Button Grid.Column="3" Style="{StaticResource IconBtn}" Width="24" Height="24" Tag="{Binding}" ToolTip="Xóa chỉ định này" Click="RemoveServiceOrder_Click">
+                                                                <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="#EF4444"/>
+                                                            </Button>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            
+                                            <!-- IN-LINE QUICK ENTRY ROW FOR SERVICES -->
+                                            <Border Background="#F9FAFB" CornerRadius="10" Padding="16,8" Margin="0,8,0,0" BorderThickness="1" BorderBrush="#E5E7EB">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="180"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Choose Service Combobox -->
+                                                    <ComboBox x:Name="QuickServiceCombo" Style="{StaticResource FormComboBox}" Height="34"
+                                                              IsEditable="True" IsTextSearchEnabled="False"
+                                                              StaysOpenOnEdit="True" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+
+                                                    <!-- Result (Optional note) -->
+                                                    <TextBox x:Name="QuickServiceResult" Grid.Column="1" Style="{StaticResource InputField}" Height="34" Padding="8,0" VerticalContentAlignment="Center" Margin="0,0,8,0" KeyDown="QuickServiceResult_KeyDown"/>
+
+                                                    <!-- Add Button -->
+                                                    <Button Grid.Column="2" Style="{StaticResource GreenIconBtn}" Width="28" Height="28" Click="ConfirmQuickAddService_Click" HorizontalAlignment="Center" ToolTip="Chỉ định dịch vụ này (Enter)">
+                                                        <TextBlock Text="+" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,1"/>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+
+                                            <TextBlock x:Name="ServiceEmpty" Text="Chưa có chỉ định dịch vụ nào." FontSize="13" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" Margin="0,24,0,16" Visibility="Collapsed"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- DIAGNOSIS -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                                <Border Width="4" Height="18" CornerRadius="3" Background="#3B82F6" Margin="0,0,10,0"/>
+                                                <TextBlock Text="CHẨN ĐOÁN" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="InputDiagnosis" Text="{Binding Diagnosis, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultiLineField}" TextChanged="Input_TextChanged"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- MEDICINE LIST -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <Grid Margin="0,0,0,16">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Width="4" Height="18" CornerRadius="3" Background="#EC4899" Margin="0,0,10,0"/>
+                                                    <TextBlock Text="ĐƠN THUỐC" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Medicine table header -->
+                                            <Border Background="#F9FAFB" CornerRadius="10" Padding="16,10" Margin="0,0,0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="80"/><ColumnDefinition Width="180"/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions>
+                                                    <TextBlock Text="TÊN THUỐC" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                    <TextBlock Text="SL" Grid.Column="1" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                    <TextBlock Text="GHI CHÚ" Grid.Column="2" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <ItemsControl x:Name="MedicineList" ItemsSource="{Binding SelectedPrescriptionDetails, ElementName=Self}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="16,8,16,8">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="80"/>
+                                                                <ColumnDefinition Width="180"/>
+                                                                <ColumnDefinition Width="40"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            
+                                                            <TextBlock Text="{Binding Medicine.MedicineName}" FontSize="13" FontWeight="Normal" VerticalAlignment="Center" Foreground="#111827"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="13" VerticalAlignment="Center" Foreground="#374151"/>
+                                                            <TextBlock Grid.Column="2" Text="{Binding Dosage}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                                            
+                                                            <Button Grid.Column="3" Style="{StaticResource IconBtn}" Width="24" Height="24" Tag="{Binding}" ToolTip="Xóa thuốc này" Click="RemoveMedicineDetail_Click">
+                                                                <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="#EF4444"/>
+                                                            </Button>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            
+                                            <!-- IN-LINE QUICK ENTRY ROW (Always visible at the bottom of the table) -->
+                                            <Border Background="#F9FAFB" CornerRadius="10" Padding="16,8" Margin="0,8,0,0" BorderThickness="1" BorderBrush="#E5E7EB">
+                                                <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="80"/>
                                                         <ColumnDefinition Width="180"/>
                                                         <ColumnDefinition Width="40"/>
                                                     </Grid.ColumnDefinitions>
-                                                    
-                                                    <TextBlock Text="{Binding Medicine.MedicineName}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="#111827"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="13" VerticalAlignment="Center" Foreground="#374151"/>
-                                                    <TextBlock Grid.Column="2" Text="{Binding Dosage}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                    
-                                                    <Button Grid.Column="3" Style="{StaticResource IconBtn}" Width="24" Height="24" Tag="{Binding}" ToolTip="Xóa thuốc này" Click="RemoveMedicineDetail_Click">
-                                                        <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="#EF4444"/>
+
+                                                    <!-- Choose Medicine Combobox -->
+                                                    <ComboBox x:Name="QuickMedicineCombo" Style="{StaticResource FormComboBox}" Height="34"
+                                                              IsEditable="True" IsTextSearchEnabled="False"
+                                                              StaysOpenOnEdit="True" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+
+                                                    <!-- Qty -->
+                                                    <TextBox x:Name="QuickMedicineQty" Grid.Column="1" Style="{StaticResource InputField}" Height="34" Padding="6,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Text="1" Margin="0,0,8,0"/>
+
+                                                    <!-- Dosage -->
+                                                    <TextBox x:Name="QuickMedicineDosage" Grid.Column="2" Style="{StaticResource InputField}" Height="34" Padding="8,0" VerticalContentAlignment="Center" Margin="0,0,8,0" KeyDown="QuickMedicineDosage_KeyDown"/>
+
+                                                    <!-- Add Button -->
+                                                    <Button Grid.Column="3" Style="{StaticResource GreenIconBtn}" Width="28" Height="28" Click="ConfirmQuickAdd_Click" HorizontalAlignment="Center" ToolTip="Kê thêm thuốc này (Enter)">
+                                                        <TextBlock Text="+" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,1"/>
                                                     </Button>
+                                                </Grid>
+                                            </Border>
+
+                                            <TextBlock x:Name="MedicineEmpty" Text="Chưa có đơn thuốc nào." FontSize="13" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" Margin="0,24,0,16" Visibility="Collapsed"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- NOTE -->
+                                    <Border Style="{StaticResource DetailCardStyle}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                                <Border Width="4" Height="18" CornerRadius="3" Background="{DynamicResource TextBrushTertiary}" Margin="0,0,10,0"/>
+                                                <TextBlock Text="GHI CHÚ CHUNG" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushTertiary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="InputNote" Style="{StaticResource InputField}" Height="66" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="12,10" TextChanged="Input_TextChanged"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- ACTION BUTTONS -->
+                                    <Grid Margin="0,10,0,10">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Style="{StaticResource CancelBtnStyle}" Click="CancelDetail_Click" Foreground="{DynamicResource TextBrushSecondary}" FontWeight="SemiBold" FontSize="13" Content="Huỷ Thay Đổi"/>
+                                        <Button Grid.Column="2" Style="{StaticResource SaveBtnStyle}" Click="Save_Click" Foreground="White" FontWeight="SemiBold" FontSize="13">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock Text="Lưu Bệnh Án" FontSize="13" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- TAB 2: LỊCH SỬ BỆNH ÁN (TIMELINE VIEW) -->
+                        <TabItem Header="Lịch sử bệnh án" Style="{StaticResource FlatTabItemStyle}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="28,24" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                                <StackPanel>
+                                    <!-- Patient Header Info (Just Name, Gender/Age, etc. to keep context) -->
+                                    <Grid Margin="0,0,0,24">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="60" Height="60" CornerRadius="14" Background="#DCFCE7" Margin="0,0,16,0" VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding PatientInitials}" FontSize="24" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding PatientName}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="{Binding Patient.Gender, StringFormat='Giới tính: {0}'}" FontSize="14" Foreground="#6B7280" Margin="0,0,12,0"/>
+                                                <TextBlock Text="{Binding Patient.DateOfBirth, StringFormat='Ngày sinh: {0}'}" FontSize="14" Foreground="#6B7280"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Border Height="1.5" Background="#F3F4F6" Margin="0,0,0,24"/>
+
+                                    <TextBlock x:Name="HistoryEmptyState" 
+                                               Text="Không có lịch sử khám trước đó" 
+                                               Foreground="{DynamicResource TextBrushTertiary}" 
+                                               FontSize="14" 
+                                               HorizontalAlignment="Center" 
+                                               Margin="0,40,0,0" 
+                                               Visibility="{Binding PatientHistoryVisits.Count, ElementName=Self, Converter={StaticResource ZeroToVisibility}}"/>
+
+                                    <!-- TIMELINE ITEMS -->
+                                    <ItemsControl ItemsSource="{Binding PatientHistoryVisits, ElementName=Self}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Row representing a single timeline node -->
+                                                <Grid Margin="0,0,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="32"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <!-- Left: vertical line and status dot -->
+                                                    <Grid Grid.Column="0">
+                                                        <Rectangle Width="2" Fill="#E5E7EB" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                                                        <Ellipse Width="12" Height="12" Fill="{Binding StatusDotColor}" Stroke="White" StrokeThickness="2" VerticalAlignment="Top" Margin="0,18,0,0">
+                                                            <Ellipse.Effect>
+                                                                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" Opacity="0.1"/>
+                                                            </Ellipse.Effect>
+                                                        </Ellipse>
+                                                    </Grid>
+
+                                                    <!-- Right: Content card -->
+                                                    <Border Grid.Column="1" Style="{StaticResource DetailCardStyle}" Padding="18" Margin="0,0,0,16">
+                                                        <StackPanel>
+                                                            <!-- Header -->
+                                                            <Grid Margin="0,0,0,12">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding VisitTime}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryGreenBrush}"/>
+                                                                    <TextBlock Text="{Binding DoctorName, StringFormat='Bác sĩ: {0}'}" FontSize="12" Foreground="#6B7280" Margin="0,2,0,0"/>
+                                                                </StackPanel>
+                                                                <Border Grid.Column="1" Background="#F3F4F6" CornerRadius="6" Padding="8,4" VerticalAlignment="Top">
+                                                                    <TextBlock Text="{Binding VisitTypeDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                </Border>
+                                                            </Grid>
+
+                                                            <!-- Symptoms and Diagnosis -->
+                                                            <UniformGrid Columns="2" Margin="0,0,0,12">
+                                                                <StackPanel Margin="0,0,12,0">
+                                                                    <TextBlock Text="TRIỆU CHỨNG" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,4"/>
+                                                                    <TextBlock Text="{Binding Symptoms, TargetNullValue='(Không ghi nhận)'}" FontSize="13" Foreground="#374151" TextWrapping="Wrap"/>
+                                                                </StackPanel>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="CHẨN ĐOÁN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,4"/>
+                                                                    <TextBlock Text="{Binding Diagnosis, TargetNullValue='(Không ghi nhận)'}" FontSize="13" FontWeight="Bold" Foreground="#111827" TextWrapping="Wrap"/>
+                                                                </StackPanel>
+                                                            </UniformGrid>
+
+                                                            <!-- Vitals (Pulse, BP, Temp, Weight) if present -->
+                                                            <Border Background="#F9FAFB" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                                        <TextBlock Text="Mạch: " FontSize="11" Foreground="#6B7280"/>
+                                                                        <TextBlock Text="{Binding Pulse, TargetNullValue='—'}" FontSize="11" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                        <TextBlock Text=" l/p" FontSize="10" Foreground="#9CA3AF" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                                    </StackPanel>
+                                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                                        <TextBlock Text="HA: " FontSize="11" Foreground="#6B7280"/>
+                                                                        <TextBlock Text="{Binding BloodPressure, TargetNullValue='—'}" FontSize="11" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                        <TextBlock Text=" mmHg" FontSize="10" Foreground="#9CA3AF" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                                    </StackPanel>
+                                                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                                        <TextBlock Text="Nhiệt độ: " FontSize="11" Foreground="#6B7280"/>
+                                                                        <TextBlock Text="{Binding Temperature, TargetNullValue='—'}" FontSize="11" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                        <TextBlock Text=" °C" FontSize="10" Foreground="#9CA3AF" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                                    </StackPanel>
+                                                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                                        <TextBlock Text="Nặng: " FontSize="11" Foreground="#6B7280"/>
+                                                                        <TextBlock Text="{Binding Weight, TargetNullValue='—'}" FontSize="11" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                        <TextBlock Text=" kg" FontSize="10" Foreground="#9CA3AF" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+
+                                                            <!-- Prescription Details -->
+                                                            <StackPanel>
+                                                                <StackPanel.Style>
+                                                                    <Style TargetType="StackPanel">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding PrescriptionDetails.Count}" Value="0">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </StackPanel.Style>
+                                                                
+                                                                <TextBlock Text="ĐƠN THUỐC ĐÃ KÊ" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,6"/>
+                                                                <ItemsControl ItemsSource="{Binding PrescriptionDetails}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Grid Margin="0,2,0,2">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="60"/>
+                                                                                    <ColumnDefinition Width="180"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Text="{Binding Medicine.MedicineName, StringFormat='• {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                                <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='SL: {0}'}" FontSize="12" Foreground="#4B5563"/>
+                                                                                <TextBlock Grid.Column="2" Text="{Binding Dosage}" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap"/>
+                                                                            </Grid>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+                                                            
+                                                            <!-- Service Orders -->
+                                                            <StackPanel>
+                                                                <StackPanel.Style>
+                                                                    <Style TargetType="StackPanel">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding ServiceOrders.Count}" Value="0">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </StackPanel.Style>
+                                                                
+                                                                <TextBlock Text="DỊCH VỤ ĐÃ CHỈ ĐỊNH" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,12,0,6"/>
+                                                                <ItemsControl ItemsSource="{Binding ServiceOrders}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Grid Margin="0,2,0,2">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Text="{Binding Service.ServiceName, StringFormat='• {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
+                                                                                <TextBlock Grid.Column="1" Text="{Binding Result}" FontSize="11" Foreground="#6B7280" TextWrapping="Wrap"/>
+                                                                            </Grid>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+
+                                                            <!-- Note if present -->
+                                                            <StackPanel Margin="0,8,0,0">
+                                                                <StackPanel.Style>
+                                                                    <Style TargetType="StackPanel">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Note}" Value="{x:Null}">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Note}" Value="">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </StackPanel.Style>
+                                                                <TextBlock Text="{Binding Note, StringFormat='Ghi chú: {0}'}" FontSize="11" Foreground="#4B5563" TextWrapping="Wrap"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Border>
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    
-                                    <!-- QUICK ADD MEDICINE AREA -->
-                                    <Border x:Name="QuickAddMedicineArea" Visibility="Collapsed" Background="White" 
-                                            CornerRadius="12" Padding="20" Margin="0,8,0,0" 
-                                            BorderThickness="1" BorderBrush="{DynamicResource BorderBrushLight}">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
-                                        </Border.Effect>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="100"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <StackPanel Margin="0,0,12,0">
-                                                <TextBlock Text="Chọn thuốc" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
-                                                <ComboBox x:Name="QuickMedicineCombo" Style="{StaticResource FormComboBox}" Height="38"
-                                                          IsEditable="True" IsTextSearchEnabled="False"
-                                                          StaysOpenOnEdit="True"/>
-                                            </StackPanel>
-                                            
-                                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                                                <TextBlock Text="Số lượng" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
-                                                <TextBox x:Name="QuickMedicineQty" Style="{StaticResource InputField}" Height="38" Padding="12,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                                            </StackPanel>
-
-                                            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0">
-                                                <TextBlock Text="Cách dùng / Liều dùng" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
-                                                <TextBox x:Name="QuickMedicineDosage" Style="{StaticResource InputField}" Height="38" Padding="12,0" VerticalContentAlignment="Center"/>
-                                            </StackPanel>
-
-                                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="12,0,0,0">
-                                                <Button Width="70" Height="36" Margin="0,0,8,0" 
-                                                        Click="CancelQuickAdd_Click" Cursor="Hand">
-                                                    <Button.Template>
-                                                        <ControlTemplate TargetType="Button">
-                                                            <Border x:Name="Bg" CornerRadius="10" Background="White" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1">
-                                                                <TextBlock Text="Hủy" FontSize="12" FontWeight="SemiBold" 
-                                                                         Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BackgroundBrushLight}"/>
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Button.Template>
-                                                </Button>
-                                                <Button Width="70" Height="36" 
-                                                        Click="ConfirmQuickAdd_Click" Cursor="Hand">
-                                                    <Button.Template>
-                                                        <ControlTemplate TargetType="Button">
-                                                            <Border x:Name="Bg" CornerRadius="10" Background="{DynamicResource PrimaryGreenBrush}">
-                                                                <TextBlock Text="Lưu" FontSize="12" FontWeight="Bold" 
-                                                                         Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="Bg" Property="Opacity" Value="0.9"/>
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Button.Template>
-                                                </Button>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-
-                                    <TextBlock x:Name="MedicineEmpty" Text="Chưa có đơn thuốc nào." FontSize="13" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center" Margin="0,24,0,16" Visibility="Collapsed"/>
                                 </StackPanel>
-                            </Border>
-
-                            <!-- NOTE -->
-                            <Border Style="{StaticResource DetailCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                        <Border Width="4" Height="18" CornerRadius="3" Background="{DynamicResource TextBrushTertiary}" Margin="0,0,10,0"/>
-                                        <TextBlock Text="GHI CHÚ CHUNG" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <TextBox x:Name="InputNote" Style="{StaticResource InputField}" Height="66" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="12,10" TextChanged="Input_TextChanged"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- ACTION BUTTONS -->
-                            <Grid Margin="0,10,0,10">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Style="{StaticResource CancelBtnStyle}" Click="CancelDetail_Click" Foreground="{DynamicResource TextBrushSecondary}" FontWeight="SemiBold" FontSize="13" Content="Huỷ Thay Đổi"/>
-                                <Button Grid.Column="2" Style="{StaticResource SaveBtnStyle}" Click="Save_Click" Foreground="White" FontWeight="SemiBold" FontSize="13">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <TextBlock Text="Lưu Bệnh Án" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-                            </Grid>
-
-                        </StackPanel>
-                    </ScrollViewer>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
 
                 </Grid>
             </Border>

@@ -21,6 +21,9 @@
         
         <!-- Container Styles (Cards, Navigation, Forms, Dialogs) -->
         <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ThemeContainers.xaml"/>
+        
+        <!-- ScrollBar Styles -->
+        <ResourceDictionary Source="pack://application:,,,/Resources/Themes/ThemeScrollBar.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
     <!--=========================================-->

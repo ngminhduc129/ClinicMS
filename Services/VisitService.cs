@@ -100,6 +100,10 @@ public class VisitService
         return await db.Visits
                        .Include(v => v.Patient)
                        .Include(v => v.Doctor)
+                       .Include(v => v.PrescriptionDetails!)
+                           .ThenInclude(pd => pd.Medicine)
+                       .Include(v => v.ServiceOrders!)
+                           .ThenInclude(so => so.Service)
                        .FirstOrDefaultAsync(v => v.VisitId == visitId);
     }
 
@@ -120,9 +124,11 @@ public class VisitService
             if (string.IsNullOrEmpty(v.VisitTime))
                 v.VisitTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            // Tách riêng đơn thuốc để tránh lỗi tracking navigation property
+            // Tách riêng đơn thuốc và dịch vụ để tránh lỗi tracking navigation property
             var details = v.PrescriptionDetails?.ToList() ?? new List<PrescriptionDetail>();
             v.PrescriptionDetails = new List<PrescriptionDetail>();
+            var orders = v.ServiceOrders?.ToList() ?? new List<ServiceOrder>();
+            v.ServiceOrders = new List<ServiceOrder>();
 
             db.Visits.Add(v);
             await db.SaveChangesAsync();
@@ -139,8 +145,21 @@ public class VisitService
                         Dosage = d.Dosage
                     });
                 }
-                await db.SaveChangesAsync();
             }
+
+            if (orders.Any())
+            {
+                foreach (var o in orders)
+                {
+                    db.ServiceOrders.Add(new ServiceOrder
+                    {
+                        VisitId = v.VisitId,
+                        ServiceId = o.ServiceId,
+                        Result = o.Result
+                    });
+                }
+            }
+            await db.SaveChangesAsync();
 
             await trans.CommitAsync();
             return v;
@@ -163,19 +182,35 @@ public class VisitService
             // Xử lý đơn thuốc: Xóa cũ, thêm mới
             var oldDetails = await db.PrescriptionDetails.Where(pd => pd.VisitId == v.VisitId).ToListAsync();
             db.PrescriptionDetails.RemoveRange(oldDetails);
+            
+            // Xử lý dịch vụ chỉ định: Xóa cũ, thêm mới
+            var oldOrders = await db.ServiceOrders.Where(so => so.VisitId == v.VisitId).ToListAsync();
+            db.ServiceOrders.RemoveRange(oldOrders);
             await db.SaveChangesAsync(); // Lưu bước xóa để tránh trùng khóa chính khi thêm lại
 
             if (v.PrescriptionDetails != null && v.PrescriptionDetails.Any())
             {
                 foreach (var detail in v.PrescriptionDetails)
                 {
-                    // Tạo mới object detail để tránh tracking conflict với 'v'
                     db.PrescriptionDetails.Add(new PrescriptionDetail
                     {
                         VisitId = v.VisitId,
                         MedicineId = detail.MedicineId,
                         Quantity = detail.Quantity,
                         Dosage = detail.Dosage
+                    });
+                }
+            }
+
+            if (v.ServiceOrders != null && v.ServiceOrders.Any())
+            {
+                foreach (var order in v.ServiceOrders)
+                {
+                    db.ServiceOrders.Add(new ServiceOrder
+                    {
+                        VisitId = v.VisitId,
+                        ServiceId = order.ServiceId,
+                        Result = order.Result
                     });
                 }
             }
@@ -205,6 +240,40 @@ public class VisitService
             .Include(pd => pd.Medicine)
             .Where(pd => pd.VisitId == visitId)
             .ToListAsync();
+    }
+
+    public async Task<List<ServiceOrder>> GetServiceOrdersAsync(int visitId)
+    {
+        await using var db = _core.Ctx();
+        return await db.ServiceOrders
+            .Include(so => so.Service)
+            .Where(so => so.VisitId == visitId)
+            .ToListAsync();
+    }
+
+    public async Task SaveServiceOrdersAsync(int visitId, List<ServiceOrder> items)
+    {
+        await using var db = _core.Ctx();
+        await using var trans = await db.Database.BeginTransactionAsync();
+        try
+        {
+            var oldOrders = await db.ServiceOrders.Where(so => so.VisitId == visitId).ToListAsync();
+            db.ServiceOrders.RemoveRange(oldOrders);
+            
+            foreach (var item in items)
+            {
+                db.ServiceOrders.Add(new ServiceOrder
+                {
+                    VisitId = visitId,
+                    ServiceId = item.ServiceId,
+                    Result = item.Result
+                });
+            }
+
+            await db.SaveChangesAsync();
+            await trans.CommitAsync();
+        }
+        catch { await trans.RollbackAsync(); throw; }
     }
 
     public async Task SavePrescriptionDetailsAsync(int visitId, List<PrescriptionDetail> items)

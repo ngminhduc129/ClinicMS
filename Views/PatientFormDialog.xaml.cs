@@ -38,7 +38,7 @@ public partial class PatientFormDialog : UserControl
                 if (SaveBtn.Template?.FindName("SaveLabel", SaveBtn) is TextBlock lbl)
                     lbl.Text = "Cập Nhật";
             };
-            _ = LoadDataAsync(patient);
+            _ = LoadDataSafeAsync(patient);
         }
 
         Loaded += (_, _) => AnimateOpen();
@@ -64,6 +64,17 @@ public partial class PatientFormDialog : UserControl
 
         BeginAnimation(OpacityProperty, animOpacity);
         translate.BeginAnimation(TranslateTransform.YProperty, animTranslate);
+    }
+
+    private async Task LoadDataSafeAsync(Patient p)
+    {
+        try { await LoadDataAsync(p); }
+        catch (Exception ex)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm,
+                $"Lỗi khi tải thông tin bệnh nhân: {ex.Message}",
+                "Lỗi", true));
+        }
     }
 
     private void CloseForm(bool? result = null)
@@ -184,13 +195,21 @@ public partial class PatientFormDialog : UserControl
         _vm.Modal.Show(confirm, async result => {
             if (result == true)
             {
-                SaveBtn.IsEnabled = false;
-                bool ok = _isEditing ? await _vm.PatientVM.UpdateAsync(patient) : await _vm.PatientVM.AddAsync(patient);
-                if (ok) CloseForm(true);
-                else 
+                try
+                {
+                    SaveBtn.IsEnabled = false;
+                    bool ok = _isEditing ? await _vm.PatientVM.UpdateAsync(patient) : await _vm.PatientVM.AddAsync(patient);
+                    if (ok) CloseForm(true);
+                    else 
+                    {
+                        SaveBtn.IsEnabled = true;
+                        _vm.Modal.Show(new MessageDialog(_vm, $"Không thể lưu thông tin bệnh nhân. Vui lòng kiểm tra lại (Họ tên có thể đã tồn tại hoặc lỗi kết nối).", "Lỗi lưu dữ liệu", true));
+                    }
+                }
+                catch (Exception ex)
                 {
                     SaveBtn.IsEnabled = true;
-                    _vm.Modal.Show(new MessageDialog(_vm, $"Không thể lưu thông tin bệnh nhân. Vui lòng kiểm tra lại (Họ tên có thể đã tồn tại hoặc lỗi kết nối).", "Lỗi lưu dữ liệu", true));
+                    _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi lưu thông tin bệnh nhân: {ex.Message}", "Lỗi hệ thống", true));
                 }
             }
         });

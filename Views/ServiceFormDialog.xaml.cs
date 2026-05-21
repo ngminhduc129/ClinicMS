@@ -39,35 +39,23 @@ public partial class ServiceFormDialog : UserControl
     private void AnimateOpen()
     {
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var dur = TimeSpan.FromSeconds(0.4);
+        var dur = TimeSpan.FromSeconds(0.2);
 
-        var translate = new TranslateTransform(0, 40);
-        var scale = new ScaleTransform(0.96, 0.96);
-        var group = new TransformGroup();
-        group.Children.Add(scale);
-        group.Children.Add(translate);
+        var translate = new TranslateTransform(0, 15);
         RenderTransformOrigin = new Point(0.5, 0.5);
-        RenderTransform = group;
+        RenderTransform = translate;
 
         var animOpacity = new DoubleAnimation(0, 1, dur) { EasingFunction = ease };
-        var animTranslate = new DoubleAnimation(40, 0, dur) { EasingFunction = ease };
-        var animScaleX = new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease };
-        var animScaleY = new DoubleAnimation(0.96, 1, dur) { EasingFunction = ease };
+        var animTranslate = new DoubleAnimation(15, 0, dur) { EasingFunction = ease };
 
         Timeline.SetDesiredFrameRate(animOpacity, 60);
         Timeline.SetDesiredFrameRate(animTranslate, 60);
-        Timeline.SetDesiredFrameRate(animScaleX, 60);
-        Timeline.SetDesiredFrameRate(animScaleY, 60);
 
         animOpacity.Freeze();
         animTranslate.Freeze();
-        animScaleX.Freeze();
-        animScaleY.Freeze();
 
         BeginAnimation(OpacityProperty, animOpacity);
         translate.BeginAnimation(TranslateTransform.YProperty, animTranslate);
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty, animScaleX);
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty, animScaleY);
     }
 
     private void CloseForm(bool? result = null) => _vm.Modal.Close(result);
@@ -103,6 +91,12 @@ public partial class ServiceFormDialog : UserControl
             return;
         }
 
+        if (svc.Price < 0)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, "Đơn giá của dịch vụ không được nhỏ hơn 0.", "Lỗi nhập liệu", true));
+            return;
+        }
+
         string action = _isEditing ? "Cập nhật" : "Thêm mới";
         var confirm = new ConfirmDialog(
             $"{action} dịch vụ?",
@@ -112,13 +106,21 @@ public partial class ServiceFormDialog : UserControl
         _vm.Modal.Show(confirm, async result => {
             if (result == true)
             {
-                SaveBtn.IsEnabled = false;
-                bool ok = _isEditing ? await _vm.ServiceVM.UpdateAsync(svc) : await _vm.ServiceVM.AddAsync(svc);
-                if (ok) CloseForm(true);
-                else 
+                try
+                {
+                    SaveBtn.IsEnabled = false;
+                    bool ok = _isEditing ? await _vm.ServiceVM.UpdateAsync(svc) : await _vm.ServiceVM.AddAsync(svc);
+                    if (ok) CloseForm(true);
+                    else 
+                    {
+                        SaveBtn.IsEnabled = true;
+                        _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu thông tin dịch vụ. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
+                    }
+                }
+                catch (Exception ex)
                 {
                     SaveBtn.IsEnabled = true;
-                    _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu thông tin dịch vụ. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
+                    _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi lưu thông tin dịch vụ: {ex.Message}", "Lỗi hệ thống", true));
                 }
             }
         });

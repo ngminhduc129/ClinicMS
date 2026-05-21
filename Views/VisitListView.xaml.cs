@@ -21,9 +21,16 @@ public partial class VisitListView : UserControl
     private string _currentStatus = "Waiting";
     private bool _isDirty = false;
     private DateTime? _selectedDateFilter;
+    private NotifyCollectionChangedEventHandler? _visitsChangedHandler;
 
     // Collection phục vụ DataTemplate cho danh sách thuốc
     public ObservableCollection<PrescriptionDetail> SelectedPrescriptionDetails { get; } = new();
+
+    // Collection phục vụ DataTemplate cho danh sách dịch vụ
+    public ObservableCollection<ServiceOrder> SelectedServiceOrders { get; } = new();
+
+    // Collection phục vụ hiển thị lịch sử khám của bệnh nhân hiện tại
+    public ObservableCollection<Visit> PatientHistoryVisits { get; } = new();
 
     public VisitListView()
     {
@@ -34,6 +41,7 @@ public partial class VisitListView : UserControl
         VisitDateFilter.SelectedDate = _selectedDateFilter;
 
         DataContextChanged += OnDataContextChanged;
+        Unloaded += OnUnloaded;
 
         VisitListCard.SizeChanged += (s, e) =>
             VisitListCard.Clip = new RectangleGeometry(
@@ -44,8 +52,23 @@ public partial class VisitListView : UserControl
                 new Rect(0, 0, DetailCard.ActualWidth, DetailCard.ActualHeight), 16, 16);
     }
 
+    private void OnUnloaded(object s, RoutedEventArgs e)
+    {
+        if (_vm != null && _visitsChangedHandler != null)
+        {
+            _vm.VisitVM.Visits.CollectionChanged -= _visitsChangedHandler;
+            _visitsChangedHandler = null;
+        }
+    }
+
     private async void OnDataContextChanged(object s, DependencyPropertyChangedEventArgs e)
     {
+        if (e.OldValue is MainViewModel oldVm && _visitsChangedHandler != null)
+        {
+            oldVm.VisitVM.Visits.CollectionChanged -= _visitsChangedHandler;
+            _visitsChangedHandler = null;
+        }
+
         if (e.NewValue is MainViewModel vm)
         {
             _vm = vm;
@@ -60,9 +83,10 @@ public partial class VisitListView : UserControl
             view.SortDescriptions.Add(new System.ComponentModel.SortDescription("VisitTime", System.ComponentModel.ListSortDirection.Descending));
 
             // Theo dõi thay đổi để ẩn/hiện empty state
-            _vm.VisitVM.Visits.CollectionChanged += (sender, args) => {
+            _visitsChangedHandler = (sender, args) => {
                 VisitEmptyState.Visibility = _vm.VisitVM.Visits.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             };
+            _vm.VisitVM.Visits.CollectionChanged += _visitsChangedHandler;
 
             // Đồng bộ bộ lọc ngày hiện tại trên UI vào ViewModel
             if (VisitDateFilter.SelectedDate.HasValue)
@@ -132,6 +156,13 @@ public partial class VisitListView : UserControl
             _isDirty = false;
             ShowDetail(v);
         }
+        else
+        {
+            _selectedVisit = null;
+            _isDirty = false;
+            DetailForm.Visibility = Visibility.Collapsed;
+            DetailEmpty.Visibility = Visibility.Visible;
+        }
     }
 
     private async void ShowDetail(Visit v)
@@ -146,8 +177,11 @@ public partial class VisitListView : UserControl
         UpdateStatusButtons();
 
         SelectedPrescriptionDetails.Clear();
+        PatientHistoryVisits.Clear();
+
         if (_vm != null)
         {
+            // 1. Tải danh sách thuốc của ca khám hiện tại
             var details = await _vm.VisitVM.GetPrescriptionDetailsAsync(v.VisitId);
             v.PrescriptionDetails = details; // Đồng bộ dữ liệu vào object gốc
             if (details.Any())
@@ -159,6 +193,35 @@ public partial class VisitListView : UserControl
             {
                 MedicineEmpty.Visibility = Visibility.Visible;
             }
+
+            // 2. Nạp danh sách thuốc tự động hoàn thành cho In-line entry row
+            if (_vm.MedicineVM.Medicines.Count == 0) await _vm.MedicineVM.LoadAsync();
+            var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").OrderBy(n => n).ToList();
+            QuickMedicineCombo.ApplyTemplate();
+            SetupSearchComboBox(QuickMedicineCombo, medicines);
+
+            // 3. Tải danh sách dịch vụ của ca khám hiện tại
+            SelectedServiceOrders.Clear();
+            var orders = await _vm.VisitVM.GetServiceOrdersAsync(v.VisitId);
+            v.ServiceOrders = orders; // Đồng bộ dữ liệu vào object gốc
+            if (orders.Any())
+            {
+                ServiceEmpty.Visibility = Visibility.Collapsed;
+                foreach (var o in orders) SelectedServiceOrders.Add(o);
+            }
+            else
+            {
+                ServiceEmpty.Visibility = Visibility.Visible;
+            }
+
+            // 4. Nạp danh sách dịch vụ tự động hoàn thành cho In-line entry row
+            if (_vm.ServiceVM.Services.Count == 0) await _vm.ServiceVM.LoadAsync();
+            var services = _vm.ServiceVM.Services.Select(s => s.ServiceName ?? "").OrderBy(n => n).ToList();
+            QuickServiceCombo.ApplyTemplate();
+            SetupSearchComboBox(QuickServiceCombo, services);
+
+            // 5. Tải lịch sử bệnh án của bệnh nhân
+            await LoadPatientHistoryAsync(v);
         }
     }
 
@@ -212,27 +275,49 @@ public partial class VisitListView : UserControl
 
     private const int MaxSuggestionItems = 10;
 
-    private async void AddMedicineDetail_Click(object sender, RoutedEventArgs e) 
-    { 
-        QuickAddMedicineArea.Visibility = Visibility.Visible;
-        if (_vm != null)
+    private async Task LoadPatientHistoryAsync(Visit? v = null)
+    {
+        if (_vm == null) return;
+        v ??= _selectedVisit;
+        if (v == null) return;
+
+        try
         {
-            if (_vm.MedicineVM.Medicines.Count == 0) await _vm.MedicineVM.LoadAsync();
-            var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").OrderBy(n => n).ToList();
-            
-            // Đảm bảo template được áp dụng trước khi tìm PART_EditableTextBox
-            QuickMedicineCombo.ApplyTemplate();
-            SetupSearchComboBox(QuickMedicineCombo, medicines);
-            QuickMedicineCombo.Focus();
+            PatientHistoryVisits.Clear();
+            var history = await _vm.PatientVM.GetPatientVisitsAsync(v.PatientId);
+            var completedVisits = history.Where(x => x.Status == "Completed").ToList();
+            foreach (var visit in completedVisits)
+            {
+                PatientHistoryVisits.Add(visit);
+            }
+        }
+        catch (Exception ex)
+        {
+            _vm.Toast.ShowError($"Lỗi khi tải lịch sử khám: {ex.Message}");
         }
     }
 
-    private void CancelQuickAdd_Click(object sender, RoutedEventArgs e)
+    private void ClearQuickAddFields()
     {
-        QuickAddMedicineArea.Visibility = Visibility.Collapsed;
         QuickMedicineCombo.Text = "";
         QuickMedicineQty.Text = "1";
         QuickMedicineDosage.Text = "";
+        
+        QuickMedicineCombo.Focus();
+        if (QuickMedicineCombo.Template?.FindName("PART_EditableTextBox", QuickMedicineCombo) is TextBox tb)
+        {
+            tb.Focus();
+            tb.SelectAll();
+        }
+    }
+
+    private void QuickMedicineDosage_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            ConfirmQuickAdd_Click(sender, e);
+            e.Handled = true;
+        }
     }
 
     private async void ConfirmQuickAdd_Click(object sender, RoutedEventArgs e)
@@ -266,9 +351,9 @@ public partial class VisitListView : UserControl
             if (existing != null) { existing.Quantity += newItem.Quantity; existing.Dosage = newItem.Dosage; }
             else currentDetails.Add(newItem);
             await _vm.VisitVM.SavePrescriptionAsync(_selectedVisit.VisitId, currentDetails);
-            CancelQuickAdd_Click(null!, null!);
             ShowDetail(_selectedVisit); 
             _vm.Toast.Show("Đã thêm thuốc vào đơn.");
+            ClearQuickAddFields();
         }
         catch (Exception ex)
         {
@@ -283,14 +368,34 @@ public partial class VisitListView : UserControl
             if (_vm == null || _selectedVisit == null) return;
             
             // Với Data Binding, các thuộc tính của _selectedVisit đã được cập nhật tự động từ UI
-            // Đảm bảo đơn thuốc được đồng bộ từ UI vào object trước khi lưu
+            // Đảm bảo đơn thuốc và dịch vụ chỉ định được đồng bộ từ UI vào object trước khi lưu
             _selectedVisit.PrescriptionDetails = SelectedPrescriptionDetails.ToList();
+            _selectedVisit.ServiceOrders = SelectedServiceOrders.ToList();
 
-            bool success = await _vm.VisitVM.UpdateAsync(_selectedVisit);
-            if (success)
+            int selectedId = _selectedVisit.VisitId;
+            // Unsubscribe trước vì UpdateAsync → LoadAsync → Visits.Clear() sẽ deselect ListBox
+            VisitGroupList.SelectionChanged -= VisitGroupList_SelectionChanged;
+            try
             {
-                _isDirty = false;
-                _vm.Toast.Show("Đã lưu thay đổi.");
+                bool success = await _vm.VisitVM.UpdateAsync(_selectedVisit);
+                if (success)
+                {
+                    _isDirty = false;
+                    
+                    var updatedVisit = _vm.VisitVM.Visits.FirstOrDefault(x => x.VisitId == selectedId);
+                    if (updatedVisit != null)
+                    {
+                        VisitGroupList.SelectedItem = updatedVisit;
+                        _selectedVisit = updatedVisit;
+                    }
+                    
+                    _vm.Toast.Show("Đã lưu thay đổi.");
+                }
+                await LoadPatientHistoryAsync();
+            }
+            finally
+            {
+                VisitGroupList.SelectionChanged += VisitGroupList_SelectionChanged;
             }
         }
         catch (Exception ex)
@@ -331,7 +436,24 @@ public partial class VisitListView : UserControl
     private void FilterAllDate_Click(object s, RoutedEventArgs e) { VisitDateFilter.SelectedDate = null; }
 
     private void Add_Click(object s, RoutedEventArgs e) { if (_vm == null) return; var form = new VisitFormDialog(_vm); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => !form.HasData()); }
-    private void Edit_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var form = new VisitFormDialog(_vm, _selectedVisit); _vm.Modal.Show(form, result => { if (result == true) _ = _vm.VisitVM.LoadAsync(); }, () => !form.HasData()); }
+    private void Edit_Click(object s, RoutedEventArgs e)
+    {
+        if (_vm == null || _selectedVisit == null) return;
+        int selectedId = _selectedVisit.VisitId;
+        var form = new VisitFormDialog(_vm, _selectedVisit);
+        _vm.Modal.Show(form, async result =>
+        {
+            if (result == true)
+            {
+                await _vm.VisitVM.LoadAsync();
+                var updatedVisit = _vm.VisitVM.Visits.FirstOrDefault(x => x.VisitId == selectedId);
+                if (updatedVisit != null)
+                {
+                    VisitGroupList.SelectedItem = updatedVisit;
+                }
+            }
+        }, () => !form.HasData());
+    }
     private void Delete_Click(object s, RoutedEventArgs e) { if (_vm == null || _selectedVisit == null) return; var confirm = new ConfirmDialog("Xóa hồ sơ khám này?", "Thao tác không thể hoàn tác.", _vm); _vm.Modal.Show(confirm, async result => { if (result == true) await _vm.VisitVM.DeleteAsync(_selectedVisit); }); }
 
     private void SearchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) 
@@ -401,6 +523,96 @@ public partial class VisitListView : UserControl
         finally
         {
             tb.TextChanged += QuickMedicine_TextChanged;
+        }
+    }
+
+    private async void ConfirmQuickAddService_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_vm == null || _selectedVisit == null) return;
+            var serviceName = QuickServiceCombo.Text.Trim();
+            if (string.IsNullOrWhiteSpace(serviceName)) return;
+
+            var svc = _vm.ServiceVM.Services.FirstOrDefault(s => s.ServiceName?.Equals(serviceName, StringComparison.OrdinalIgnoreCase) == true);
+            if (svc == null) { _vm.Toast.ShowError("Không tìm thấy dịch vụ này."); return; }
+
+            // Kiểm tra trùng
+            if (SelectedServiceOrders.Any(o => o.ServiceId == svc.ServiceId))
+            {
+                _vm.Toast.ShowError("Dịch vụ này đã được chỉ định.");
+                return;
+            }
+
+            var newOrder = new ServiceOrder 
+            { 
+                VisitId = _selectedVisit.VisitId, 
+                ServiceId = svc.ServiceId, 
+                Service = svc, 
+                Result = QuickServiceResult.Text.Trim() 
+            };
+            
+            // Lấy danh sách dịch vụ hiện tại từ db để giữ tính đồng bộ
+            var currentOrders = await _vm.VisitVM.GetServiceOrdersAsync(_selectedVisit.VisitId);
+            currentOrders.Add(newOrder);
+            
+            await _vm.VisitVM.SaveServiceOrdersAsync(_selectedVisit.VisitId, currentOrders);
+            
+            ShowDetail(_selectedVisit);
+            _vm.Toast.Show("Đã chỉ định dịch vụ.");
+            
+            QuickServiceCombo.Text = "";
+            QuickServiceResult.Text = "";
+            QuickServiceCombo.Focus();
+        }
+        catch (Exception ex)
+        {
+            _vm?.Toast.ShowError($"Lỗi khi chỉ định dịch vụ: {ex.Message}");
+        }
+    }
+
+    private async void RemoveServiceOrder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_vm == null || _selectedVisit == null || sender is not Button btn || btn.Tag is not ServiceOrder order) return;
+            var currentOrders = await _vm.VisitVM.GetServiceOrdersAsync(_selectedVisit.VisitId);
+            var toRemove = currentOrders.FirstOrDefault(o => o.ServiceId == order.ServiceId);
+            if (toRemove != null)
+            {
+                currentOrders.Remove(toRemove);
+                await _vm.VisitVM.SaveServiceOrdersAsync(_selectedVisit.VisitId, currentOrders);
+                ShowDetail(_selectedVisit);
+                _vm.Toast.Show("Đã xóa dịch vụ chỉ định.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _vm?.Toast.ShowError($"Lỗi khi xóa dịch vụ chỉ định: {ex.Message}");
+        }
+    }
+
+    private void QuickServiceResult_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            ConfirmQuickAddService_Click(sender, e);
+            e.Handled = true;
+        }
+    }
+
+    private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (sender is ScrollViewer scrollViewer)
+        {
+            if (PresentationSource.FromDependencyObject(e.OriginalSource as DependencyObject) != PresentationSource.FromDependencyObject(this))
+                return;
+
+            QuickMedicineCombo.IsDropDownOpen = false;
+            QuickServiceCombo.IsDropDownOpen = false;
+
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+            e.Handled = true;
         }
     }
 }

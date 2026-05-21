@@ -107,5 +107,60 @@ Tài liệu này ghi lại các thay đổi quan trọng về cấu trúc Databa
     - **Đồng bộ thông báo UI:** Sửa logic trong `VisitListView.xaml.cs` để thông báo "Đã lưu thay đổi" chỉ xuất hiện sau khi hàm `UpdateAsync` trả về `true` (thành công thực sự).
 *   **Kết quả:** Sửa triệt để lỗi crash/đỏ khi nhấn Lưu bệnh án. Dữ liệu được lưu an toàn và thông báo trên giao diện hoàn toàn chính xác.
 
+## 11. BẮT NGOẠI LỆ TRONG CALLBACK BẤT ĐỒNG BỘ & CHẶN GIÁ TRỊ ÂM TRÊN FORM
+*   **Vấn đề:** 
+    *   Logic lưu trong callback `async void` của `Modal.Show` ở các form không bắt exception, dễ gây sập app khi lỗi DB SQLite.
+    *   Người dùng có thể nhập đơn giá âm hoặc tồn kho âm gây sai lệch số liệu tài chính/kho.
+*   **Giải pháp:**
+    *   Bao bọc tất cả các database calls trong callback lưu của `DoctorFormDialog`, `PatientFormDialog`, `MedicineFormDialog`, `ServiceFormDialog` bằng khối lệnh `try-catch` an toàn.
+    *   Thêm các câu lệnh validation `Price < 0` và `StockQuantity < 0` trên form thuốc và dịch vụ để ngăn chặn giá trị âm.
+*   **Kết quả:** Ứng dụng hoạt động ổn định trước mọi lỗi tương tác DB và đảm bảo tính chính xác của số liệu tài chính.
+
+## 12. TỰ ĐỘNG SAO LƯU CƠ SỞ DỮ LIỆU KHI KHỞI CHẠY (AUTO DATABASE BACKUP)
+*   **Vấn đề:** SQLite lưu toàn bộ dữ liệu trong file duy nhất, có rủi ro mất mát dữ liệu cao nếu tệp tin bị hỏng (corrupted).
+*   **Giải pháp:**
+    *   Chuyển thuộc tính `DbPath` trong `ClinicDbContext.cs` thành `public` để truy cập toàn cục.
+    *   Tích hợp hàm `BackupDatabase()` chạy trong sự kiện `OnStartup` của `App.xaml.cs`.
+    *   Tự động copy file cơ sở dữ liệu dự phòng sang thư mục `%localappdata%\ClinicMS\Backups\`, chỉ lưu giữ tối đa 7 bản sao lưu gần nhất để tiết kiệm dung lượng.
+*   **Kết quả:** Dữ liệu phòng khám luôn được bảo vệ an toàn với quy trình sao lưu tự động chạy nền.
+
+---
+## 13. FIX LỖI P0-P2 & NÂNG CẤP GIAO DIỆN CHI TIẾT HỒ SƠ
+* **P0 (3 files):**
+  - `Services/VisitService.cs:97-104` — Thêm `.Include(v => v.PrescriptionDetails).ThenInclude(pd => pd.Medicine)` và `.Include(v => v.ServiceOrders).ThenInclude(so => so.Service)` trong `GetVisitDetailsAsync` (PDF xuất thiếu thuốc & dịch vụ).
+  - `Views/VisitListView.xaml.cs` — Fix memory leak (lambda CollectionChanged → named handler + Unloaded unsubscribe). Fix Save_Click reload loop (unsubscribe SelectionChanged trước UpdateAsync, try-finally).
+  - `Views/PdfPreviewView.xaml.cs` — Constructor từ `MainViewModel` → `ModalService` (bỏ static DI lookup).
+* **P1 (4 files):**
+  - `Views/VisitFormDialog.xaml.cs` — Chuyển 4× `Refresh*List()` từ constructor → Loaded (control chưa sẵn sàng).
+  - `Views/PatientFormDialog.xaml.cs` — Bọc `LoadDataAsync` trong try-catch + dialog báo lỗi.
+  - `ViewModels/VisitViewModel.cs` — Inject `ModalService` qua DI thay vì `App.ServiceProvider.GetService`.
+  - `Views/MedicineFormDialog.xaml.cs` — Check overflow `(int)s`: cap `int.MaxValue`, min 0.
+* **P2 (4 files):**
+  - `Views/ServiceFormDialog.xaml.cs` — Animation 0.4s→0.2s, bỏ scale, giữ translate-only.
+  - `Data/ClinicDbContext.cs` — Xoá duplicate `ToTable("visits")`.
+  - `Resources/Themes/ThemeScrollBar.xaml` (mới) — Scrollbar custom: rộng 8px, thumb `#CBD5E1`, radius 3px, hover tối hơn.
+  - `Resources/Themes/ClinicTheme.xaml` — Merge ThemeScrollBar.xaml.
+* **UI improvements:**
+  - `ThemeColors.xaml` — BorderColorLight `#E5E7EB`→`#D1D5DB`, TextTertiaryColor `#9CA3AF`→`#6B7280`, FormLabel FontWeight→Medium.
+  - `VisitListView.xaml` — Button Xoá style `DangerGhostBtn` (`#FEF2F2` bg, hover `#FEE2E2`, no border). Icon Lưu `&#xE74E;`(floppy)→`&#xE73E;`(checkmark).
+* **History tab:**
+  - Tách `LoadPatientHistoryAsync()`, gọi từ cả `ShowDetail` và `Save_Click` (history refresh sau save).
+  - Bỏ filter `VisitId != v.VisitId` — completed visits include current.
+  - `PatientService.GetPatientVisitsAsync` — Thêm `.Include(v => v.ServiceOrders).ThenInclude(so => so.Service)`.
+  - `VisitListView.xaml` — Thêm section "DỊCH VỤ ĐÃ CHỈ ĐỊNH" trong timeline history.
+
+## 14. FIX DROPDOWN/POPUP BỊ TRÔI TỌA ĐỘ & KHÔNG SCROLL ĐƯỢC
+* **Vấn đề:** 
+  - Dropdown của FormComboBox (chọn thuốc, dịch vụ, bệnh nhân, bác sĩ) trong `VisitFormDialog` hiển thị sai vị trí (trôi lệch khỏi ô input) sau khi scroll main content.
+  - Khi fix bằng cách đóng dropdown khi scroll, dropdown không scroll được bằng con lăn chuột (mouse wheel) vì `e.Handled = true` chặn sự kiện đến ScrollViewer bên trong popup.
+* **Giải pháp gốc (root cause):**
+  - Popup của FormComboBox trong `VisitFormDialog.xaml` **thiếu `PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"`** — không có ràng buộc vị trí, dropdown lấy tọa độ sai khi scroll.
+* **Phân biệt scroll trong popup vs ngoài main content:**
+  - Dùng `PresentationSource.FromDependencyObject(e.OriginalSource)` so sánh với `PresentationSource.FromDependencyObject(this)`.
+  - Popup với `AllowsTransparency=True` tạo cửa sổ riêng → `PresentationSource` khác.
+  - **Scroll trong popup:** `PresentationSource` khác → `return` luôn, sự kiện chảy tự nhiên đến ScrollViewer bên trong dropdown.
+  - **Scroll ngoài main content:** `PresentationSource` giống → đóng tất cả dropdown hiện tại → cuộn main ScrollViewer.
+* **Kết quả:** Dropdown hiển thị đúng vị trí, scroll được bằng con lăn chuột, tự động đóng khi scroll main content.
+
 ---
 *Ghi chú: Cấu trúc Database hiện tại đã rất "sạch" và chuẩn theo Model. Mọi thay đổi về Model sau này cần được cập nhật tương ứng vào Database.*

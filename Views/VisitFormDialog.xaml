@@ -141,6 +141,7 @@
                             <Popup x:Name="PART_Popup"
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
                                    Placement="Bottom"
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                                    AllowsTransparency="True"
                                    Focusable="False"
                                    PopupAnimation="Slide">
@@ -412,7 +413,7 @@
                         </Grid>
                     </Border>
 
-                    <ScrollViewer Grid.Row="1" Background="{DynamicResource BackgroundBrushLight}" VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer Grid.Row="1" Background="{DynamicResource BackgroundBrushLight}" VerticalScrollBarVisibility="Hidden" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                         <Grid Margin="20,18,20,18">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -544,35 +545,164 @@
                                                  Height="86" TextWrapping="Wrap" AcceptsReturn="True"
                                                  VerticalContentAlignment="Top" Padding="12,10" Margin="0,0,0,16"/>
 
-                                        <TextBlock Text="Chẩn Đoán" Style="{StaticResource FormLabel}"/>
-                                        <TextBox x:Name="DiagnosisBox" Style="{StaticResource FormTextBox}"
-                                                 Height="86" TextWrapping="Wrap" AcceptsReturn="True"
-                                                 VerticalContentAlignment="Top" Padding="12,10" Margin="0,0,0,20"/>
-
                                         <Grid Margin="0,0,0,16">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Border Width="4" Height="18" Background="#DB2777" CornerRadius="2" Margin="0,0,10,0"/>
-                                                <TextBlock Text="ĐƠN THUỐC" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                <Border Width="4" Height="18" Background="#6366F1" CornerRadius="2" Margin="0,0,10,0"/>
+                                                <TextBlock Text="CHỈ ĐỊNH DỊCH VỤ" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}"/>
                                             </StackPanel>
                                             <Button HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                                    Click="AddMedicine_Click" Cursor="Hand">
+                                                    Click="AddService_Click" Cursor="Hand">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
-                                                        <Border x:Name="border" Background="White" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="12" Padding="12,6">
+                                                        <Border x:Name="border" Background="White" BorderBrush="#6366F1" BorderThickness="1" CornerRadius="12" Padding="12,6">
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="+" FontSize="16" Foreground="#22C55E" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                                <TextBlock Text="Thêm thuốc" FontSize="13" Foreground="#22C55E" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="+" FontSize="16" Foreground="#6366F1" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="Thêm dịch vụ" FontSize="13" Foreground="#6366F1" VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="border" Property="Background" Value="#F0FDF4"/>
+                                                                <Setter TargetName="border" Property="Background" Value="#EEF2FF"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
                                                 </Button.Template>
                                             </Button>
                                         </Grid>
+
+                                        <Border Background="{DynamicResource BackgroundBrushLight}" CornerRadius="10" Padding="16,10" Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="200"/>
+                                                    <ColumnDefinition Width="30"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="TÊN DỊCH VỤ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                                <TextBlock Grid.Column="1" Text="KẾT QUẢ (NẾU CÓ)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border x:Name="ServiceInputArea" Background="White" 
+                                                CornerRadius="12" Padding="20" Margin="0,0,0,16" 
+                                                BorderThickness="1" BorderBrush="{DynamicResource BorderBrushLight}">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                                            </Border.Effect>
+                                            <StackPanel>
+                                                <Grid Margin="0,0,0,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="Chọn dịch vụ" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
+                                                        <ComboBox x:Name="ServiceCombo" Style="{StaticResource FormComboBox}"
+                                                                  IsEditable="True" IsTextSearchEnabled="False"
+                                                                  StaysOpenOnEdit="True"
+                                                                  SelectionChanged="SearchComboBox_SelectionChanged"
+                                                                  LostKeyboardFocus="SearchComboBox_LostKeyboardFocus"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                                <TextBlock Text="Kết quả (nếu có)" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox x:Name="ServiceResultBox" Style="{StaticResource FormTextBox}" Height="38" VerticalContentAlignment="Center" Padding="12,0"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                                                        <Button Width="70" Height="36" Margin="0,0,8,0" 
+                                                                Click="CancelAddService_Click" Cursor="Hand">
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border x:Name="Bg" CornerRadius="10" Background="White" BorderBrush="{DynamicResource BorderBrushLight}" BorderThickness="1.5">
+                                                                        <TextBlock Text="Hủy" FontSize="12" FontWeight="Bold" 
+                                                                                  Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BackgroundBrushLight}"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                        <Button Width="70" Height="36" 
+                                                                Click="ConfirmAddService_Click" Cursor="Hand">
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border x:Name="Bg" CornerRadius="10" Background="#6366F1">
+                                                                        <TextBlock Text="Lưu" FontSize="12" FontWeight="Bold" 
+                                                                                  Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="Bg" Property="Opacity" Value="0.9"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <ListView x:Name="ServiceOrderListDialog" Margin="0,0,0,16" BorderThickness="0" Background="Transparent" d:ItemsSource="{d:SampleData ItemCount=1}">
+                                            <ListView.ItemContainerStyle>
+                                                <Style TargetType="ListViewItem">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="ListViewItem">
+                                                                <Border Background="Transparent" BorderBrush="{DynamicResource BorderBrushLight}" 
+                                                                        BorderThickness="0,0,0,1" Padding="16,10">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="200"/>
+                                                                            <ColumnDefinition Width="30"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock Text="{Binding Service.ServiceName}" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
+                                                                        <TextBlock Grid.Column="1" Text="{Binding Result}" FontSize="12" Foreground="{DynamicResource TextBrushSecondary}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                                                        <Button Grid.Column="2" Width="24" Height="24" Background="Transparent" BorderThickness="0" 
+                                                                                Cursor="Hand" Click="RemoveService_Click" Tag="{Binding}" HorizontalAlignment="Right">
+                                                                            <TextBlock Text="✕" FontSize="10" Foreground="{DynamicResource ErrorBrush}"/>
+                                                                        </Button>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </ListView.ItemContainerStyle>
+                                        </ListView>
+
+                                        <TextBlock Text="Chẩn Đoán" Style="{StaticResource FormLabel}"/>
+                                        <TextBox x:Name="DiagnosisBox" Style="{StaticResource FormTextBox}"
+                                                 Height="86" TextWrapping="Wrap" AcceptsReturn="True"
+                                                 VerticalContentAlignment="Top" Padding="12,10" Margin="0,0,0,20"/>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                            <Border Width="4" Height="18" CornerRadius="3" Margin="0,0,10,0" Background="#DB2777"/>
+                                            <TextBlock Text="ĐƠN THUỐC" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                        </StackPanel>
+                                        <Button HorizontalAlignment="Left" Margin="0,0,0,16" 
+                                                Click="AddMedicine_Click" Cursor="Hand">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="border" Background="White" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="12" Padding="12,6">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="+" FontSize="16" Foreground="#22C55E" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="Thêm thuốc" FontSize="13" Foreground="#22C55E" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="#F0FDF4"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
 
                                         <Border Background="{DynamicResource BackgroundBrushLight}" CornerRadius="10" Padding="16,10" Margin="0,0,0,8">
                                             <Grid>

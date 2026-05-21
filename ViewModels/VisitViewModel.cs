@@ -15,6 +15,7 @@ public class VisitViewModel : BaseViewModel
     private readonly InvoiceService _invoiceService;
     private readonly ToastService _toast;
     private readonly PdfExportService _pdf;
+    private readonly ModalService _modal;
 
     public ObservableCollection<Visit> Visits { get; } = new();
     
@@ -38,12 +39,13 @@ public class VisitViewModel : BaseViewModel
     public RelayCommand ExportPrescriptionCommand { get; }
     public RelayCommand ExportMedicalRecordCommand { get; }
 
-    public VisitViewModel(VisitService visitService, InvoiceService invoiceService, ToastService toast, PdfExportService pdf)
+    public VisitViewModel(VisitService visitService, InvoiceService invoiceService, ToastService toast, PdfExportService pdf, ModalService modal)
     {
         _visitService = visitService;
         _invoiceService = invoiceService;
         _toast = toast;
         _pdf = pdf;
+        _modal = modal;
 
         ExportPrescriptionCommand = new RelayCommand(async p => await DoExportPdf(p, "prescription"));
         ExportMedicalRecordCommand = new RelayCommand(async p => await DoExportPdf(p, "medical_record"));
@@ -53,6 +55,13 @@ public class VisitViewModel : BaseViewModel
     public async Task SavePrescriptionAsync(int visitId, List<PrescriptionDetail> details) 
     { 
         await _visitService.SavePrescriptionDetailsAsync(visitId, details);
+        await _invoiceService.GenerateOrUpdateInvoiceAsync(visitId);
+    }
+
+    public async Task<List<ServiceOrder>> GetServiceOrdersAsync(int visitId) => await _visitService.GetServiceOrdersAsync(visitId);
+    public async Task SaveServiceOrdersAsync(int visitId, List<ServiceOrder> orders) 
+    { 
+        await _visitService.SaveServiceOrdersAsync(visitId, orders);
         await _invoiceService.GenerateOrUpdateInvoiceAsync(visitId);
     }
 
@@ -83,12 +92,7 @@ public class VisitViewModel : BaseViewModel
                 title = "Bệnh Án";
             }
             
-            // Tìm MainViewModel để dùng ModalService
-            var mainVm = App.ServiceProvider.GetService(typeof(MainViewModel)) as MainViewModel;
-            if (mainVm != null)
-            {
-                mainVm.Modal.Show(new ClinicMS.Views.PdfPreviewView(filePath, title, mainVm));
-            }
+            _modal.Show(new ClinicMS.Views.PdfPreviewView(filePath, title, _modal));
             
             _toast.Show("Đã xuất file PDF thành công");
         }

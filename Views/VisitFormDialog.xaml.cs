@@ -31,6 +31,9 @@ public partial class VisitFormDialog : UserControl
     // Danh sách thuốc đang kê
     private readonly System.Collections.ObjectModel.ObservableCollection<PrescriptionDetail> _prescriptionItems = new();
 
+    // Danh sách dịch vụ chỉ định
+    private readonly System.Collections.ObjectModel.ObservableCollection<ServiceOrder> _serviceOrders = new();
+
     public VisitFormDialog(MainViewModel vm, Visit? visit = null)
     {
         InitializeComponent();
@@ -38,30 +41,35 @@ public partial class VisitFormDialog : UserControl
         _editing = visit;
         Opacity = 0;
 
-        // Kết nối ListView với danh sách thuốc
+        // Kết nối ListView với danh sách thuốc và dịch vụ
         PrescriptionList.ItemsSource = _prescriptionItems;
         MedicineInputArea.Visibility = Visibility.Collapsed;
+
+        ServiceOrderListDialog.ItemsSource = _serviceOrders;
+        ServiceInputArea.Visibility = Visibility.Collapsed;
 
         if (_isEditing && visit != null)
             LoadData(visit);
         else
             VisitDatePicker.SelectedDate = DateTime.Today;
 
-        // Tải trước dữ liệu tĩnh để tránh giật lag khi đang chạy animation
-        RefreshPatientList();
-        RefreshDoctorList();
-        RefreshMedicineList();
-
         Loaded += (_, _) =>
         {
             AnimateOpen();
             HookDateBorderFocus();
+
+            // Tải trước dữ liệu tĩnh khi control đã sẵn sàng trong visual tree
+            RefreshPatientList();
+            RefreshDoctorList();
+            RefreshMedicineList();
+            RefreshServiceList();
 
             if (!_searchSetupDone)
             {
                 SetupSearchComboBox(PatientNameBox, _patientNames);
                 SetupSearchComboBox(DoctorNameBox, _doctorNames);
                 SetupSearchComboBox(MedicineCombo, _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList());
+                SetupSearchComboBox(ServiceCombo, _vm.ServiceVM.Services.Select(s => s.ServiceName ?? "").ToList());
                 _searchSetupDone = true;
             }
 
@@ -69,6 +77,7 @@ public partial class VisitFormDialog : UserControl
             _vm.PatientVM.Patients.CollectionChanged += OnPatientsChanged;
             _vm.DoctorVM.Doctors.CollectionChanged += OnDoctorsChanged;
             _vm.MedicineVM.Medicines.CollectionChanged += OnMedicinesChanged;
+            _vm.ServiceVM.Services.CollectionChanged += OnServicesChanged;
         };
 
         Unloaded += (_, _) =>
@@ -76,6 +85,7 @@ public partial class VisitFormDialog : UserControl
             _vm.PatientVM.Patients.CollectionChanged -= OnPatientsChanged;
             _vm.DoctorVM.Doctors.CollectionChanged -= OnDoctorsChanged;
             _vm.MedicineVM.Medicines.CollectionChanged -= OnMedicinesChanged;
+            _vm.ServiceVM.Services.CollectionChanged -= OnServicesChanged;
             _vm.PropertyChanged -= OnViewModelPropertyChanged;
         };
     }
@@ -92,6 +102,7 @@ public partial class VisitFormDialog : UserControl
     private void OnPatientsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshPatientList();
     private void OnDoctorsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshDoctorList();
     private void OnMedicinesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshMedicineList();
+    private void OnServicesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshServiceList();
 
     private void RefreshPatientList()
     {
@@ -109,6 +120,12 @@ public partial class VisitFormDialog : UserControl
     {
         var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList();
         UpdateComboSource(MedicineCombo, medicines);
+    }
+
+    private void RefreshServiceList()
+    {
+        var services = _vm.ServiceVM.Services.Select(s => s.ServiceName ?? "").ToList();
+        UpdateComboSource(ServiceCombo, services);
     }
 
     private static void UpdateComboSource(ComboBox comboBox, List<string> items)
@@ -208,6 +225,17 @@ public partial class VisitFormDialog : UserControl
         // Ensure the list reflects the loaded items
         PrescriptionList.ItemsSource = _prescriptionItems;
 
+        // Load dịch vụ chỉ định
+        var serviceOrders = await _vm.VisitVM.GetServiceOrdersAsync(v.VisitId);
+        var orderList = serviceOrders.ToList();
+        v.ServiceOrders = orderList; // Đồng bộ để IsDirty có thể so sánh chính xác
+
+        _serviceOrders.Clear();
+        foreach (var o in orderList) _serviceOrders.Add(o);
+
+        // Ensure the list reflects the loaded items
+        ServiceOrderListDialog.ItemsSource = _serviceOrders;
+
         // ĐÃ SỬA: Load dữ liệu cho RadioButton Loại Khám
         RbAppt.IsChecked = v.VisitType == "Appointment";
         RbEmerg.IsChecked = v.VisitType == "Emergency";
@@ -257,6 +285,16 @@ public partial class VisitFormDialog : UserControl
                 MedicineId = item.MedicineId,
                 Quantity = item.Quantity,
                 Dosage = item.Dosage
+            });
+        }
+
+        foreach (var item in _serviceOrders)
+        {
+            v.ServiceOrders.Add(new ServiceOrder
+            {
+                VisitId = v.VisitId,
+                ServiceId = item.ServiceId,
+                Result = item.Result
             });
         }
         return v;
@@ -358,9 +396,9 @@ public partial class VisitFormDialog : UserControl
             }
 
             // KIỂM TRA TỒN KHO
-            if (med.StockQuantity <= 0)
+            if (med.AvailableQuantity <= 0)
             {
-                _vm.Modal.Show(new MessageDialog(_vm, $"Thuốc '{med.MedicineName}' đã hết hàng trong kho.", "Hết hàng", true));
+                _vm.Modal.Show(new MessageDialog(_vm, $"Thuốc '{med.MedicineName}' đã hết hoặc đã bị giữ chỗ hết.", "Hết hàng", true));
                 return;
             }
 
@@ -373,9 +411,9 @@ public partial class VisitFormDialog : UserControl
             double.TryParse(MedicineQty.Text, out double qty);
             if (qty <= 0) qty = 1;
 
-            if (qty > med.StockQuantity)
+            if (qty > med.AvailableQuantity)
             {
-                _vm.Modal.Show(new MessageDialog(_vm, $"Số lượng kê ({qty}) vượt quá số lượng tồn kho hiện có ({med.StockQuantity}).", "Cảnh báo tồn kho", true));
+                _vm.Modal.Show(new MessageDialog(_vm, $"Số lượng kê ({qty}) vượt quá số lượng khả dụng hiện có ({med.AvailableQuantity}).", "Cảnh báo tồn kho", true));
                 return;
             }
 
@@ -423,6 +461,85 @@ public partial class VisitFormDialog : UserControl
         catch (Exception ex)
         {
             _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi xóa thuốc: {ex.Message}", "Lỗi", true));
+        }
+    }
+
+    // ───────────────────────────── Service Orders Logic ─────────────────────────────
+
+    private void AddService_Click(object sender, RoutedEventArgs e)
+    {
+        ServiceInputArea.Visibility = ServiceInputArea.Visibility == Visibility.Visible 
+            ? Visibility.Collapsed : Visibility.Visible;
+        if (ServiceInputArea.Visibility == Visibility.Visible)
+        {
+            ServiceCombo.ApplyTemplate();
+            ServiceCombo.Focus();
+        }
+    }
+
+    private void CancelAddService_Click(object sender, RoutedEventArgs e)
+    {
+        ServiceCombo.Text = "";
+        ServiceResultBox.Clear();
+        ServiceInputArea.Visibility = Visibility.Collapsed;
+    }
+
+    private void ConfirmAddService_Click(object sender, RoutedEventArgs e)
+    {
+        try 
+        {
+            var serviceName = ServiceCombo.Text.Trim();
+            if (string.IsNullOrWhiteSpace(serviceName))
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn dịch vụ.", "Thông báo", true));
+                return;
+            }
+
+            var svc = _vm.ServiceVM.Services.FirstOrDefault(s => s.ServiceName?.Equals(serviceName, StringComparison.OrdinalIgnoreCase) == true);
+            if (svc == null)
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, "Không tìm thấy dịch vụ này trong hệ thống.", "Thông báo", true));
+                return;
+            }
+
+            // Kiểm tra xem dịch vụ đã có trong danh sách chỉ định chưa
+            var existing = _serviceOrders.FirstOrDefault(s => s.ServiceId == svc.ServiceId);
+            if (existing != null)
+            {
+                _vm.Modal.Show(new MessageDialog(_vm, "Dịch vụ này đã được chỉ định.", "Thông báo", true));
+                return;
+            }
+
+            _serviceOrders.Add(new ServiceOrder
+            {
+                ServiceId = svc.ServiceId,
+                Service = svc,
+                Result = ServiceResultBox.Text.Trim()
+            });
+
+            // Reset input
+            ServiceCombo.Text = "";
+            ServiceResultBox.Clear();
+            ServiceInputArea.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi thêm dịch vụ: {ex.Message}", "Lỗi", true));
+        }
+    }
+
+    private void RemoveService_Click(object sender, RoutedEventArgs e)
+    {
+        try 
+        {
+            if (sender is Button btn && btn.Tag is ServiceOrder order)
+            {
+                _serviceOrders.Remove(order);
+            }
+        }
+        catch (Exception ex)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi xóa dịch vụ: {ex.Message}", "Lỗi", true));
         }
     }
 
@@ -481,15 +598,39 @@ public partial class VisitFormDialog : UserControl
             }
         }
 
+        // Kiểm tra chi tiết dịch vụ chỉ định
+        bool servicesChanged = false;
+        if (_editing != null)
+        {
+            servicesChanged = _serviceOrders.Count != (_editing.ServiceOrders?.Count ?? 0);
+            if (!servicesChanged && _serviceOrders.Any() && _editing.ServiceOrders != null)
+            {
+                foreach (var item in _serviceOrders)
+                {
+                    var original = _editing.ServiceOrders.FirstOrDefault(so => so.ServiceId == item.ServiceId);
+                    if (original == null || original.Result != item.Result)
+                    {
+                        servicesChanged = true;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            servicesChanged = _serviceOrders.Any();
+        }
+
         return patientChanged || doctorChanged || dateChanged || typeChanged || statusChanged ||
-               SymptomsBox.Text != (_editing.Symptoms ?? "") ||
-               DiagnosisBox.Text != (_editing.Diagnosis ?? "") ||
-               NoteBox.Text != (_editing.Note ?? "") ||
-               PulseBox.Text != (_editing.Pulse ?? "") ||
-               BPBox.Text != (_editing.BloodPressure ?? "") ||
-               TempBox.Text != (_editing.Temperature ?? "") ||
-               PrescriptionBox.Text != (_editing.PrescriptionText ?? "") ||
-               prescriptionChanged;
+               SymptomsBox.Text != (_editing?.Symptoms ?? "") ||
+               DiagnosisBox.Text != (_editing?.Diagnosis ?? "") ||
+               NoteBox.Text != (_editing?.Note ?? "") ||
+               PulseBox.Text != (_editing?.Pulse ?? "") ||
+               BPBox.Text != (_editing?.BloodPressure ?? "") ||
+               TempBox.Text != (_editing?.Temperature ?? "") ||
+               PrescriptionBox.Text != (_editing?.PrescriptionText ?? "") ||
+               prescriptionChanged ||
+               servicesChanged;
     }
 
     private async void Save_Click(object s, RoutedEventArgs e)
@@ -686,6 +827,23 @@ public partial class VisitFormDialog : UserControl
             _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
                 if (res == true) CloseForm();
             });
+        }
+    }
+
+    private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (sender is ScrollViewer scrollViewer)
+        {
+            if (PresentationSource.FromDependencyObject(e.OriginalSource as DependencyObject) != PresentationSource.FromDependencyObject(this))
+                return;
+
+            PatientNameBox.IsDropDownOpen = false;
+            DoctorNameBox.IsDropDownOpen = false;
+            MedicineCombo.IsDropDownOpen = false;
+            ServiceCombo.IsDropDownOpen = false;
+
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+            e.Handled = true;
         }
     }
 }

@@ -202,6 +202,10 @@ public class PatientService
         await using var db = _core.Ctx();
         return await db.Visits
                        .Include(v => v.Doctor)
+                       .Include(v => v.PrescriptionDetails)
+                           .ThenInclude(pd => pd.Medicine)
+                       .Include(v => v.ServiceOrders)
+                           .ThenInclude(so => so.Service)
                        .Where(v => v.PatientId == patientId)
                        .OrderByDescending(v => v.VisitTime)
                        .ToListAsync();

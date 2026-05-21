@@ -124,13 +124,21 @@ public partial class DoctorFormDialog : UserControl
         _vm.Modal.Show(confirm, async result => {
             if (result == true)
             {
-                SaveBtn.IsEnabled = false;
-                bool ok = _isEditing ? await _vm.DoctorVM.UpdateAsync(doctor) : await _vm.DoctorVM.AddAsync(doctor);
-                if (ok) CloseForm(true);
-                else 
+                try
+                {
+                    SaveBtn.IsEnabled = false;
+                    bool ok = _isEditing ? await _vm.DoctorVM.UpdateAsync(doctor) : await _vm.DoctorVM.AddAsync(doctor);
+                    if (ok) CloseForm(true);
+                    else 
+                    {
+                        SaveBtn.IsEnabled = true;
+                        _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu thông tin bác sĩ. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
+                    }
+                }
+                catch (Exception ex)
                 {
                     SaveBtn.IsEnabled = true;
-                    _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu thông tin bác sĩ. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
+                    _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi lưu thông tin bác sĩ: {ex.Message}", "Lỗi hệ thống", true));
                 }
             }
         });

@@ -74,7 +74,9 @@ public partial class MedicineFormDialog : UserControl
         MedicineName = NameBox.Text.Trim(),
         Unit = UnitBox.Text.Trim(),
         Price = double.TryParse(PriceBox.Text.Trim(), out var p) ? p : 0,
-        StockQuantity = double.TryParse(StockBox.Text.Trim(), out var s) ? (int)s : 0,
+        StockQuantity = double.TryParse(StockBox.Text.Trim(), out var s)
+            ? (s > int.MaxValue ? int.MaxValue : s < 0 ? 0 : (int)s)
+            : 0,
         CreatedAt = _editing?.CreatedAt ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
     };
 
@@ -96,6 +98,18 @@ public partial class MedicineFormDialog : UserControl
             return;
         }
 
+        if (med.Price < 0)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, "Đơn giá của thuốc không được nhỏ hơn 0.", "Lỗi nhập liệu", true));
+            return;
+        }
+
+        if (med.StockQuantity < 0)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, "Số lượng tồn kho không được nhỏ hơn 0.", "Lỗi nhập liệu", true));
+            return;
+        }
+
         string action = _isEditing ? "Cập nhật" : "Thêm mới";
         var confirm = new ConfirmDialog(
             $"{action} thuốc?",
@@ -105,13 +119,21 @@ public partial class MedicineFormDialog : UserControl
         _vm.Modal.Show(confirm, async result => {
             if (result == true)
             {
-                SaveBtn.IsEnabled = false;
-                bool ok = _isEditing ? await _vm.MedicineVM.UpdateAsync(med) : await _vm.MedicineVM.AddAsync(med);
-                if (ok) CloseForm(true);
-                else 
+                try
+                {
+                    SaveBtn.IsEnabled = false;
+                    bool ok = _isEditing ? await _vm.MedicineVM.UpdateAsync(med) : await _vm.MedicineVM.AddAsync(med);
+                    if (ok) CloseForm(true);
+                    else 
+                    {
+                        SaveBtn.IsEnabled = true;
+                        _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu thông tin thuốc. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
+                    }
+                }
+                catch (Exception ex)
                 {
                     SaveBtn.IsEnabled = true;
-                    _vm.Modal.Show(new MessageDialog(_vm, "Không thể lưu thông tin thuốc. Vui lòng kiểm tra lại thông tin và kết nối.", "Lỗi lưu dữ liệu", true));
+                    _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi lưu thông tin thuốc: {ex.Message}", "Lỗi hệ thống", true));
                 }
             }
         });

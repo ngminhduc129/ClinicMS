@@ -2,20 +2,20 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using ClinicMS.ViewModels;
+using ClinicMS.Services;
 using Microsoft.Web.WebView2.Core;
 
 namespace ClinicMS.Views;
 
 public partial class PdfPreviewView : UserControl
 {
-    private readonly MainViewModel _mainVm;
+    private readonly ModalService _modal;
     private readonly string _filePath;
 
-    public PdfPreviewView(string filePath, string title, MainViewModel mainVm)
+    public PdfPreviewView(string filePath, string title, ModalService modal)
     {
         InitializeComponent();
-        _mainVm = mainVm;
+        _modal = modal;
         _filePath = filePath;
         
         TxtTitle.Text = title;
@@ -47,6 +47,6 @@ public partial class PdfPreviewView : UserControl
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
-        _mainVm.Modal.Close();
+        _modal.Close();
     }
 }

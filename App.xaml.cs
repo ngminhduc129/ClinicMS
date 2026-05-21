@@ -9,6 +9,7 @@ using ClinicMS.ViewModels;
 using System.Threading.Tasks;
 using Serilog;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 using QuestPDF.Infrastructure;
@@ -33,6 +34,9 @@ public partial class App : Application
 
         Log.Information("Ứng dụng ClinicMS đang khởi động...");
 
+        // Thực hiện sao lưu Database tự động
+        BackupDatabase();
+
         // 1. Cấu hình DI
         var services = new ServiceCollection();
         ConfigureServices(services);
@@ -55,6 +59,57 @@ public partial class App : Application
 
         // 4. Xử lý lỗi tập trung (Global Exception Handling)
         SetupExceptionHandling();
+    }
+
+    private void BackupDatabase()
+    {
+        try
+        {
+            string dbPath = Data.ClinicDbContext.DbPath;
+            if (!File.Exists(dbPath))
+            {
+                Log.Warning("Không tìm thấy file Database SQLite để sao lưu: {Path}", dbPath);
+                return;
+            }
+
+            string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClinicMS");
+            string backupFolder = Path.Combine(appDataFolder, "Backups");
+            if (!Directory.Exists(backupFolder))
+            {
+                Directory.CreateDirectory(backupFolder);
+            }
+
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string backupFilePath = Path.Combine(backupFolder, $"clinic_backup_{timestamp}.db");
+
+            File.Copy(dbPath, backupFilePath, true);
+            Log.Information("Đã sao lưu Database thành công tới: {Path}", backupFilePath);
+
+            var backupFiles = Directory.GetFiles(backupFolder, "clinic_backup_*.db")
+                                       .Select(f => new FileInfo(f))
+                                       .OrderByDescending(f => f.CreationTime)
+                                       .ToList();
+
+            if (backupFiles.Count > 7)
+            {
+                for (int i = 7; i < backupFiles.Count; i++)
+                {
+                    try
+                    {
+                        backupFiles[i].Delete();
+                        Log.Information("Đã xóa bản sao lưu cũ: {Path}", backupFiles[i].FullName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "Không thể xóa bản sao lưu cũ: {Path}", backupFiles[i].FullName);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Lỗi xảy ra trong quá trình tự động sao lưu Database");
+        }
     }
 
     private void ConfigureServices(IServiceCollection services)

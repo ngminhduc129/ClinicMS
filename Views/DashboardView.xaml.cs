@@ -27,4 +27,14 @@ public partial class DashboardView : UserControl
     {
         if (_vm != null) await _vm.DashboardVM.LoadAsync();
     }
+
+    private void AddAppointment_Click(object sender, RoutedEventArgs e)
+    {
+        if (_vm == null) return;
+        var form = new AppointmentFormDialog(_vm);
+        _vm.Modal.Show(form, result =>
+        {
+            if (result == true) _ = _vm.DashboardVM.LoadAsync();
+        });
+    }
 }

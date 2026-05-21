@@ -19,8 +19,8 @@
     <!--=========================================-->
     <!-- BORDER & DIVIDER COLORS -->
     <!--=========================================-->
-    <Color x:Key="BorderColorLight">#D1D5DB</Color>
-    <Color x:Key="BorderColorMedium">#D1D5DB</Color>
+    <Color x:Key="BorderColorLight">#9CA3AF</Color>
+    <Color x:Key="BorderColorMedium">#9CA3AF</Color>
     <Color x:Key="DividerColor">#E5E7EB</Color>
     
     <!--=========================================-->
@@ -76,8 +76,8 @@
     <SolidColorBrush x:Key="SurfaceBrushWhite" Color="#FFFFFF"/>
     
     <!-- Border Brushes -->
-    <SolidColorBrush x:Key="BorderBrushLight" Color="#D1D5DB"/>
-    <SolidColorBrush x:Key="BorderBrushMedium" Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="BorderBrushLight" Color="#9CA3AF"/>
+    <SolidColorBrush x:Key="BorderBrushMedium" Color="#9CA3AF"/>
     <SolidColorBrush x:Key="DividerBrush" Color="#E5E7EB"/>
     
     <!-- Text Brushes -->

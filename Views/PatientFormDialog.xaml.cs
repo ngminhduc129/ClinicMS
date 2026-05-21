@@ -15,8 +15,11 @@ namespace ClinicMS.Views;
 public partial class PatientFormDialog : UserControl
 {
     private readonly MainViewModel _vm;
-    private readonly Patient? _editing;
+    private Patient? _editing;
     private bool _isEditing => _editing != null;
+
+    private int _patientSearchCount;
+    private bool _isSelectingPatient;
 
     private static readonly SolidColorBrush _borderFocused = new(Color.FromRgb(22, 163, 74));
     private static readonly SolidColorBrush _borderNormal = new(Color.FromRgb(229, 231, 235));
@@ -66,6 +69,85 @@ public partial class PatientFormDialog : UserControl
         translate.BeginAnimation(TranslateTransform.YProperty, animTranslate);
     }
 
+    // ───────────────────────────── Patient search ─────────────────────────────
+    private async void NameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            if (_isSelectingPatient) return;
+
+            int currentRequest = ++_patientSearchCount;
+            await Task.Delay(300);
+            if (currentRequest != _patientSearchCount) return;
+
+            await ShowSuggestions(NameBox.Text.Trim());
+        }
+        catch
+        {
+            SuggestPopup.IsOpen = false;
+        }
+    }
+
+    private async Task ShowSuggestions(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            SuggestPopup.IsOpen = false;
+            return;
+        }
+
+        try
+        {
+            var patients = await _vm.PatientVM.QuickSearchAsync(searchTerm);
+            SuggestList.ItemsSource = patients;
+            SuggestPopup.IsOpen = patients is { Count: > 0 };
+        }
+        catch
+        {
+            SuggestPopup.IsOpen = false;
+        }
+    }
+
+    private void NameBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        SuggestPopup.IsOpen = false;
+    }
+
+    private async void SuggestList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SuggestList.SelectedItem is not Patient selected) return;
+
+        _isSelectingPatient = true;
+        try
+        {
+            _patientSearchCount++; // invalidate any pending debounce
+            NameBox.Text = selected.FullName ?? "";
+            NameBox.CaretIndex = NameBox.Text.Length;
+        }
+        finally
+        {
+            _isSelectingPatient = false;
+        }
+
+        await SelectExistingPatient(selected.PatientId);
+
+        SuggestPopup.IsOpen = false;
+    }
+
+    private async Task SelectExistingPatient(int patientId)
+    {
+        var (patient, _) = await _vm.PatientVM.GetPatientWithContactAsync(patientId);
+        if (patient == null) return;
+
+        _editing = patient;
+        TitleText.Text = "Sửa Thông Tin Bệnh Nhân";
+        SubtitleText.Text = "Cập nhật thông tin bệnh nhân";
+        await LoadDataAsync(patient);
+
+        if (SaveBtn.Template?.FindName("SaveLabel", SaveBtn) is TextBlock lbl)
+            lbl.Text = "Cập Nhật";
+    }
+
     private async Task LoadDataSafeAsync(Patient p)
     {
         try { await LoadDataAsync(p); }
@@ -102,7 +184,16 @@ public partial class PatientFormDialog : UserControl
     // ───────────────────────────── Data ─────────────────────────────
     private async Task LoadDataAsync(Patient p)
     {
-        NameBox.Text = p.FullName ?? ""; NotesBox.Text = p.Note ?? "";
+        _isSelectingPatient = true;
+        try
+        {
+            NameBox.Text = p.FullName ?? "";
+        }
+        finally
+        {
+            _isSelectingPatient = false;
+        }
+        NotesBox.Text = p.Note ?? "";
         HeightBox.Text = p.HeightCm?.ToString() ?? ""; WeightBox.Text = p.WeightKg?.ToString() ?? "";
         if (DateTime.TryParse(p.DateOfBirth, out var d)) DobPicker.SelectedDate = d;
         GenderNam.IsChecked = p.Gender == "Nam";
@@ -179,11 +270,22 @@ public partial class PatientFormDialog : UserControl
     // ───────────────────────────── Button events ─────────────────────────────
     private async void Save_Click(object s, RoutedEventArgs e)
     {
+        SuggestPopup.IsOpen = false;
         var patient = BuildPatient();
         if (string.IsNullOrWhiteSpace(patient.FullName))
         { 
             _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập họ tên bệnh nhân.", "Thiếu thông tin", true));
             return; 
+        }
+        if (DobPicker.SelectedDate == null)
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn ngày sinh.", "Thiếu thông tin", true));
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(patient.Phone))
+        {
+            _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng nhập số điện thoại.", "Thiếu thông tin", true));
+            return;
         }
 
         string action = _isEditing ? "Cập nhật" : "Thêm mới";
@@ -217,6 +319,7 @@ public partial class PatientFormDialog : UserControl
 
     private void Cancel_Click(object s, RoutedEventArgs e)
     {
+        SuggestPopup.IsOpen = false;
         if (IsDirty())
         {
             _vm.Modal.Show(new ConfirmDialog("Hủy thay đổi?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
@@ -228,6 +331,7 @@ public partial class PatientFormDialog : UserControl
 
     private void Close_Click(object s, RoutedEventArgs e)
     {
+        SuggestPopup.IsOpen = false;
         if (IsDirty())
         {
             _vm.Modal.Show(new ConfirmDialog("Thoát form?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
@@ -239,6 +343,7 @@ public partial class PatientFormDialog : UserControl
 
     private void Overlay_Click(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
+        SuggestPopup.IsOpen = false;
         if (e.Source == e.OriginalSource || (e.OriginalSource is FrameworkElement fe && fe.Name != "DialogRoot" && FindParent<Border>(fe)?.Name != "DialogRoot"))
         {
             if (!IsDirty())
@@ -250,6 +355,18 @@ public partial class PatientFormDialog : UserControl
             _vm.Modal.Show(new ConfirmDialog("Thoát form?", "Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", _vm), (res) => {
                 if (res == true) CloseForm();
             });
+        }
+    }
+
+    private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (sender is System.Windows.Controls.ScrollViewer sv)
+        {
+            if (PresentationSource.FromDependencyObject(e.OriginalSource as DependencyObject) != PresentationSource.FromDependencyObject(this))
+                return;
+            SuggestPopup.IsOpen = false;
+            sv.ScrollToVerticalOffset(sv.VerticalOffset - e.Delta);
+            e.Handled = true;
         }
     }
 

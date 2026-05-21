@@ -141,7 +141,10 @@ public class Visit : INotifyPropertyChanged
     public string PatientGenderIcon => Patient?.Gender == "Nữ" ? "\uE8D4" : "\uE77B";
 
     [NotMapped]
-    public string GenderColor => Patient?.Gender == "Nữ" ? "#0D9488" : "#64748B"; // Nữ: Teal (Xanh mòng két), Nam: Slate (Xám xanh)
+    public string GenderColor => Patient?.Gender == "Nữ" ? "#F0FDF4" : "#F3F4F6"; // Nữ: pastel green bg, Nam: pastel gray bg
+
+    [NotMapped]
+    public string GenderIconColor => Patient?.Gender == "Nữ" ? "#059669" : "#6B7280";
 
     [NotMapped]
     public string StatusGroup => Status switch

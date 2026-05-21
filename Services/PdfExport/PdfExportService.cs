@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -46,7 +47,32 @@ public class PdfExportService
         var fileName = $"HoaDon_{invoice.VisitId}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
         var filePath = Path.Combine(_tempFolder, fileName);
 
-        var document = new InvoiceDocument(invoice);
+        var items = invoice.Items ?? new List<InvoiceItem>();
+        var document = new InvoiceDocument(invoice, items, "HÓA ĐƠN THANH TOÁN");
+        document.GeneratePdf(filePath);
+
+        return filePath;
+    }
+
+    public string ExportMedicineInvoice(Invoice invoice)
+    {
+        var fileName = $"HoaDonThuoc_{invoice.VisitId}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+        var filePath = Path.Combine(_tempFolder, fileName);
+
+        var items = invoice.Items?.Where(i => i.ItemType == "Medicine").ToList() ?? new List<InvoiceItem>();
+        var document = new InvoiceDocument(invoice, items, "HÓA ĐƠN THUỐC");
+        document.GeneratePdf(filePath);
+
+        return filePath;
+    }
+
+    public string ExportServiceInvoice(Invoice invoice)
+    {
+        var fileName = $"HoaDonDichVu_{invoice.VisitId}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+        var filePath = Path.Combine(_tempFolder, fileName);
+
+        var items = invoice.Items?.Where(i => i.ItemType == "Service").ToList() ?? new List<InvoiceItem>();
+        var document = new InvoiceDocument(invoice, items, "HÓA ĐƠN DỊCH VỤ");
         document.GeneratePdf(filePath);
 
         return filePath;
@@ -204,7 +230,15 @@ public class MedicalRecordDocument : IDocument
 public class InvoiceDocument : IDocument
 {
     private readonly Invoice _invoice;
-    public InvoiceDocument(Invoice invoice) => _invoice = invoice;
+    private readonly List<InvoiceItem> _items;
+    private readonly string _title;
+
+    public InvoiceDocument(Invoice invoice, List<InvoiceItem> items, string title)
+    {
+        _invoice = invoice;
+        _items = items;
+        _title = title;
+    }
 
     public void Compose(IDocumentContainer container)
     {
@@ -219,7 +253,7 @@ public class InvoiceDocument : IDocument
                 row.RelativeItem().Column(col =>
                 {
                     col.Item().Text("PHÒNG KHÁM ĐA KHOA CLINICMS").FontSize(12).SemiBold().FontColor(Colors.Green.Medium);
-                    col.Item().Text("HÓA ĐƠN THANH TOÁN").FontSize(14).ExtraBold();
+                    col.Item().Text(_title).FontSize(14).ExtraBold();
                 });
                 row.ConstantItem(80).Text($"Mã: INV-{_invoice.VisitId}").FontSize(8).Italic();
             });
@@ -250,8 +284,7 @@ public class InvoiceDocument : IDocument
                         header.Cell().BorderBottom(1).AlignRight().Text("Thành tiền");
                     });
 
-                    var items = _invoice.Items ?? new List<InvoiceItem>();
-                    foreach(var item in items)
+                    foreach(var item in _items)
                     {
                         table.Cell().PaddingVertical(2).Text(item.ItemName);
                         table.Cell().PaddingVertical(2).AlignCenter().Text(item.Quantity.ToString());
@@ -260,7 +293,7 @@ public class InvoiceDocument : IDocument
                     }
 
                     table.Cell().ColumnSpan(3).PaddingTop(10).Text("TỔNG CỘNG").Bold();
-                    table.Cell().PaddingTop(10).AlignRight().Text(_invoice.TotalAmount.ToString("N0") + " đ").Bold();
+                    table.Cell().PaddingTop(10).AlignRight().Text(_items.Sum(i => i.Subtotal).ToString("N0") + " đ").Bold();
                 });
 
                 col.Item().PaddingTop(20).Row(row =>

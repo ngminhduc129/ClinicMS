@@ -9,7 +9,7 @@
         <Style x:Key="ChartBar" TargetType="Border">
             <Setter Property="Background" Value="#22C55E"/>
             <Setter Property="CornerRadius" Value="4,4,0,0"/>
-            <Setter Property="Width" Value="32"/>
+            <Setter Property="Width" Value="40"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -39,43 +39,43 @@
                 <ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
+            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20,24" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#ECFDF5" HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#CCFBF1" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0F766E"/>
                     </Border>
-                    <TextBlock Text="{Binding TotalPatients}" FontSize="32" FontWeight="Bold" Foreground="#065F46"/>
-                    <TextBlock Text="Bệnh Nhân" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
+                    <TextBlock Text="{Binding TotalPatients}" FontSize="32" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="Bệnh Nhân" FontSize="13" FontWeight="Medium" Foreground="#64748B" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
+            <Border Grid.Column="2" Background="White" CornerRadius="12" Padding="20,24" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#F0FDF4" HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#16A34A"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#CCFBF1" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0F766E"/>
                     </Border>
-                    <TextBlock Text="{Binding TotalDoctors}" FontSize="32" FontWeight="Bold" Foreground="#15803D"/>
-                    <TextBlock Text="Bác Sĩ" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
+                    <TextBlock Text="{Binding TotalDoctors}" FontSize="32" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="Bác Sĩ" FontSize="13" FontWeight="Medium" Foreground="#64748B" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="4" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
+            <Border Grid.Column="4" Background="White" CornerRadius="12" Padding="20,24" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
                     <Border Width="44" Height="44" CornerRadius="10" Background="#FEF3C7" HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#D97706"/>
+                        <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#B45309"/>
                     </Border>
-                    <TextBlock Text="{Binding TotalVisits}" FontSize="32" FontWeight="Bold" Foreground="#D97706"/>
-                    <TextBlock Text="Tổng Hồ Sơ Khám" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
+                    <TextBlock Text="{Binding TotalVisits}" FontSize="32" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="Tổng Hồ Sơ Khám" FontSize="13" FontWeight="Medium" Foreground="#64748B" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="6" Background="White" CornerRadius="10" Padding="22,18" Effect="{StaticResource StandardShadow}">
+            <Border Grid.Column="6" Background="White" CornerRadius="12" Padding="20,24" Effect="{StaticResource StandardShadow}">
                 <StackPanel>
-                    <Border Width="44" Height="44" CornerRadius="10" Background="#FCE7F3" HorizontalAlignment="Left" Margin="0,0,0,14">
-                        <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#BE185D"/>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#E0F2FE" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0369A1"/>
                     </Border>
-                    <TextBlock Text="{Binding VisitsToday}" FontSize="32" FontWeight="Bold" Foreground="#BE185D"/>
-                    <TextBlock Text="Khám Hôm Nay" FontSize="13" Foreground="#6B7280" Margin="0,2,0,0"/>
+                    <TextBlock Text="{Binding VisitsToday}" FontSize="32" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="Khám Hôm Nay" FontSize="13" FontWeight="Medium" Foreground="#64748B" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -93,42 +93,53 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="24"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
                 <!-- WEEKLY CHART -->
-                <Border Grid.Row="0" Background="White" CornerRadius="16" Padding="24" Effect="{StaticResource StandardShadow}">
+                <Border Grid.Row="0" Background="White" CornerRadius="16" Padding="24" ClipToBounds="True" Effect="{StaticResource StandardShadow}">
                     <StackPanel>
                         <TextBlock Text="THỐNG KÊ 7 NGÀY QUA" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF" Margin="0,0,0,20"/>
-                        <ItemsControl ItemsSource="{Binding WeeklyStats}" Height="160">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><UniformGrid Columns="7" VerticalAlignment="Bottom"/></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid VerticalAlignment="Bottom">
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding Value}" FontSize="11" FontWeight="SemiBold" Foreground="#16A34A" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                                            <Border Style="{StaticResource ChartBar}">
-                                                <Border.Height>
-                                                    <MultiBinding Converter="{StaticResource PercentageToHeightConverter}">
-                                                        <Binding Path="Percentage"/><Binding Source="120"/>
-                                                    </MultiBinding>
-                                                </Border.Height>
-                                            </Border>
-                                            <TextBlock Text="{Binding Label}" FontSize="10" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <Grid Height="160">
+                            <!-- Dashed grid lines -->
+                            <Line HorizontalAlignment="Stretch" VerticalAlignment="Top" Y1="0" Y2="0" Stroke="#E5E7EB" StrokeDashArray="3,3" Opacity="0.5" StrokeThickness="1" Margin="8,40,8,0"/>
+                            <Line HorizontalAlignment="Stretch" VerticalAlignment="Top" Y1="0" Y2="0" Stroke="#E5E7EB" StrokeDashArray="3,3" Opacity="0.5" StrokeThickness="1" Margin="8,80,8,0"/>
+                            <Line HorizontalAlignment="Stretch" VerticalAlignment="Top" Y1="0" Y2="0" Stroke="#E5E7EB" StrokeDashArray="3,3" Opacity="0.5" StrokeThickness="1" Margin="8,120,8,0"/>
+
+                            <!-- Baseline -->
+                            <Border Height="1" Background="#E5E7EB" VerticalAlignment="Bottom" Margin="8,0,8,18"/>
+
+                            <!-- Bars -->
+                            <ItemsControl ItemsSource="{Binding WeeklyStats}" VerticalAlignment="Bottom">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Columns="7" VerticalAlignment="Bottom"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid VerticalAlignment="Bottom">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding Value}" FontSize="11" FontWeight="SemiBold" Foreground="#16A34A" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                                <Border Style="{StaticResource ChartBar}">
+                                                    <Border.Height>
+                                                        <MultiBinding Converter="{StaticResource PercentageToHeightConverter}">
+                                                            <Binding Path="Percentage"/><Binding Source="120"/>
+                                                        </MultiBinding>
+                                                    </Border.Height>
+                                                </Border>
+                                                <TextBlock Text="{Binding Label}" FontSize="10" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
                 <!-- UPCOMING APPOINTMENTS -->
-                <Border Grid.Row="2" Background="White" CornerRadius="16" Padding="24" Effect="{StaticResource StandardShadow}">
+                <Border Grid.Row="2" Background="White" CornerRadius="16" Padding="24" Margin="0,0,0,24" ClipToBounds="True" Effect="{StaticResource StandardShadow}">
                     <Grid>
-                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Margin="0,0,0,20">
                             <TextBlock Text="LỊCH HẸN SẮP TỚI" FontSize="12" FontWeight="Bold" Foreground="#9CA3AF"/>
                             <TextBlock Text="Các bệnh nhân đặt lịch trước" FontSize="11" Foreground="#D1D5DB" Margin="0,2,0,0"/>
@@ -157,20 +168,28 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         
-                        <TextBlock Grid.Row="1" Text="Không có lịch hẹn" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
+                        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,24">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers><DataTrigger Binding="{Binding UpcomingAppointments.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </StackPanel.Style>
+                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="48" Foreground="#D1D5DB" HorizontalAlignment="Center" Opacity="0.3"/>
+                            <TextBlock Text="Không có lịch hẹn" Foreground="#D1D5DB" FontSize="13" HorizontalAlignment="Center" Margin="0,8,0,16"/>
+                            <Button Style="{StaticResource OutlineBtn}" Click="AddAppointment_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="+" FontSize="16" FontWeight="Bold" Foreground="#16A34A" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Tạo lịch hẹn mới" FontSize="13" Foreground="#16A34A"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>
 
             <!-- RIGHT: TODAY'S VISITS LIST -->
-            <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="24" Effect="{StaticResource StandardShadow}">
+            <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="24" ClipToBounds="True" Effect="{StaticResource StandardShadow}">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,0,0,20">
@@ -223,7 +242,7 @@
                                     
                                     <!-- Avatar / Icon based on Gender -->
                                     <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="{Binding GenderColor}" Margin="0,0,12,0">
-                                        <TextBlock Text="{Binding PatientGenderIcon}" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PatientGenderIcon}" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{Binding GenderIconColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
 
                                     <!-- Info -->
@@ -239,8 +258,14 @@
                                     <!-- Status Badge -->
                                     <Border Grid.Column="2" CornerRadius="8" Padding="10,4" VerticalAlignment="Center"
                                             Background="{Binding Status, Converter={StaticResource StatusToBackground}}">
-                                        <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Bold"
-                                                   Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="9" FontWeight="Bold" VerticalAlignment="Center"
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"
+                                                       Margin="0,0,4,0"/>
+                                            <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusToBrush}, FallbackValue=#3B82F6}"/>
+                                        </StackPanel>
                                     </Border>
                                 </Grid>
                             </DataTemplate>

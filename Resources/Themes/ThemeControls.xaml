@@ -392,7 +392,7 @@
                             Padding="0"
                             Effect="{TemplateBinding Effect}">
                         <ScrollViewer x:Name="PART_ContentHost"
-                                      VerticalAlignment="Center"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                       Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -412,7 +412,6 @@
                         </EventTrigger>
                         <Trigger Property="IsFocused" Value="True">
                             <Setter TargetName="MainBorder" Property="BorderBrush" Value="#16A34A"/>
-                            <Setter TargetName="MainBorder" Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

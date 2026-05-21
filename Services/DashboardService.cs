@@ -29,6 +29,13 @@ public class DashboardService
                        .ToListAsync();
     }
 
+    public async Task CreateAppointmentAsync(Appointment appointment)
+    {
+        await using var db = _core.Ctx();
+        db.Appointments.Add(appointment);
+        await db.SaveChangesAsync();
+    }
+
     public async Task<Dictionary<string, int>> GetVisitCountByDayAsync(int daysBack = 7)
     {
         await using var db = _core.Ctx();

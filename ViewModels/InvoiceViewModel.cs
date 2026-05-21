@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ClinicMS.Models;
 using ClinicMS.Services;
 using ClinicMS.Services.PdfExport;
+using ClinicMS.Views;
 
 namespace ClinicMS.ViewModels;
 
@@ -13,6 +14,7 @@ public class InvoiceViewModel : BaseViewModel
     private readonly InvoiceService _invoiceService;
     private readonly PdfExportService _pdfService;
     private readonly ToastService _toast;
+    private readonly ModalService _modal;
 
     public ObservableCollection<Invoice> Invoices { get; } = new();
 
@@ -31,16 +33,19 @@ public class InvoiceViewModel : BaseViewModel
     }
 
     public RelayCommand LoadCommand { get; }
-    public RelayCommand PrintCommand { get; }
+    public RelayCommand PrintMedicineCommand { get; }
+    public RelayCommand PrintServiceCommand { get; }
 
-    public InvoiceViewModel(InvoiceService invoiceService, PdfExportService pdfService, ToastService toast)
+    public InvoiceViewModel(InvoiceService invoiceService, PdfExportService pdfService, ToastService toast, ModalService modal)
     {
         _invoiceService = invoiceService;
         _pdfService = pdfService;
         _toast = toast;
+        _modal = modal;
 
         LoadCommand = new RelayCommand(async () => await LoadAsync());
-        PrintCommand = new RelayCommand(p => ExportPdf(p as Invoice));
+        PrintMedicineCommand = new RelayCommand(p => ExportMedicinePdf(p as Invoice));
+        PrintServiceCommand = new RelayCommand(p => ExportServicePdf(p as Invoice));
     }
 
     public async Task LoadAsync()
@@ -65,15 +70,31 @@ public class InvoiceViewModel : BaseViewModel
         }
     }
 
-    private void ExportPdf(Invoice? inv)
+    private void ExportMedicinePdf(Invoice? inv)
     {
         if (inv == null) return;
         try
         {
-            var path = _pdfService.ExportInvoice(inv);
-            // Mở file (PdfExportService có hàm OpenFile nhưng nó private, tôi sẽ gọi qua shell hoặc sửa PdfExportService sau)
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
-            _toast.Show("Đã xuất hóa đơn PDF");
+            _toast.Show("Đang chuẩn bị hóa đơn thuốc...");
+            var path = _pdfService.ExportMedicineInvoice(inv);
+            _modal.Show(new PdfPreviewView(path, "HÓA ĐƠN THUỐC", _modal));
+            _toast.Show("Đã xuất hóa đơn thuốc thành công");
+        }
+        catch (Exception ex)
+        {
+            _toast.ShowError($"Lỗi xuất PDF: {ex.Message}");
+        }
+    }
+
+    private void ExportServicePdf(Invoice? inv)
+    {
+        if (inv == null) return;
+        try
+        {
+            _toast.Show("Đang chuẩn bị hóa đơn dịch vụ...");
+            var path = _pdfService.ExportServiceInvoice(inv);
+            _modal.Show(new PdfPreviewView(path, "HÓA ĐƠN DỊCH VỤ", _modal));
+            _toast.Show("Đã xuất hóa đơn dịch vụ thành công");
         }
         catch (Exception ex)
         {

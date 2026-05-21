@@ -56,7 +56,7 @@ namespace ClinicMS.Views
             // Nền: trắng mờ khi active, trong suốt khi không
             if (bg != null)
                 bg.Background = active
-                    ? new SolidColorBrush(Color.FromArgb(45, 255, 255, 255))
+                    ? new SolidColorBrush(Color.FromArgb(75, 255, 255, 255))
                     : Brushes.Transparent;
 
             // Chữ: sáng hoàn toàn khi active, mờ khi không

@@ -23,10 +23,10 @@ public partial class VisitFormDialog : UserControl
     private readonly Visit? _editing;
     private int? _selectedPatientId;
     private int? _selectedDoctorId;
-    private List<string> _patientNames = new();
     private List<string> _doctorNames = new();
+    private List<string> _medicineNames = new();
+    private List<string> _serviceNames = new();
     private bool _isEditing => _editing != null;
-    private bool _searchSetupDone;
 
     // Danh sách thuốc đang kê
     private readonly System.Collections.ObjectModel.ObservableCollection<PrescriptionDetail> _prescriptionItems = new();
@@ -59,22 +59,11 @@ public partial class VisitFormDialog : UserControl
             HookDateBorderFocus();
 
             // Tải trước dữ liệu tĩnh khi control đã sẵn sàng trong visual tree
-            RefreshPatientList();
             RefreshDoctorList();
             RefreshMedicineList();
             RefreshServiceList();
 
-            if (!_searchSetupDone)
-            {
-                SetupSearchComboBox(PatientNameBox, _patientNames);
-                SetupSearchComboBox(DoctorNameBox, _doctorNames);
-                SetupSearchComboBox(MedicineCombo, _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList());
-                SetupSearchComboBox(ServiceCombo, _vm.ServiceVM.Services.Select(s => s.ServiceName ?? "").ToList());
-                _searchSetupDone = true;
-            }
-
             // Subscribe to changes
-            _vm.PatientVM.Patients.CollectionChanged += OnPatientsChanged;
             _vm.DoctorVM.Doctors.CollectionChanged += OnDoctorsChanged;
             _vm.MedicineVM.Medicines.CollectionChanged += OnMedicinesChanged;
             _vm.ServiceVM.Services.CollectionChanged += OnServicesChanged;
@@ -82,7 +71,6 @@ public partial class VisitFormDialog : UserControl
 
         Unloaded += (_, _) =>
         {
-            _vm.PatientVM.Patients.CollectionChanged -= OnPatientsChanged;
             _vm.DoctorVM.Doctors.CollectionChanged -= OnDoctorsChanged;
             _vm.MedicineVM.Medicines.CollectionChanged -= OnMedicinesChanged;
             _vm.ServiceVM.Services.CollectionChanged -= OnServicesChanged;
@@ -93,46 +81,27 @@ public partial class VisitFormDialog : UserControl
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         // Note: These properties are now in MainViewModel but were restored by the generalist
-        if (e.PropertyName == "FullPatientNames")
-            RefreshPatientList();
-        else if (e.PropertyName == "FullDoctorNames")
+        if (e.PropertyName == "FullDoctorNames")
             RefreshDoctorList();
     }
 
-    private void OnPatientsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshPatientList();
     private void OnDoctorsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshDoctorList();
     private void OnMedicinesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshMedicineList();
     private void OnServicesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshServiceList();
 
-    private void RefreshPatientList()
-    {
-        _patientNames = _vm.FullPatientNames.Keys.OrderBy(n => n).ToList();
-        UpdateComboSource(PatientNameBox, _patientNames);
-    }
-
     private void RefreshDoctorList()
     {
         _doctorNames = _vm.FullDoctorNames.Keys.OrderBy(n => n).ToList();
-        UpdateComboSource(DoctorNameBox, _doctorNames);
     }
 
     private void RefreshMedicineList()
     {
-        var medicines = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList();
-        UpdateComboSource(MedicineCombo, medicines);
+        _medicineNames = _vm.MedicineVM.Medicines.Select(m => m.MedicineName ?? "").ToList();
     }
 
     private void RefreshServiceList()
     {
-        var services = _vm.ServiceVM.Services.Select(s => s.ServiceName ?? "").ToList();
-        UpdateComboSource(ServiceCombo, services);
-    }
-
-    private static void UpdateComboSource(ComboBox comboBox, List<string> items)
-    {
-        comboBox.Tag = items;
-        if (comboBox.ItemsSource != items)
-            comboBox.ItemsSource = items;
+        _serviceNames = _vm.ServiceVM.Services.Select(s => s.ServiceName ?? "").ToList();
     }
 
     private void AnimateOpen()
@@ -364,14 +333,13 @@ public partial class VisitFormDialog : UserControl
             ? Visibility.Collapsed : Visibility.Visible;
         if (MedicineInputArea.Visibility == Visibility.Visible)
         {
-            MedicineCombo.ApplyTemplate();
-            MedicineCombo.Focus();
+            MedicineNameBox.Focus();
         }
     }
 
     private void CancelAddMedicine_Click(object sender, RoutedEventArgs e)
     {
-        MedicineCombo.Text = "";
+        MedicineNameBox.Text = "";
         MedicineQty.Clear();
         MedicineDosage.Clear();
         MedicineInputArea.Visibility = Visibility.Collapsed;
@@ -381,7 +349,7 @@ public partial class VisitFormDialog : UserControl
     {
         try 
         {
-            var medicineName = MedicineCombo.Text.Trim();
+            var medicineName = MedicineNameBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(medicineName))
             {
                 _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn thuốc.", "Thông báo", true));
@@ -438,7 +406,7 @@ public partial class VisitFormDialog : UserControl
             }
 
             // Reset input
-            MedicineCombo.Text = "";
+            MedicineNameBox.Text = "";
             MedicineQty.Clear();
             MedicineDosage.Clear();
             MedicineInputArea.Visibility = Visibility.Collapsed;
@@ -472,14 +440,13 @@ public partial class VisitFormDialog : UserControl
             ? Visibility.Collapsed : Visibility.Visible;
         if (ServiceInputArea.Visibility == Visibility.Visible)
         {
-            ServiceCombo.ApplyTemplate();
-            ServiceCombo.Focus();
+            ServiceNameBox.Focus();
         }
     }
 
     private void CancelAddService_Click(object sender, RoutedEventArgs e)
     {
-        ServiceCombo.Text = "";
+        ServiceNameBox.Text = "";
         ServiceResultBox.Clear();
         ServiceInputArea.Visibility = Visibility.Collapsed;
     }
@@ -488,7 +455,7 @@ public partial class VisitFormDialog : UserControl
     {
         try 
         {
-            var serviceName = ServiceCombo.Text.Trim();
+            var serviceName = ServiceNameBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(serviceName))
             {
                 _vm.Modal.Show(new MessageDialog(_vm, "Vui lòng chọn dịch vụ.", "Thông báo", true));
@@ -518,7 +485,7 @@ public partial class VisitFormDialog : UserControl
             });
 
             // Reset input
-            ServiceCombo.Text = "";
+            ServiceNameBox.Text = "";
             ServiceResultBox.Clear();
             ServiceInputArea.Visibility = Visibility.Collapsed;
         }
@@ -637,6 +604,11 @@ public partial class VisitFormDialog : UserControl
     {
         try
         {
+            PatientSuggestPopup.IsOpen = false;
+            DoctorSuggestPopup.IsOpen = false;
+            ServiceSuggestPopup.IsOpen = false;
+            MedicineSuggestPopup.IsOpen = false;
+
             var (patientId, patientError) = await TryResolvePatientIdAsync();
             if (patientError != null)
             {
@@ -676,6 +648,10 @@ public partial class VisitFormDialog : UserControl
 
     private void Cancel_Click(object s, RoutedEventArgs e)
     {
+        PatientSuggestPopup.IsOpen = false;
+        DoctorSuggestPopup.IsOpen = false;
+        ServiceSuggestPopup.IsOpen = false;
+        MedicineSuggestPopup.IsOpen = false;
         if (IsDirty())
         {
             _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Hủy thay đổi?", _vm), (res) => {
@@ -687,6 +663,10 @@ public partial class VisitFormDialog : UserControl
 
     private void Close_Click(object s, RoutedEventArgs e)
     {
+        PatientSuggestPopup.IsOpen = false;
+        DoctorSuggestPopup.IsOpen = false;
+        ServiceSuggestPopup.IsOpen = false;
+        MedicineSuggestPopup.IsOpen = false;
         if (IsDirty())
         {
             _vm.Modal.Show(new ConfirmDialog("Thông tin đã thay đổi sẽ bị mất. Bạn có chắc muốn thoát không?", "Thoát form?", _vm), (res) => {
@@ -708,114 +688,12 @@ public partial class VisitFormDialog : UserControl
 
     public bool HasData() => IsDirty();
 
-    private static void SetupSearchComboBox(ComboBox comboBox, List<string> allItems)
-    {
-        comboBox.Tag = allItems;
-        comboBox.ItemsSource = allItems;
-        comboBox.IsTextSearchEnabled = false;
-
-        var tb = comboBox.Template?.FindName("PART_EditableTextBox", comboBox) as TextBox;
-        if (tb != null)
-        {
-            tb.TextChanged -= EditableComboBox_TextChanged;
-            tb.TextChanged += EditableComboBox_TextChanged;
-        }
-        else
-        {
-            comboBox.Loaded += (s, e) =>
-            {
-                if (comboBox.Template?.FindName("PART_EditableTextBox", comboBox) is TextBox tb2)
-                {
-                    tb2.TextChanged -= EditableComboBox_TextChanged;
-                    tb2.TextChanged += EditableComboBox_TextChanged;
-                }
-            };
-        }
-    }
-
-    private static async void EditableComboBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (sender is not TextBox tb || tb.TemplatedParent is not ComboBox cb) return;
-        if (cb.Tag is not List<string> sourceItems) return;
-
-        var text = tb.Text ?? string.Empty;
-        var caretIndex = tb.CaretIndex;
-
-        if (cb.Name == "PatientNameBox")
-        {
-            var parent = FindParent<VisitFormDialog>(cb);
-            if (parent != null) parent._selectedPatientId = null;
-        }
-        else if (cb.Name == "DoctorNameBox")
-        {
-            var parent = FindParent<VisitFormDialog>(cb);
-            if (parent != null) parent._selectedDoctorId = null;
-        }
-
-        tb.TextChanged -= EditableComboBox_TextChanged;
-
-        try 
-        {
-            var filtered = string.IsNullOrWhiteSpace(text)
-                ? sourceItems.Take(MaxSuggestionItems).ToList()
-                : sourceItems.Where(n => n.Contains(text, StringComparison.OrdinalIgnoreCase)).Take(MaxSuggestionItems).ToList();
-
-            cb.ItemsSource = filtered;
-            
-            if (filtered.Any() && tb.IsFocused)
-            {
-                cb.IsDropDownOpen = true;
-                // Force open dropdown if it closed due to items change
-                await cb.Dispatcher.InvokeAsync(() => {
-                    if (tb.IsFocused && filtered.Any()) cb.IsDropDownOpen = true;
-                }, System.Windows.Threading.DispatcherPriority.Input);
-            }
-            else
-            {
-                cb.IsDropDownOpen = false;
-            }
-
-            tb.Text = text;
-            cb.Text = text;
-            tb.CaretIndex = caretIndex;
-        }
-        finally
-        {
-            tb.TextChanged += EditableComboBox_TextChanged;
-        }
-    }
-
-    private void SearchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is not ComboBox cb || cb.SelectedItem is not string selected) return;
-
-        cb.Text = selected;
-        cb.IsDropDownOpen = false;
-
-        if (cb.Name == "PatientNameBox")
-        {
-            if (_vm.FullPatientNames.TryGetValue(selected, out var pid))
-                _selectedPatientId = pid;
-        }
-        else if (cb.Name == "DoctorNameBox")
-        {
-            if (_vm.FullDoctorNames.TryGetValue(selected, out var did))
-                _selectedDoctorId = did;
-        }
-
-        if (cb.Template.FindName("PART_EditableTextBox", cb) is TextBox tb)
-        {
-            tb.CaretIndex = tb.Text.Length;
-        }
-    }
-
-    private void SearchComboBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-    {
-        if (sender is ComboBox cb) cb.IsDropDownOpen = false;
-    }
-
     private void Overlay_Click(object s, MouseButtonEventArgs e)
     {
+        PatientSuggestPopup.IsOpen = false;
+        DoctorSuggestPopup.IsOpen = false;
+        ServiceSuggestPopup.IsOpen = false;
+        MedicineSuggestPopup.IsOpen = false;
         if (e.Source == e.OriginalSource || (e.OriginalSource is FrameworkElement fe && fe.Name != "DialogRoot" && FindParent<Border>(fe)?.Name != "DialogRoot"))
         {
             if (!IsDirty())
@@ -830,6 +708,63 @@ public partial class VisitFormDialog : UserControl
         }
     }
 
+    // ───────────────────────────── Patient search (name + phone) ─────────────────────────────
+    private bool _isSelectingPatient;
+    private int _patientSearchCount;
+
+    private async void PatientNameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            if (_isSelectingPatient) return;
+            int currentRequest = ++_patientSearchCount;
+            await Task.Delay(300);
+            if (currentRequest != _patientSearchCount) return;
+
+            var searchTerm = PatientNameBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                PatientSuggestPopup.IsOpen = false;
+                return;
+            }
+
+            var patients = await _vm.PatientVM.QuickSearchAsync(searchTerm);
+            PatientSuggestList.ItemsSource = patients;
+            PatientSuggestPopup.IsOpen = patients is { Count: > 0 };
+        }
+        catch
+        {
+            PatientSuggestPopup.IsOpen = false;
+        }
+    }
+
+    private async void PatientSuggestList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            if (PatientSuggestList.SelectedItem is not Patient selected) return;
+
+            _isSelectingPatient = true;
+            _patientSearchCount++; // invalidate any pending debounce
+            PatientNameBox.Text = selected.FullName ?? "";
+            PatientNameBox.CaretIndex = PatientNameBox.Text.Length;
+            _isSelectingPatient = false;
+
+            _selectedPatientId = selected.PatientId;
+            PatientSuggestPopup.IsOpen = false;
+        }
+        catch
+        {
+            _isSelectingPatient = false;
+            PatientSuggestPopup.IsOpen = false;
+        }
+    }
+
+    private void PatientNameBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        PatientSuggestPopup.IsOpen = false;
+    }
+
     private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
     {
         if (sender is ScrollViewer scrollViewer)
@@ -837,13 +772,169 @@ public partial class VisitFormDialog : UserControl
             if (PresentationSource.FromDependencyObject(e.OriginalSource as DependencyObject) != PresentationSource.FromDependencyObject(this))
                 return;
 
-            PatientNameBox.IsDropDownOpen = false;
-            DoctorNameBox.IsDropDownOpen = false;
-            MedicineCombo.IsDropDownOpen = false;
-            ServiceCombo.IsDropDownOpen = false;
+            PatientSuggestPopup.IsOpen = false;
+            DoctorSuggestPopup.IsOpen = false;
+            MedicineSuggestPopup.IsOpen = false;
+            ServiceSuggestPopup.IsOpen = false;
 
             scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
             e.Handled = true;
         }
+    }
+
+    // ───────────────────────────── Doctor search ─────────────────────────────
+    private int _doctorSearchCount;
+
+    private async void DoctorNameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            if (_isSuppressTextChanged) return;
+            int currentRequest = ++_doctorSearchCount;
+            await Task.Delay(300);
+            if (currentRequest != _doctorSearchCount) return;
+
+            _selectedDoctorId = null;
+            var searchTerm = DoctorNameBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                DoctorSuggestPopup.IsOpen = false;
+                return;
+            }
+
+            var filtered = _doctorNames
+                .Where(n => n.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .Take(MaxSuggestionItems)
+                .ToList();
+
+            DoctorSuggestList.ItemsSource = filtered;
+            DoctorSuggestPopup.IsOpen = filtered.Count > 0;
+        }
+        catch
+        {
+            DoctorSuggestPopup.IsOpen = false;
+        }
+    }
+
+    private bool _isSuppressTextChanged;
+
+    private void DoctorSuggestList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DoctorSuggestList.SelectedItem is not string selected) return;
+
+        _doctorSearchCount++;
+        _isSuppressTextChanged = true;
+        DoctorNameBox.Text = selected;
+        DoctorNameBox.CaretIndex = DoctorNameBox.Text.Length;
+        _isSuppressTextChanged = false;
+
+        if (_vm.FullDoctorNames.TryGetValue(selected, out var did))
+            _selectedDoctorId = did;
+        DoctorSuggestPopup.IsOpen = false;
+    }
+
+    private void DoctorNameBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        DoctorSuggestPopup.IsOpen = false;
+    }
+
+    // ───────────────────────────── Service search ─────────────────────────────
+    private int _serviceSearchCount;
+
+    private async void ServiceNameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            if (_isSuppressTextChanged) return;
+            int currentRequest = ++_serviceSearchCount;
+            await Task.Delay(300);
+            if (currentRequest != _serviceSearchCount) return;
+
+            var searchTerm = ServiceNameBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                ServiceSuggestPopup.IsOpen = false;
+                return;
+            }
+
+            var filtered = _serviceNames
+                .Where(n => n.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .Take(MaxSuggestionItems)
+                .ToList();
+
+            ServiceSuggestList.ItemsSource = filtered;
+            ServiceSuggestPopup.IsOpen = filtered.Count > 0;
+        }
+        catch
+        {
+            ServiceSuggestPopup.IsOpen = false;
+        }
+    }
+
+    private void ServiceSuggestList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ServiceSuggestList.SelectedItem is not string selected) return;
+
+        _serviceSearchCount++;
+        _isSuppressTextChanged = true;
+        ServiceNameBox.Text = selected;
+        ServiceNameBox.CaretIndex = ServiceNameBox.Text.Length;
+        _isSuppressTextChanged = false;
+        ServiceSuggestPopup.IsOpen = false;
+    }
+
+    private void ServiceNameBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        ServiceSuggestPopup.IsOpen = false;
+    }
+
+    // ───────────────────────────── Medicine search ─────────────────────────────
+    private int _medicineSearchCount;
+
+    private async void MedicineNameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            if (_isSuppressTextChanged) return;
+            int currentRequest = ++_medicineSearchCount;
+            await Task.Delay(300);
+            if (currentRequest != _medicineSearchCount) return;
+
+            var searchTerm = MedicineNameBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                MedicineSuggestPopup.IsOpen = false;
+                return;
+            }
+
+            var filtered = _medicineNames
+                .Where(n => n.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .Take(MaxSuggestionItems)
+                .ToList();
+
+            MedicineSuggestList.ItemsSource = filtered;
+            MedicineSuggestPopup.IsOpen = filtered.Count > 0;
+        }
+        catch
+        {
+            MedicineSuggestPopup.IsOpen = false;
+        }
+    }
+
+    private void MedicineSuggestList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (MedicineSuggestList.SelectedItem is not string selected) return;
+
+        _medicineSearchCount++;
+        _isSuppressTextChanged = true;
+        MedicineNameBox.Text = selected;
+        MedicineNameBox.CaretIndex = MedicineNameBox.Text.Length;
+        _isSuppressTextChanged = false;
+        MedicineSuggestPopup.IsOpen = false;
+    }
+
+    private void MedicineNameBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        MedicineSuggestPopup.IsOpen = false;
     }
 }

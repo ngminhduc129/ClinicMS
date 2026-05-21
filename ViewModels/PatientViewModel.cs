@@ -91,6 +91,12 @@ public class PatientViewModel : BaseViewModel
     }
 
     public async Task<(Patient? p, Contact? contact)> GetPatientWithContactAsync(int id) => await _patientService.GetPatientWithContactAsync(id);
+
+    public async Task<List<Patient>> QuickSearchAsync(string term, int limit = 10)
+    {
+        if (string.IsNullOrWhiteSpace(term)) return new();
+        return await _patientService.SearchPatientsAsync(term, 0, limit);
+    }
     
     // This will be updated later when VisitService is ready, for now it's still in DatabaseService
     public async Task<List<Visit>> GetPatientVisitsAsync(int id) 

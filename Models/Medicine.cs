@@ -52,4 +52,12 @@ public class Medicine
         <= 10 => "#FEF3C7", // Amber 100
         _ => "#D1FAE5"      // Emerald 100
     };
+
+    [NotMapped]
+    public string StockStatusBorder => AvailableQuantity switch
+    {
+        <= 0 => "#FECACA", // Red 200
+        <= 10 => "#FDE68A", // Amber 200
+        _ => "#BBF7D0"      // Emerald 200
+    };
 }

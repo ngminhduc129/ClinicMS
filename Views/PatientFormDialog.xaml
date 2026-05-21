@@ -373,7 +373,7 @@
                         </Grid>
                     </Border>
 
-                    <ScrollViewer Grid.Row="1" Background="#EDEEF0" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="1" Background="#EDEEF0" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                         <Grid Margin="20,18,20,18">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1.4*"/>
@@ -410,9 +410,34 @@
                                                 <ColumnDefinition Width="10"/>
                                                 <ColumnDefinition Width="1*"/>
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
+                                            <StackPanel Grid.Column="0" x:Name="NameBoxPanel">
                                                 <TextBlock Style="{StaticResource FormLabel}">Họ và Tên<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
-                                                <TextBox x:Name="NameBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"/>
+                                                <TextBox x:Name="NameBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0" TextChanged="NameBox_TextChanged" LostFocus="NameBox_LostFocus"/>
+                                                <Popup x:Name="SuggestPopup" PlacementTarget="{Binding ElementName=NameBox}" Placement="Bottom"
+                                                       IsOpen="False" AllowsTransparency="True" StaysOpen="True" PopupAnimation="Slide"
+                                                       Width="{Binding ActualWidth, ElementName=NameBox}">
+                                                    <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1"
+                                                            Padding="4" Effect="{StaticResource ElevatedShadow}" MaxHeight="200">
+                                                        <ListBox x:Name="SuggestList" Background="Transparent" BorderThickness="0"
+                                                                 FontSize="13"
+                                                                 SelectionChanged="SuggestList_SelectionChanged">
+                                                            <ListBox.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid Margin="0,2">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock Text="{Binding FullName}" Padding="8,6" FontWeight="SemiBold"
+                                                                                   Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                                        <TextBlock Grid.Column="1" Text="{Binding Phone}" Padding="8,6"
+                                                                                   Foreground="{DynamicResource TextBrushSecondary}"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ListBox.ItemTemplate>
+                                                        </ListBox>
+                                                    </Border>
+                                                </Popup>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Style="{StaticResource FormLabel}">Ngày Sinh<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>

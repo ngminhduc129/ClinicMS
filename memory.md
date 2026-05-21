@@ -162,5 +162,60 @@ Tài liệu này ghi lại các thay đổi quan trọng về cấu trúc Databa
   - **Scroll ngoài main content:** `PresentationSource` giống → đóng tất cả dropdown hiện tại → cuộn main ScrollViewer.
 * **Kết quả:** Dropdown hiển thị đúng vị trí, scroll được bằng con lăn chuột, tự động đóng khi scroll main content.
 
+## 15. NÂNG CẤP GIAO DIỆN TAB BỆNH NHÂN & CƠ CHẾ GỢI Ý (PATIENT AUTOCOMPLETE + SEARCH)
+*   **Vấn đề:**
+    - Các ComboBox chọn Bệnh nhân, Bác sĩ, Dịch vụ, Thuốc trong VisitFormDialog dùng `ComboBox` mặc định — không gõ tìm được, khó chọn khi danh sách dài.
+    - Popup của các ComboBox bị lỗi "Ghost" (hiện ra sau modal overlay do là HWND riêng với `AllowsTransparency=True`).
+    - ComboBox trong `VisitFormDialog` bị trôi tọa độ sau khi scroll main content.
+    - Khi scroll, dropdown không scroll được bằng con lăn chuột.
+*   **Giải pháp:**
+    - **Chuyển ComboBox → TextBox + Popup:** Cả 4 ComboBox (Patient, Doctor, Service, Medicine) đều được thay bằng TextBox + Popup riêng chứa ListBox gợi ý. Lọc theo thời gian thực (real-time filtering) khi gõ.
+    - **Guard chọn đúng:** `_isSelectingPatient` / `_isSuppressTextChanged` ngăn vòng lặp khi chọn từ Popup.
+    - **Ghost popup fix:** Đóng tất cả Popup đồng bộ (`StaysOpen=false`) trước khi gọi `_vm.Modal.Show()` — xóa sạch lớp HWND popup trước khi modal overlay phủ lên.
+    - **Scroll detachment fix:** `PreviewMouseWheel` handler so sánh `PresentationSource.FromDependencyObject` — nếu scroll từ popup (HWND khác) thì `return` để scroll bên trong popup; nếu scroll từ main content thì đóng popup + cuộn main ScrollViewer.
+*   **Kết quả:** Tìm kiếm mượt mà như ComboBox edittable, không còn "bóng ma" popup sau overlay, scroll popup riêng biệt.
+
+## 16. TỐI ƯU GIAO DIỆN THẺ THỐNG KÊ DASHBOARD (STAT CARDS)
+*   **Vấn đề:** Màu sắc các icon thẻ thống kê chưa đồng nhất (mỗi card dùng màu khác nhau tùy tiện). CornerRadius quá nhỏ (8px), padding chưa đẹp.
+*   **Giải pháp:**
+    - **Palette icon cố định:** Card 1–2 (Teal) `IconBackground="#CCFBF1"` / `IconColor="#0F766E"`. Card 3 (Amber) `IconColor="#B45309"` (giữ bg `#FEF3C7`). Card 4 (Sky Blue) `IconBackground="#E0F2FE"` / `IconColor="#0369A1"`.
+    - **Số liệu:** `#1F2937` (tất cả card).
+    - **Label:** `#64748B`, `FontWeight="Medium"`.
+    - **CornerRadius:** `12`, **Padding:** `20,24`.
+    - **Chart bar:** Width `40`, dashed grid lines.
+*   **Kết quả:** Giao diện dashboard đồng bộ, chuyên nghiệp.
+
+## 17. FORM LỊCH HẸN (APPOINTMENTFORMDIALOG) & THÊM NHANH BỆNH NHÂN INLINE
+*   **Vấn đề (mới):** Tab Lịch Hẹn cần form tạo appointment riêng với header riêng.
+*   **Giải pháp:**
+    - **AppointmentFormDialog (mới):** Modal form với Patient/Doctor ComboBox, DatePicker, TimeBox, Note. Header flat white + border trái xanh 4px + `Background="#F0F9F0"`. Subtitle `#6B7280`. Icon `#ECFDF5`/`#16A34A`.
+    - **Nút "+" bên cạnh Patient:** 36×36, CornerRadius 8, hover hiệu ứng.
+    - **Inline Quick-Add Container:** Khi click "+", thay vì mở popup modal, hiện container inline ẩn/hiện ngay bên dưới ComboBox. Gồm Name + Phone fields, nút "Lưu" xanh, nút "✕" đóng.
+    - **InlineSave_Click:** Gọi `PatientService.AddPatientAsync`, thêm vào `PatientVM.Patients`, tự động chọn trong `PatientCombo`.
+    - **Deleted QuickAddPatientDialog.xaml + .xaml.cs** — không cần modal riêng nữa.
+*   **Kết quả:** Luồng thêm bệnh nhân nhanh không rời form, không popup chồng popup.
+
+## 18. SỬA GHOST POPUP & OVERLAY (MODAL SERVICE + DIMMER Z-ORDER)
+*   **Vấn đề:** Khi hiển thị `QuickAddPatientDialog` (và các modal con khác), dimmer (backdrop) phủ lên luôn parent modal — dimmer và overlay của child modal chồng chéo.
+*   **Giải pháp:**
+    - **ModalService dimmer fix:** `_host.Children.Insert(prevIndex, dimmer)` — chèn dimmer trước parent modal trong `Children` collection, dimmer chỉ làm mờ app background, không làm mờ parent modal.
+    - **Child modal overlay removed:** QuickAddPatientDialog không còn overlay riêng (Grid có Background overlay) — chỉ dùng dimmer từ ModalService.
+*   **Kết quả:** Overlay tầng tầng lớp lớp biến mất. Parent modal vẫn sáng, chỉ app background bị dim.
+
+## 19. TINH CHỈNH GIAO DIỆN NHỎ (UI TWEAKS)
+*   **Medicine filter buttons font:** Chuyển từ `Content="Tất cả"` → `<TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#166534">` để đồng bộ font với Visit tab.
+*   **MedicineListView UI alignment:** Xoá local `IconBtn`+`OutlineBtn` styles. Title icon 40→36. Table card Grid+shadow. DataGrid virtualized + `FilteredMedicines` binding. Badge đồng bộ Visit (`CornerRadius=10`, `BorderThickness=1`, `FontSize=12`, `FontWeight=SemiBold`, `Padding=8,4`).
+*   **Medicine stock filter:** Dùng `AvailableQuantity` (không phải `StockQuantity`). Stats > 0 && <= 10. Active filter indicator (selected button green bg/border).
+*   **Medicine.cs:** Thêm `StockStatusBorder` property (red/amber/emerald 200).
+*   **MessageDialog error button:** Style trigger `Tag="Error"` → gray button (`#9CA3AF`, hover `#6B7280`).
+*   **Cursor jumping fix:** Xoá `IsFocused` `BorderThickness` change (1.5→2) trong `ModernTextBoxStyle` — Border re-layout gây ScrollViewer re-measure → caret reset.
+*   **Dropdown scroll fix:** Xoá `ScrollViewer` bao quanh 5 suggestion popups (VisitFormDialog, PatientFormDialog) — ScrollViewer > ListBox vô hiệu hoá ListBox internal scrolling.
+*   **ComboBoxItem FontWeight:** `FontWeight="Normal"` trong VisitListView local style.
+*   **NavButton active alpha:** 45→75 — active state dễ thấy hơn.
+*   **Visit.cs GenderColor:** `Nữ` → `#F0FDF4`/`#059669`, `Nam` → `#F3F4F6`/`#6B7280`.
+*   **DashboardView status badge:** Thêm `&#xE73E;` (checkmark Segoe MDL2) icon trước status text.
+*   **Header icons:** VisitFormDialog/VisitListView header icon `&#xE8D6;`(music note) → `&#xE160;`(document).
+*   **Border contrast:** Light `#D1D5DB`→`#9CA3AF`, dark `#374151`→`#4B5563`.
+
 ---
 *Ghi chú: Cấu trúc Database hiện tại đã rất "sạch" và chuẩn theo Model. Mọi thay đổi về Model sau này cần được cập nhật tương ứng vào Database.*

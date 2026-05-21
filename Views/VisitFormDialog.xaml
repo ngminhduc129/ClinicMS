@@ -380,7 +380,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Border Width="46" Height="46" CornerRadius="13"
                                             Background="#33FFFFFF" Margin="0,0,14,0">
-                                        <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets"
+                                        <TextBlock Text="&#xE160;" FontFamily="Segoe MDL2 Assets"
                                                    FontSize="20" Foreground="White"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
@@ -438,18 +438,56 @@
                                         </StackPanel>
 
                                         <TextBlock Style="{StaticResource FormLabel}">Bệnh Nhân<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
-                                        <ComboBox x:Name="PatientNameBox" Style="{StaticResource FormComboBox}"
-                                                  Margin="0,0,0,16" IsEditable="True" IsTextSearchEnabled="False"
-                                                  StaysOpenOnEdit="True"
-                                                  SelectionChanged="SearchComboBox_SelectionChanged"
-                                                  LostKeyboardFocus="SearchComboBox_LostKeyboardFocus"/>
+                                        <Grid Margin="0,0,0,16">
+                                            <TextBox x:Name="PatientNameBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"
+                                                     TextChanged="PatientNameBox_TextChanged" LostFocus="PatientNameBox_LostFocus"/>
+                                            <Popup x:Name="PatientSuggestPopup" PlacementTarget="{Binding ElementName=PatientNameBox}" Placement="Bottom"
+                                                   IsOpen="False" AllowsTransparency="True" StaysOpen="True" PopupAnimation="Slide"
+                                                   Width="{Binding ActualWidth, ElementName=PatientNameBox}">
+                                                <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1"
+                                                        Padding="4" Effect="{StaticResource ElevatedShadow}" MaxHeight="200">
+                                                    <ListBox x:Name="PatientSuggestList" Background="Transparent" BorderThickness="0" FontSize="13"
+                                                             SelectionChanged="PatientSuggestList_SelectionChanged">
+                                                        <ListBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="0,2">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding FullName}" Padding="8,6" FontWeight="SemiBold"
+                                                                               Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Phone}" Padding="8,6"
+                                                                               Foreground="{DynamicResource TextBrushSecondary}"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ListBox.ItemTemplate>
+                                                    </ListBox>
+                                                </Border>
+                                            </Popup>
+                                        </Grid>
 
                                         <TextBlock Style="{StaticResource FormLabel}">Bác Sĩ<Run Text=" *" Foreground="{DynamicResource ErrorBrush}"/></TextBlock>
-                                        <ComboBox x:Name="DoctorNameBox" Style="{StaticResource FormComboBox}"
-                                                  Margin="0,0,0,16" IsEditable="True" IsTextSearchEnabled="False"
-                                                  StaysOpenOnEdit="True"
-                                                  SelectionChanged="SearchComboBox_SelectionChanged"
-                                                  LostKeyboardFocus="SearchComboBox_LostKeyboardFocus"/>
+                                        <Grid Margin="0,0,0,16">
+                                            <TextBox x:Name="DoctorNameBox" Style="{StaticResource FormTextBox}" Height="40" Padding="12,0"
+                                                     TextChanged="DoctorNameBox_TextChanged" LostFocus="DoctorNameBox_LostFocus"/>
+                                            <Popup x:Name="DoctorSuggestPopup" PlacementTarget="{Binding ElementName=DoctorNameBox}" Placement="Bottom"
+                                                   IsOpen="False" AllowsTransparency="True" StaysOpen="True" PopupAnimation="Slide"
+                                                   Width="{Binding ActualWidth, ElementName=DoctorNameBox}">
+                                                <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1"
+                                                        Padding="4" Effect="{StaticResource ElevatedShadow}" MaxHeight="200">
+                                                    <ListBox x:Name="DoctorSuggestList" Background="Transparent" BorderThickness="0" FontSize="13"
+                                                             SelectionChanged="DoctorSuggestList_SelectionChanged">
+                                                        <ListBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding}" Padding="8,6" FontWeight="SemiBold"
+                                                                           Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                            </DataTemplate>
+                                                        </ListBox.ItemTemplate>
+                                                    </ListBox>
+                                                </Border>
+                                            </Popup>
+                                        </Grid>
 
                                         <TextBlock Text="Ngày Khám" Style="{StaticResource FormLabel}"/>
                                         <Border x:Name="DateBorder" CornerRadius="10" BorderBrush="{DynamicResource BorderBrushLight}"
@@ -595,11 +633,26 @@
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel>
                                                         <TextBlock Text="Chọn dịch vụ" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
-                                                        <ComboBox x:Name="ServiceCombo" Style="{StaticResource FormComboBox}"
-                                                                  IsEditable="True" IsTextSearchEnabled="False"
-                                                                  StaysOpenOnEdit="True"
-                                                                  SelectionChanged="SearchComboBox_SelectionChanged"
-                                                                  LostKeyboardFocus="SearchComboBox_LostKeyboardFocus"/>
+                                                        <Grid>
+                                                            <TextBox x:Name="ServiceNameBox" Style="{StaticResource FormTextBox}" Height="38" VerticalContentAlignment="Center" Padding="12,0"
+                                                                     TextChanged="ServiceNameBox_TextChanged" LostFocus="ServiceNameBox_LostFocus"/>
+                                                            <Popup x:Name="ServiceSuggestPopup" PlacementTarget="{Binding ElementName=ServiceNameBox}" Placement="Bottom"
+                                                                   IsOpen="False" AllowsTransparency="True" StaysOpen="True" PopupAnimation="Slide"
+                                                                   Width="{Binding ActualWidth, ElementName=ServiceNameBox}">
+                                                                <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1"
+                                                                        Padding="4" Effect="{StaticResource ElevatedShadow}" MaxHeight="200">
+                                                                    <ListBox x:Name="ServiceSuggestList" Background="Transparent" BorderThickness="0" FontSize="13"
+                                                                             SelectionChanged="ServiceSuggestList_SelectionChanged">
+                                                                        <ListBox.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}" Padding="8,6" FontWeight="SemiBold"
+                                                                                           Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                                            </DataTemplate>
+                                                                        </ListBox.ItemTemplate>
+                                                                    </ListBox>
+                                                                </Border>
+                                                            </Popup>
+                                                        </Grid>
                                                     </StackPanel>
                                                 </Grid>
                                                 <TextBlock Text="Kết quả (nếu có)" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
@@ -732,11 +785,26 @@
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Margin="0,0,12,0">
                                                         <TextBlock Text="Chọn thuốc" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
-                                                        <ComboBox x:Name="MedicineCombo" Style="{StaticResource FormComboBox}"
-                                                                  IsEditable="True" IsTextSearchEnabled="False"
-                                                                  StaysOpenOnEdit="True"
-                                                                  SelectionChanged="SearchComboBox_SelectionChanged"
-                                                                  LostKeyboardFocus="SearchComboBox_LostKeyboardFocus"/>
+                                                        <Grid>
+                                                            <TextBox x:Name="MedicineNameBox" Style="{StaticResource FormTextBox}" Height="38" VerticalContentAlignment="Center" Padding="12,0"
+                                                                     TextChanged="MedicineNameBox_TextChanged" LostFocus="MedicineNameBox_LostFocus"/>
+                                                            <Popup x:Name="MedicineSuggestPopup" PlacementTarget="{Binding ElementName=MedicineNameBox}" Placement="Bottom"
+                                                                   IsOpen="False" AllowsTransparency="True" StaysOpen="True" PopupAnimation="Slide"
+                                                                   Width="{Binding ActualWidth, ElementName=MedicineNameBox}">
+                                                                <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1"
+                                                                        Padding="4" Effect="{StaticResource ElevatedShadow}" MaxHeight="200">
+                                                                    <ListBox x:Name="MedicineSuggestList" Background="Transparent" BorderThickness="0" FontSize="13"
+                                                                             SelectionChanged="MedicineSuggestList_SelectionChanged">
+                                                                        <ListBox.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}" Padding="8,6" FontWeight="SemiBold"
+                                                                                           Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                                            </DataTemplate>
+                                                                        </ListBox.ItemTemplate>
+                                                                    </ListBox>
+                                                                </Border>
+                                                            </Popup>
+                                                        </Grid>
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="1">
                                                         <TextBlock Text="Số lượng" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>

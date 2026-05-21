@@ -23,11 +23,16 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     private enum StockFilter { All, Low, Out }
     private StockFilter _currentStockFilter = StockFilter.All;
 
+    private static readonly SolidColorBrush ActiveBg = new(Color.FromRgb(220, 252, 231));
+    private static readonly SolidColorBrush ActiveBorder = new(Color.FromRgb(22, 163, 74));
+    private static readonly SolidColorBrush DefaultBg = Brushes.White;
+    private static readonly SolidColorBrush DefaultBorder = new(Color.FromRgb(209, 250, 229));
+
     public MedicineListView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
-        
+
         Unloaded += (s, e) => {
             if (_vm?.MedicineVM?.Medicines != null)
                 _vm.MedicineVM.Medicines.CollectionChanged -= OnMedicinesChanged;
@@ -43,11 +48,12 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
         {
             _vm = vm;
             _vm.MedicineVM.Medicines.CollectionChanged += OnMedicinesChanged;
-            try 
-            { 
-                await _vm.MedicineVM.LoadAsync(); 
-                ApplyFilter(); 
-                UpdateStats(); // Đảm bảo cập nhật con số thống kê ngay khi nạp xong
+            try
+            {
+                await _vm.MedicineVM.LoadAsync();
+                UpdateFilterButtonStates();
+                ApplyFilter();
+                UpdateStats();
             }
             catch (Exception ex) { _vm.Toast.ShowError($"Lỗi: {ex.Message}"); }
         }
@@ -64,7 +70,7 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     private void ApplyFilter()
     {
         if (_vm == null) return;
-        
+
         if (!Dispatcher.CheckAccess())
         {
             Dispatcher.Invoke(ApplyFilter);
@@ -74,12 +80,12 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
         var search = _search?.Trim().ToLower() ?? "";
 
         var query = _vm.MedicineVM.Medicines.Where(m =>
-            (string.IsNullOrEmpty(search) || 
+            (string.IsNullOrEmpty(search) ||
              (m.MedicineName != null && m.MedicineName.ToLower().Contains(search)) ||
              (m.Unit != null && m.Unit.ToLower().Contains(search)))
             && (_currentStockFilter switch {
-                StockFilter.Low => m.StockQuantity > 0 && m.StockQuantity <= 10,
-                StockFilter.Out => m.StockQuantity <= 0,
+                StockFilter.Low => m.AvailableQuantity > 0 && m.AvailableQuantity <= 10,
+                StockFilter.Out => m.AvailableQuantity <= 0,
                 _ => true
             })
         ).ToList();
@@ -102,30 +108,68 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null) return;
         double totalValue = _vm.MedicineVM.Medicines.Sum(m => m.StockValue);
-        // Đếm tất cả thuốc có số lượng từ 0 đến 10
-        int lowStockCount = _vm.MedicineVM.Medicines.Count(m => m.StockQuantity <= 10);
-        
+        int lowStockCount = _vm.MedicineVM.Medicines.Count(m => m.AvailableQuantity > 0 && m.AvailableQuantity <= 10);
+
         if (TxtTotalValue != null) TxtTotalValue.Text = totalValue.ToString("N0") + " ₫";
         if (TxtLowStockCount != null) TxtLowStockCount.Text = lowStockCount.ToString();
     }
 
-    private void FilterAll_Click(object s, RoutedEventArgs e) { _currentStockFilter = StockFilter.All; ApplyFilter(); }
-    private void FilterLowStock_Click(object s, RoutedEventArgs e) { _currentStockFilter = StockFilter.Low; ApplyFilter(); }
-    private void FilterOutOfStock_Click(object s, RoutedEventArgs e) { _currentStockFilter = StockFilter.Out; ApplyFilter(); }
+    private void FilterAll_Click(object s, RoutedEventArgs e)
+    {
+        _currentStockFilter = StockFilter.All;
+        UpdateFilterButtonStates();
+        ApplyFilter();
+    }
+
+    private void FilterLowStock_Click(object s, RoutedEventArgs e)
+    {
+        _currentStockFilter = StockFilter.Low;
+        UpdateFilterButtonStates();
+        ApplyFilter();
+    }
+
+    private void FilterOutOfStock_Click(object s, RoutedEventArgs e)
+    {
+        _currentStockFilter = StockFilter.Out;
+        UpdateFilterButtonStates();
+        ApplyFilter();
+    }
+
+    private void UpdateFilterButtonStates()
+    {
+        if (FilterAllBtn == null || FilterLowBtn == null || FilterOutBtn == null) return;
+
+        var (activeBg, activeBd, defaultBg, defaultBd) = (ActiveBg, ActiveBorder, DefaultBg, DefaultBorder);
+
+        // Reset all
+        FilterAllBtn.Background = defaultBg;
+        FilterAllBtn.BorderBrush = defaultBd;
+        FilterLowBtn.Background = defaultBg;
+        FilterLowBtn.BorderBrush = defaultBd;
+        FilterOutBtn.Background = defaultBg;
+        FilterOutBtn.BorderBrush = defaultBd;
+
+        // Highlight active
+        var target = _currentStockFilter switch
+        {
+            StockFilter.All => FilterAllBtn,
+            StockFilter.Low => FilterLowBtn,
+            StockFilter.Out => FilterOutBtn,
+            _ => null
+        };
+
+        if (target != null)
+        {
+            target.Background = activeBg;
+            target.BorderBrush = activeBd;
+        }
+    }
 
     private async void Refresh_Click(object s, RoutedEventArgs e)
     {
         if (_vm == null) return;
         try { await _vm.MedicineVM.LoadAsync(); _vm.Toast.Show("Đã làm mới dữ liệu"); }
         catch (Exception ex) { _vm.Toast.ShowError(ex.Message); }
-    }
-
-    private void TableCard_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        if (sender is Border b)
-        {
-            b.Clip = new RectangleGeometry(new Rect(0, 0, b.ActualWidth, b.ActualHeight), 10, 10);
-        }
     }
 
     private void Add_Click(object s, RoutedEventArgs e)
@@ -146,7 +190,7 @@ public partial class MedicineListView : UserControl, INotifyPropertyChanged
     {
         if (_vm == null || (s is not FrameworkElement el) || el.DataContext is not Medicine m) return;
         var confirm = new ConfirmDialog($"Xóa thuốc \"{m.MedicineName}\"?", "Thao tác không thể hoàn tác.", _vm);
-        _vm.Modal.Show(confirm, async result => { 
+        _vm.Modal.Show(confirm, async result => {
             if (result == true) { var ok = await _vm.MedicineVM.DeleteAsync(m); if (ok) ApplyFilter(); }
         });
     }

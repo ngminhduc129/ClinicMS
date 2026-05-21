@@ -19,7 +19,6 @@ public partial class VisitListView : UserControl
     private MainViewModel? _vm;
     private Visit? _selectedVisit;
     private string _currentStatus = "Waiting";
-    private bool _isDirty = false;
     private DateTime? _selectedDateFilter;
     private NotifyCollectionChangedEventHandler? _visitsChangedHandler;
 
@@ -127,39 +126,12 @@ public partial class VisitListView : UserControl
     {
         if (VisitGroupList.SelectedItem is Visit v)
         {
-            if (_isDirty && _selectedVisit != null && _selectedVisit.VisitId != v.VisitId)
-            {
-                if (_vm != null)
-                {
-                    _vm.Modal.Show(new ConfirmDialog(
-                        "Bạn có thay đổi chưa lưu. Bạn có chắc muốn chuyển sang bệnh nhân khác và mất các thay đổi này không?",
-                        "Xác nhận chuyển", _vm), (res) =>
-                    {
-                        if (res == true)
-                        {
-                            _selectedVisit = v;
-                            _isDirty = false;
-                            ShowDetail(v);
-                        }
-                        else
-                        {
-                            VisitGroupList.SelectionChanged -= VisitGroupList_SelectionChanged;
-                            VisitGroupList.SelectedItem = _selectedVisit;
-                            VisitGroupList.SelectionChanged += VisitGroupList_SelectionChanged;
-                        }
-                    });
-                    return;
-                }
-            }
-
             _selectedVisit = v;
-            _isDirty = false;
             ShowDetail(v);
         }
         else
         {
             _selectedVisit = null;
-            _isDirty = false;
             DetailForm.Visibility = Visibility.Collapsed;
             DetailEmpty.Visibility = Visibility.Visible;
         }
@@ -168,7 +140,6 @@ public partial class VisitListView : UserControl
     private async void ShowDetail(Visit v)
     {
         _selectedVisit = v;
-        _isDirty = false;
         DetailEmpty.Visibility = Visibility.Collapsed;
         DetailLoading.Visibility = Visibility.Collapsed;
         DetailForm.Visibility = Visibility.Visible;
@@ -225,11 +196,6 @@ public partial class VisitListView : UserControl
         }
     }
 
-    private void Input_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        _isDirty = true;
-    }
-
     private void UpdateStatusButtons()
     {
         // Reset colors and borders
@@ -248,9 +214,9 @@ public partial class VisitListView : UserControl
         else if (_currentStatus == "Completed") BtnCompleted.BorderBrush = Brushes.Green;
     }
 
-    private void StatusWaiting_Click(object s, RoutedEventArgs e) { _currentStatus = "Waiting"; if(_selectedVisit != null) _selectedVisit.Status = "Waiting"; UpdateStatusButtons(); _isDirty = true; }
-    private void StatusInProgress_Click(object s, RoutedEventArgs e) { _currentStatus = "In Progress"; if(_selectedVisit != null) _selectedVisit.Status = "In Progress"; UpdateStatusButtons(); _isDirty = true; }
-    private void StatusCompleted_Click(object s, RoutedEventArgs e) { _currentStatus = "Completed"; if(_selectedVisit != null) _selectedVisit.Status = "Completed"; UpdateStatusButtons(); _isDirty = true; }
+    private void StatusWaiting_Click(object s, RoutedEventArgs e) { _currentStatus = "Waiting"; if(_selectedVisit != null) _selectedVisit.Status = "Waiting"; UpdateStatusButtons(); }
+    private void StatusInProgress_Click(object s, RoutedEventArgs e) { _currentStatus = "In Progress"; if(_selectedVisit != null) _selectedVisit.Status = "In Progress"; UpdateStatusButtons(); }
+    private void StatusCompleted_Click(object s, RoutedEventArgs e) { _currentStatus = "Completed"; if(_selectedVisit != null) _selectedVisit.Status = "Completed"; UpdateStatusButtons(); }
 
     private async void RemoveMedicineDetail_Click(object sender, RoutedEventArgs e)
     {
@@ -380,8 +346,6 @@ public partial class VisitListView : UserControl
                 bool success = await _vm.VisitVM.UpdateAsync(_selectedVisit);
                 if (success)
                 {
-                    _isDirty = false;
-                    
                     var updatedVisit = _vm.VisitVM.Visits.FirstOrDefault(x => x.VisitId == selectedId);
                     if (updatedVisit != null)
                     {
@@ -404,7 +368,7 @@ public partial class VisitListView : UserControl
         }
     }
 
-    private void CancelDetail_Click(object s, RoutedEventArgs e) { _selectedVisit = null; DetailForm.Visibility = Visibility.Collapsed; DetailEmpty.Visibility = Visibility.Visible; _isDirty = false; }
+    private void CancelDetail_Click(object s, RoutedEventArgs e) { _selectedVisit = null; DetailForm.Visibility = Visibility.Collapsed; DetailEmpty.Visibility = Visibility.Visible; }
     private string FormatVisitDate(string? time) => DateTime.TryParse(time, out var dt) ? dt.ToString("dd/MM/yyyy HH:mm") : (time ?? "--");
     private string NormalizeStatus(string? status) => string.IsNullOrEmpty(status) ? "Waiting" : status;
 

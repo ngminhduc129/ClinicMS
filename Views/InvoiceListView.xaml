@@ -189,19 +189,21 @@
                                         <TextBlock Text="{Binding DoctorName, StringFormat='Bác sĩ: {0}'}" FontSize="15" Foreground="{DynamicResource TextBrushSecondary}" Margin="0,4,0,0"/>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <Button Style="{StaticResource OutlineBtn}" Content="In Hóa Đơn (PDF)" Padding="20,10"
-                                                Command="{Binding DataContext.InvoiceVM.PrintCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
+                                        <Button Style="{StaticResource OutlineBtn}" Content="In HĐ Thuốc" Padding="12,10" Margin="0,0,8,0"
+                                                Command="{Binding DataContext.InvoiceVM.PrintMedicineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                        <Button Style="{StaticResource OutlineBtn}" Content="In HĐ Dịch Vụ" Padding="12,10"
+                                                Command="{Binding DataContext.InvoiceVM.PrintServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
-                            <!-- Items List -->
-                            <Border Style="{StaticResource DetailCardStyle}">
+                            <!-- THUỐC Section -->
+                            <Border x:Name="MedicineSection" Style="{StaticResource DetailCardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="CHI TIẾT CÁC KHOẢN PHÍ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,16"/>
-                                    
+                                    <TextBlock Text="THUỐC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,16"/>
                                     <Border Background="{DynamicResource BackgroundBrushLight}" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -216,8 +218,7 @@
                                             <TextBlock Text="THÀNH TIỀN" Grid.Column="3" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
-
-                                    <ItemsControl ItemsSource="{Binding Items}">
+                                    <ItemsControl ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=MedicineItems}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,0,0,1" Padding="16,14">
@@ -237,14 +238,68 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-
-                                    <Border Margin="0,20,0,0" Padding="16,10" Background="#F0FDF4" CornerRadius="12">
+                                    <Border Margin="0,16,0,0" Padding="16,10" Background="#F0FDF4" CornerRadius="12">
                                         <Grid>
-                                            <TextBlock Text="TỔNG TIỀN HÓA ĐƠN" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding TotalDisplay}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryGreenBrush}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="Tổng tiền thuốc" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=MedicineTotalDisplay}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryGreenBrush}" HorizontalAlignment="Right"/>
                                         </Grid>
                                     </Border>
                                 </StackPanel>
+                            </Border>
+
+                            <!-- DỊCH VỤ Section -->
+                            <Border x:Name="ServiceSection" Style="{StaticResource DetailCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="DỊCH VỤ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" Margin="0,0,0,16"/>
+                                    <Border Background="{DynamicResource BackgroundBrushLight}" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="120"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="NỘI DUNG" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}"/>
+                                            <TextBlock Text="SL" Grid.Column="1" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="ĐƠN GIÁ" Grid.Column="2" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="THÀNH TIỀN" Grid.Column="3" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextBrushTertiary}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                    <ItemsControl ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ServiceItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,0,0,1" Padding="16,14">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="120"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="{Binding ItemName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushPrimary}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="14" Foreground="{DynamicResource TextBrushPrimary}" HorizontalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding PriceDisplay}" FontSize="14" Foreground="{DynamicResource TextBrushSecondary}" HorizontalAlignment="Right"/>
+                                                        <TextBlock Grid.Column="3" Text="{Binding SubtotalDisplay}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}" HorizontalAlignment="Right"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Border Margin="0,16,0,0" Padding="16,10" Background="#F0FDF4" CornerRadius="12">
+                                        <Grid>
+                                            <TextBlock Text="Tổng tiền dịch vụ" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ServiceTotalDisplay}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryGreenBrush}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Grand Total -->
+                            <Border Margin="0,20,0,0" Padding="16,10" Background="#F0FDF4" CornerRadius="12">
+                                <Grid>
+                                    <TextBlock Text="TỔNG TIỀN HÓA ĐƠN" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrushPrimary}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TotalDisplay}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryGreenBrush}" HorizontalAlignment="Right"/>
+                                </Grid>
                             </Border>
 
                             <!-- Payment History -->

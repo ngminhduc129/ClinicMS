@@ -30,7 +30,7 @@ public class ModalService : BaseViewModel
 
         Rectangle? dimmer = null;
 
-        // Nếu đã có modal, thêm một lớp phủ tối màu giữa modal cũ và modal mới
+        // Nếu đã có modal, thêm backdrop TRƯỚC modal cha (z-index: app < dimmer < parent < child)
         if (_modalStack.Count > 0)
         {
             if (_modalStack.Peek().content is UIElement prev)
@@ -41,9 +41,13 @@ public class ModalService : BaseViewModel
             dimmer = new Rectangle
             {
                 Fill = new SolidColorBrush(Color.FromArgb(120, 0, 0, 0)), // ~47% black
-                IsHitTestVisible = true // Ngăn click xuyên qua modal bên dưới
+                IsHitTestVisible = true
             };
-            _host.Children.Add(dimmer);
+            // Insert backdrop BEFORE parent modal để chỉ phủ app background, không chạm modal cha
+            int prevIndex = 0;
+            if (_modalStack.Peek().content is UIElement prevContent)
+                prevIndex = _host.Children.IndexOf(prevContent);
+            _host.Children.Insert(prevIndex, dimmer);
         }
 
         _modalStack.Push((content, dimmer, callback, canClose));

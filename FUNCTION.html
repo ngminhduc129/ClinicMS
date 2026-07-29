@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClinicMS - Function Reference</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface-hover: #f8f9fc;
+    --text: #1a1a2e;
+    --text-secondary: #555;
+    --text-muted: #888;
+    --border: #e8ecf1;
+    --shadow: rgba(0,0,0,0.06);
+    --shadow-lg: rgba(0,0,0,0.12);
+    --header-bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    --accent: #4A6CF7;
+    --green: #4CAF50;
+    --blue: #2196F3;
+    --orange: #FF9800;
+    --purple: #9C27B0;
+    --radius: 14px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  [data-theme="dark"] {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface-hover: #222240;
+    --text: #e8e8f0;
+    --text-secondary: #aaa;
+    --text-muted: #666;
+    --border: #2a2a44;
+    --shadow: rgba(0,0,0,0.2);
+    --shadow-lg: rgba(0,0,0,0.4);
+    --header-bg: linear-gradient(135deg, #050510, #151530, #1a1a35);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    transition: background var(--transition), color var(--transition);
+    scroll-behavior: smooth;
+  }
+  .container { max-width: 1120px; margin: 0 auto; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--header-bg); color: #fff; padding: 36px 40px;
+    border-radius: 18px; margin-bottom: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2); position: relative; overflow: hidden;
+  }
+  .header::before { content: ''; position: absolute; top: -50%; right: -20%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(74,108,247,0.15), transparent); border-radius: 50%; }
+  .header::after { content: ''; position: absolute; bottom: -40%; left: 10%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(76,175,80,0.1), transparent); border-radius: 50%; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; }
+  .header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
+  .header h1 small { font-size: 14px; font-weight: 400; opacity: 0.6; margin-left: 12px; }
+  .header p { opacity: 0.7; font-size: 14px; margin-top: 4px; position: relative; z-index: 1; }
+  .header-actions { display: flex; gap: 8px; position: relative; z-index: 1; }
+
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); font-size: 15px;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.18); }
+
+  /* ===== STATS ===== */
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat {
+    background: var(--surface); padding: 10px 18px;
+    border-radius: 10px; box-shadow: 0 2px 8px var(--shadow);
+    font-size: 13px; display: flex; align-items: center; gap: 8px;
+    transition: var(--transition); border: 1px solid var(--border);
+  }
+  .stat:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--shadow-lg); }
+  .stat strong { font-size: 18px; }
+
+  /* ===== TOOLBAR ===== */
+  .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .search-box { flex: 1; min-width: 200px; position: relative; }
+  .search-box input {
+    width: 100%; padding: 10px 14px 10px 40px;
+    border: 2px solid var(--border); border-radius: 10px;
+    font-size: 14px; outline: none; transition: var(--transition);
+    background: var(--surface); color: var(--text);
+  }
+  .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,108,247,0.12); }
+  .search-box .icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+
+  .tab-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tab {
+    padding: 7px 16px; border-radius: 20px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600; transition: var(--transition);
+    background: var(--surface); color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .tab:hover { background: var(--surface-hover); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 12px rgba(74,108,247,0.3); }
+
+  .action-btns { display: flex; gap: 6px; }
+  .action-btn {
+    padding: 7px 14px; border-radius: 10px; border: 1px solid var(--border);
+    cursor: pointer; font-size: 12px; font-weight: 500;
+    transition: var(--transition); background: var(--surface); color: var(--text-secondary);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .action-btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+
+  /* ===== SECTION CARDS ===== */
+  .section {
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: 0 2px 12px var(--shadow);
+    margin-bottom: 18px; overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid var(--border);
+  }
+  .section:hover { box-shadow: 0 4px 24px var(--shadow-lg); }
+
+  .section-header {
+    padding: 16px 20px; display: flex; align-items: center;
+    justify-content: space-between; cursor: pointer; user-select: none;
+    transition: var(--transition);
+  }
+  .section-header:hover { filter: brightness(0.97); }
+  .section-header .title {
+    font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex: 1;
+  }
+  .section-header .title .badge {
+    font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 8px; color: #fff;
+  }
+  .section-header .title .method-count { font-size: 11px; font-weight: 400; opacity: 0.5; }
+  .section-header .source-path { font-size: 11px; font-family: 'Consolas', monospace; opacity: 0.4; cursor: pointer; }
+  .section-header .source-path:hover { opacity: 0.8; color: var(--accent); }
+  .section-header .right-group { display: flex; align-items: center; gap: 12px; }
+  .section-header .bookmark-btn { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-muted); transition: var(--transition); padding: 2px; }
+  .section-header .bookmark-btn:hover { transform: scale(1.15); }
+  .section-header .bookmark-btn.bookmarked { color: #f59e0b; }
+  .section-header .toggle { font-size: 12px; opacity: 0.4; transition: var(--transition); }
+  .section.collapsed .section-header .toggle { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 0 20px 12px; }
+
+  .method {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition); position: relative;
+  }
+  .method:last-child { border-bottom: none; }
+  .method:hover { background: var(--surface-hover); }
+  .method .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; transition: var(--transition); }
+  .method:hover .dot { transform: scale(1.3); }
+  .method .info { flex: 1; min-width: 0; }
+  .method .signature {
+    font-family: 'Consolas', 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .method .signature .returns { color: #7c3aed; font-weight: 400; }
+  [data-theme="dark"] .method .signature .returns { color: #a78bfa; }
+  .method .desc { font-size: 13px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+  .method .params-block { font-size: 12px; color: var(--text-muted); margin-top: 2px; padding: 4px 8px; background: var(--bg); border-radius: 6px; display: inline-block; }
+
+  .method .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 3px; }
+  .method .meta-tag { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+
+  .method .copy-btn {
+    position: absolute; right: 8px; top: 10px;
+    opacity: 0; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; width: 28px; height: 28px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); color: var(--text-muted); font-size: 12px;
+  }
+  .method:hover .copy-btn { opacity: 1; }
+  .method .copy-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .cat-service .section-header { background: linear-gradient(135deg, #e8f5e9, #f1f8e9); }
+  .cat-service .dot { background: var(--green); }
+  .cat-service .badge { background: var(--green); }
+  [data-theme="dark"] .cat-service .section-header { background: linear-gradient(135deg, rgba(76,175,80,0.08), rgba(76,175,80,0.03)); }
+
+  .cat-viewmodel .section-header { background: linear-gradient(135deg, #e3f2fd, #e8eaf6); }
+  .cat-viewmodel .dot { background: var(--blue); }
+  .cat-viewmodel .badge { background: var(--blue); }
+  [data-theme="dark"] .cat-viewmodel .section-header { background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(33,150,243,0.03)); }
+
+  .cat-pdf .section-header { background: linear-gradient(135deg, #fff3e0, #fff8e1); }
+  .cat-pdf .dot { background: var(--orange); }
+  .cat-pdf .badge { background: var(--orange); }
+  [data-theme="dark"] .cat-pdf .section-header { background: linear-gradient(135deg, rgba(255,152,0,0.08), rgba(255,152,0,0.03)); }
+
+  .cat-other .section-header { background: linear-gradient(135deg, #fce4ec, #f3e5f5); }
+  .cat-other .dot { background: var(--purple); }
+  .cat-other .badge { background: var(--purple); }
+  [data-theme="dark"] .cat-other .section-header { background: linear-gradient(135deg, rgba(156,39,176,0.08), rgba(156,39,176,0.03)); }
+
+  .view-table .section-body { padding: 0; }
+  .view-table .method { border-radius: 0; padding: 8px 20px; border-bottom: 1px solid var(--border); }
+
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+  .back-to-top {
+    position: fixed; bottom: 24px; left: 24px; z-index: 999;
+    width: 42px; height: 42px; border-radius: 12px;
+    background: var(--accent); color: #fff; border: none;
+    cursor: pointer; font-size: 16px;
+    box-shadow: 0 4px 16px rgba(74,108,247,0.3);
+    transition: var(--transition); display: flex;
+    align-items: center; justify-content: center;
+    opacity: 0; transform: translateY(20px); pointer-events: none;
+  }
+  .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .back-to-top:hover { transform: translateY(-2px); }
+
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .header { padding: 20px; }
+    .header h1 { font-size: 20px; }
+    .header h1 small { display: block; margin-left: 0; margin-top: 4px; }
+    .header-top { flex-direction: column; gap: 12px; }
+    .toolbar { flex-direction: column; }
+    .search-box { min-width: 100%; }
+    .tab-group { width: 100%; justify-content: center; }
+    .action-btns { width: 100%; justify-content: center; }
+    .method .copy-btn { opacity: 1; }
+    .section-header .source-path { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ========== HEADER ========== -->
+<header class="header">
+  <div class="header-top">
+    <div>
+      <h1>&#9829; ClinicMS <small>Function Reference</small></h1>
+      <p>&#128187; Danh sach &amp; mo ta tat ca methods &mdash; Services &middot; ViewModels &middot; PDF Export</p>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleDark()" title="Dark Mode">&#9790;</button>
+      <button class="icon-btn" onclick="expandAll()" title="Expand all">&#9447;</button>
+      <button class="icon-btn" onclick="collapseAll()" title="Collapse all">&#9448;</button>
+    </div>
+  </div>
+</header>
+
+<!-- ========== STATS ========== -->
+<div class="stats">
+  <div class="stat">&#128230; Classes: <strong id="totalClasses">0</strong></div>
+  <div class="stat">&#128295; Methods: <strong id="totalMethods">0</strong></div>
+  <div class="stat" id="bookmarkStat" style="display:none;">&#128278; Bookmarks: <strong id="bookmarkCount">0</strong></div>
+</div>
+
+<!-- ========== TOOLBAR ========== -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="icon">&#128269;</span>
+    <input type="text" id="search" placeholder="Search method name, description..." oninput="filterMethods()">
+  </div>
+  <div class="tab-group" id="tabs">
+    <button class="tab active" data-cat="all" onclick="switchTab('all', this)">&#9776; All</button>
+    <button class="tab" data-cat="service" onclick="switchTab('service', this)">&#9881; Services</button>
+    <button class="tab" data-cat="viewmodel" onclick="switchTab('viewmodel', this)">&#9632; ViewModels</button>
+    <button class="tab" data-cat="pdf" onclick="switchTab('pdf', this)">&#128196; PDF</button>
+    <button class="tab" data-cat="other" onclick="switchTab('other', this)">&#8942; Other</button>
+    <button class="tab" id="bookmarkTab" style="display:none;" onclick="showBookmarks()">&#128278; Bookmarks</button>
+  </div>
+  <div class="action-btns">
+    <button class="action-btn" onclick="exportCSV()">&#128229; CSV</button>
+    <button class="action-btn" onclick="toggleView(this)">&#9776; Table</button>
+  </div>
+</div>
+
+<!-- ========== CONTENT ========== -->
+<div id="content">
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128451; CoreDatabaseService
+      <span class="badge">Singleton</span>
+      <span class="method-count">4 methods</span>
+      <span class="source-path">&#128196; CoreDatabaseService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Initialize() <span class="returns">&rarr; void</span></div><div class="desc">Initialize database: create tables, run migrations, seed 5 sample medicines</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Ctx() <span class="returns">&rarr; ClinicDbContext</span></div><div class="desc">Factory method returning a new ClinicDbContext instance per call</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetSettingAsync(key) <span class="returns">&rarr; string?</span></div><div class="desc">Read a setting value from the AppSettings table by key</div><div class="params-block">&#9654; key: string</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SetSettingAsync(key, value) <span class="returns">&rarr; Task</span></div><div class="desc">Upsert a setting into AppSettings table</div><div class="params-block">&#9654; key: string, value: string</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#127973; PatientService
+      <span class="badge">Transient</span>
+      <span class="method-count">11 methods</span>
+      <span class="source-path">&#128196; PatientService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientsCountAsync() <span class="returns">&rarr; int</span></div><div class="desc">Get total patients count</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetAllPatientNamesAsync() <span class="returns">&rarr; List&lt;string&gt;</span></div><div class="desc">Get list of all patient full names</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientsLookupAsync() <span class="returns">&rarr; Dictionary&lt;string, int&gt;</span></div><div class="desc">Get lookup dictionary: "FullName (ID: x)" &rarr; PatientId</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientsWithContactsAsync(offset, limit) <span class="returns">&rarr; List&lt;PatientWithContact&gt;</span></div><div class="desc">Get paginated patients with their contact info</div><div class="params-block">&#9654; offset: int, limit: int</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchPatientsAsync(term, offset, limit) <span class="returns">&rarr; List&lt;PatientWithContact&gt;</span></div><div class="desc">Search patients by name or phone with pagination</div><div class="params-block">&#9654; term: string, offset: int, limit: int</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientsSearchCountAsync(term) <span class="returns">&rarr; int</span></div><div class="desc">Count search results for pagination</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientByNameAsync(name) <span class="returns">&rarr; Patient?</span></div><div class="desc">Find patient by exact full name</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientsAsync() <span class="returns">&rarr; List&lt;Patient&gt;</span></div><div class="desc">Get all patients ordered by full name</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddPatientAsync(patient) <span class="returns">&rarr; Task</span></div><div class="desc">Add new patient + create Contact + PatientContact</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdatePatientAsync(patient) <span class="returns">&rarr; Task</span></div><div class="desc">Update patient details + associated Contact</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeletePatientAsync(id) <span class="returns">&rarr; Task</span></div><div class="desc">Delete patient + Contact + all related Visits</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientWithContactAsync(id) <span class="returns">&rarr; (Patient?, Contact?)</span></div><div class="desc">Get tuple of Patient + Contact by patient ID</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientVisitsAsync(patientId) <span class="returns">&rarr; List&lt;Visit&gt;</span></div><div class="desc">Get visit history for a patient (includes Doctor, PrescriptionDetails, ServiceOrders)</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#127973; DoctorService
+      <span class="badge">Transient</span>
+      <span class="method-count">8 methods</span>
+      <span class="source-path">&#128196; DoctorService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetDoctorsCountAsync() <span class="returns">&rarr; int</span></div><div class="desc">Get total doctors count</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetDoctorsAsync() <span class="returns">&rarr; List&lt;Doctor&gt;</span></div><div class="desc">Get all doctors</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetAllDoctorNamesAsync() <span class="returns">&rarr; List&lt;string&gt;</span></div><div class="desc">Get list of all doctor full names</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetDoctorsLookupAsync() <span class="returns">&rarr; Dictionary&lt;string, int&gt;</span></div><div class="desc">Get lookup dictionary: "FullName (ID: x)" &rarr; DoctorId</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchDoctorsAsync(term, limit) <span class="returns">&rarr; List&lt;Doctor&gt;</span></div><div class="desc">Search doctors by name or specialization</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetDoctorByNameAsync(name) <span class="returns">&rarr; Doctor?</span></div><div class="desc">Find doctor by exact full name</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddDoctorAsync(doctor) <span class="returns">&rarr; Task</span></div><div class="desc">Add a new doctor</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateDoctorAsync(doctor) <span class="returns">&rarr; Task</span></div><div class="desc">Update an existing doctor</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteDoctorAsync(id) <span class="returns">&rarr; Task</span></div><div class="desc">Delete doctor and cascade-delete related Visits</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128203; VisitService
+      <span class="badge">Transient</span>
+      <span class="method-count">12 methods</span>
+      <span class="source-path">&#128196; VisitService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetTodayVisitsAsync() <span class="returns">&rarr; List&lt;Visit&gt;</span></div><div class="desc">Get today's visits (includes Patient, Doctor)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetVisitsAsync(offset, limit, dateFilter?) <span class="returns">&rarr; List&lt;Visit&gt;</span></div><div class="desc">Get paginated visits with optional date filter</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchVisitsAsync(term, offset, limit, dateFilter?) <span class="returns">&rarr; List&lt;Visit&gt;</span></div><div class="desc">Search visits by patient/doctor name or diagnosis</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetVisitsSearchCountAsync(term, dateFilter?) <span class="returns">&rarr; int</span></div><div class="desc">Count search results with optional date filter</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetVisitsCountAsync() <span class="returns">&rarr; int</span></div><div class="desc">Get total visit records count</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetVisitDetailsAsync(visitId) <span class="returns">&rarr; Visit?</span></div><div class="desc">Get full visit details with all includes (Patient, Doctor, Prescription, Services)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetTodayVisitsCountAsync() <span class="returns">&rarr; int</span></div><div class="desc">Count today's visits</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddVisitAsync(visit) <span class="returns">&rarr; Task</span></div><div class="desc">Add visit with prescription + services in a transaction</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateVisitAsync(visit) <span class="returns">&rarr; Task</span></div><div class="desc">Update visit, replace prescription and services in transaction</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteVisitAsync(id) <span class="returns">&rarr; Task</span></div><div class="desc">Delete visit, restore ReservedQuantity, cascade related data</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPrescriptionDetailsAsync(visitId) <span class="returns">&rarr; List&lt;PrescriptionDetail&gt;</span></div><div class="desc">Get prescription details with Medicine includes</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SavePrescriptionDetailsAsync(visitId, items) <span class="returns">&rarr; Task</span></div><div class="desc">Save prescription (delete old + insert new, update ReservedQuantity delta)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetServiceOrdersAsync(visitId) <span class="returns">&rarr; List&lt;ServiceOrder&gt;</span></div><div class="desc">Get service orders for a visit</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SaveServiceOrdersAsync(visitId, items) <span class="returns">&rarr; Task</span></div><div class="desc">Save service orders (delete old + insert new) in transaction</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128176; InvoiceService
+      <span class="badge">Transient</span>
+      <span class="method-count">7 methods</span>
+      <span class="source-path">&#128196; InvoiceService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetInvoicesAsync(offset, limit, dateFilter?) <span class="returns">&rarr; List&lt;Invoice&gt;</span></div><div class="desc">Get paginated invoices (includes Visit.Patient, Doctor, Items, Payments)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetTodayInvoicesAsync() <span class="returns">&rarr; List&lt;Invoice&gt;</span></div><div class="desc">Get today's invoices</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetTodayInvoiceStatsAsync() <span class="returns">&rarr; (int, decimal)</span></div><div class="desc">Tuple: (paid invoice count, total revenue today)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetInvoiceByVisitIdAsync(visitId) <span class="returns">&rarr; Invoice?</span></div><div class="desc">Get invoice by VisitId</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GenerateOrUpdateInvoiceAsync(visitId) <span class="returns">&rarr; Task</span></div><div class="desc">Auto-generate or update invoice from completed visit</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateInvoiceStatusAsync(visitId, status) <span class="returns">&rarr; Task</span></div><div class="desc">Update invoice payment status</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddPaymentAsync(payment) <span class="returns">&rarr; Task</span></div><div class="desc">Add payment record (transaction: update status, deduct actual stock)</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128137; MedicineService
+      <span class="badge">Transient</span>
+      <span class="method-count">4 methods</span>
+      <span class="source-path">&#128196; MedicineService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetMedicinesAsync() <span class="returns">&rarr; List&lt;Medicine&gt;</span></div><div class="desc">Get all medicines</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddMedicineAsync(medicine) <span class="returns">&rarr; Task</span></div><div class="desc">Add a new medicine</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateMedicineAsync(medicine) <span class="returns">&rarr; Task</span></div><div class="desc">Update an existing medicine</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteMedicineAsync(id) <span class="returns">&rarr; Task</span></div><div class="desc">Delete a medicine</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128719; ServiceCatalogService
+      <span class="badge">Transient</span>
+      <span class="method-count">4 methods</span>
+      <span class="source-path">&#128196; ServiceCatalogService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetServicesAsync() <span class="returns">&rarr; List&lt;Service&gt;</span></div><div class="desc">Get all medical services</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddServiceAsync(service) <span class="returns">&rarr; Task</span></div><div class="desc">Add a new service</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateServiceAsync(service) <span class="returns">&rarr; Task</span></div><div class="desc">Update an existing service</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteServiceAsync(id) <span class="returns">&rarr; Task</span></div><div class="desc">Delete a service</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128200; DashboardService
+      <span class="badge">Transient</span>
+      <span class="method-count">3 methods</span>
+      <span class="source-path">&#128196; DashboardService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetUpcomingAppointmentsAsync(limit) <span class="returns">&rarr; List&lt;Appointment&gt;</span></div><div class="desc">Get upcoming scheduled appointments (includes Patient, Doctor)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">CreateAppointmentAsync(appointment) <span class="returns">&rarr; Task</span></div><div class="desc">Create a new appointment</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetVisitCountByDayAsync(daysBack) <span class="returns">&rarr; Dictionary&lt;string, int&gt;</span></div><div class="desc">Get dictionary of "yyyy-MM-dd" &rarr; visit count for chart</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128209; ModalService
+      <span class="badge">Singleton</span>
+      <span class="method-count">4 methods</span>
+      <span class="source-path">&#128196; ModalService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Register(overlay, host) <span class="returns">&rarr; void</span></div><div class="desc">Register Grid overlay + Panel host from MainWindow</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Show(content, callback?, canClose?) <span class="returns">&rarr; void</span></div><div class="desc">Show modal with dimmer overlay (supports nesting)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">RequestClose() <span class="returns">&rarr; void</span></div><div class="desc">Request modal close (checks canClose callback)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Close(result?) <span class="returns">&rarr; void</span></div><div class="desc">Close modal, remove dimmer, invoke callback, restore hit-test</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-service" data-cat="service">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#127854; ToastService
+      <span class="badge">Singleton</span>
+      <span class="method-count">2 methods</span>
+      <span class="source-path">&#128196; ToastService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Show(message, type) <span class="returns">&rarr; void</span></div><div class="desc">Show toast notification (Success/Error), auto-dismiss after 3s</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ShowError(message) <span class="returns">&rarr; void</span></div><div class="desc">Shorthand: Show(message, Error)</div></div></div>
+  </div>
+</div>
+
+<!-- ===== OTHERS ===== -->
+
+<div class="section cat-other" data-cat="other">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#127912; ThemeManager
+      <span class="badge">Static</span>
+      <span class="method-count">1 method</span>
+      <span class="source-path">&#128196; ThemeManager.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ApplyTheme(AppTheme) <span class="returns">&rarr; void</span></div><div class="desc">Swap ThemeColors.xaml andharr; ThemeColorsDark.xaml resource dictionaries</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-other" data-cat="other">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128260; FontScaleManager
+      <span class="badge">Static</span>
+      <span class="method-count">2 methods</span>
+      <span class="source-path">&#128196; FontScaleManager.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateApplicationScale(scale) <span class="returns">&rarr; void</span></div><div class="desc">Update 7 font-size keys in Application.Resources</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ApplyScaleToWindow(window, scale) <span class="returns">&rarr; void</span></div><div class="desc">(Deprecated) No longer used</div></div></div>
+  </div>
+</div>
+
+<!-- ===== PDF ===== -->
+
+<div class="section cat-pdf" data-cat="pdf">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128228; PdfExportService
+      <span class="badge">Singleton</span>
+      <span class="method-count">5 methods</span>
+      <span class="source-path">&#128196; PdfExportService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ExportPrescription(visit) <span class="returns">&rarr; string</span></div><div class="desc">Export prescription PDF (A5) &rarr; returns file path</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ExportMedicalRecord(visit) <span class="returns">&rarr; string</span></div><div class="desc">Export medical record PDF (A4) &rarr; returns file path</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ExportInvoice(invoice) <span class="returns">&rarr; string</span></div><div class="desc">Export full invoice PDF (A5) &rarr; returns file path</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ExportMedicineInvoice(invoice) <span class="returns">&rarr; string</span></div><div class="desc">Export medicine-only invoice PDF &rarr; returns file path</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ExportServiceInvoice(invoice) <span class="returns">&rarr; string</span></div><div class="desc">Export service-only invoice PDF &rarr; returns file path</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-pdf" data-cat="pdf">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128220; PrescriptionDocument
+      <span class="badge">IDocument</span>
+      <span class="method-count">1 method</span>
+      <span class="source-path">&#128196; PdfExportService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Compose(IDocumentContainer) <span class="returns">&rarr; void</span></div><div class="desc">Build A5 prescription PDF: clinic header, patient info, medicine table, diagnosis, doctor signature</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-pdf" data-cat="pdf">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128221; MedicalRecordDocument
+      <span class="badge">IDocument</span>
+      <span class="method-count">1 method</span>
+      <span class="source-path">&#128196; PdfExportService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Compose(IDocumentContainer) <span class="returns">&rarr; void</span></div><div class="desc">Build A4 medical record PDF: patient info, symptoms, diagnosis, notes</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-pdf" data-cat="pdf">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128196; InvoiceDocument
+      <span class="badge">IDocument</span>
+      <span class="method-count">1 method</span>
+      <span class="source-path">&#128196; PdfExportService.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Compose(IDocumentContainer) <span class="returns">&rarr; void</span></div><div class="desc">Build A5 invoice PDF: medicine/service details, total amount, payment history</div></div></div>
+  </div>
+</div>
+
+<!-- ===== VIEWMODELS ===== -->
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128193; BaseViewModel
+      <span class="badge">Abstract</span>
+      <span class="method-count">5 methods</span>
+      <span class="source-path">&#128196; BaseViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">OnPropertyChanged(name?) <span class="returns">&rarr; void</span></div><div class="desc">Raise PropertyChanged + auto-validate if using ValidationAttribute</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SetProperty&lt;T&gt;(ref field, value, name?) <span class="returns">&rarr; bool</span></div><div class="desc">Set backing field + notify if changed</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ValidateProperty(name?) <span class="returns">&rarr; void</span></div><div class="desc">Validate a single property via ValidationAttribute</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">ValidateAllProperties() <span class="returns">&rarr; bool</span></div><div class="desc">Validate all properties, return true if valid</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetErrors(propertyName?) <span class="returns">&rarr; IEnumerable</span></div><div class="desc">Get validation errors (INotifyDataErrorInfo implementation)</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#9889; RelayCommand
+      <span class="badge">ICommand</span>
+      <span class="method-count">4 methods</span>
+      <span class="source-path">&#128196; BaseViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">RelayCommand(Action&lt;object?&gt; execute, canExecute?) <span class="returns">&rarr; constructor</span></div><div class="desc">Command with parameter</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">RelayCommand(Action execute, canExecute?) <span class="returns">&rarr; constructor</span></div><div class="desc">Command without parameter</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">CanExecute(param) <span class="returns">&rarr; bool</span></div><div class="desc">Check if command can execute</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Execute(param) <span class="returns">&rarr; void</span></div><div class="desc">Execute the command</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#127968; MainViewModel
+      <span class="badge">Singleton</span>
+      <span class="method-count">2 methods</span>
+      <span class="source-path">&#128196; MainViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadLookupsAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load FullPatientNames + FullDoctorNames for autocomplete</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">InitializeAndLoad() <span class="returns">&rarr; async void</span></div><div class="desc">Entry point: Init DB &rarr; Load settings &rarr; Load lookups &rarr; Load dashboard</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128200; DashboardViewModel
+      <span class="method-count">1 method</span>
+      <span class="source-path">&#128196; DashboardViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load all dashboard stats: totals, today counts, revenue, appointments, weekly chart</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128101; PatientViewModel
+      <span class="method-count">8 methods</span>
+      <span class="source-path">&#128196; PatientViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load paginated patient list (offset-based)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchAsync(term) <span class="returns">&rarr; Task</span></div><div class="desc">Search patients + reset offset</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadMoreAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load next page (infinite scroll support)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddAsync(patient) <span class="returns">&rarr; Task</span></div><div class="desc">Add patient &rarr; reload list + notify DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateAsync(patient) <span class="returns">&rarr; Task</span></div><div class="desc">Update patient &rarr; reload list + notify DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteAsync(patient) <span class="returns">&rarr; Task</span></div><div class="desc">Delete patient &rarr; reload list + notify DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPatientWithContactAsync(id) <span class="returns">&rarr; (Patient?, Contact?)</span></div><div class="desc">Get patient + contact tuple by ID</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">QuickSearchAsync(term, limit) <span class="returns">&rarr; List&lt;string&gt;</span></div><div class="desc">Quick search for autocomplete dropdown</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#127973; DoctorViewModel
+      <span class="method-count">5 methods</span>
+      <span class="source-path">&#128196; DoctorViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load all doctors</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchAsync(term) <span class="returns">&rarr; Task</span></div><div class="desc">Search by name or specialization</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddAsync(doctor) <span class="returns">&rarr; Task</span></div><div class="desc">Add doctor &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateAsync(doctor) <span class="returns">&rarr; Task</span></div><div class="desc">Update doctor &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteAsync(doctor) <span class="returns">&rarr; Task</span></div><div class="desc">Delete doctor &rarr; reload + DataChanged</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128203; VisitViewModel
+      <span class="method-count">10 methods</span>
+      <span class="source-path">&#128196; VisitViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load paginated visit list with date filter</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchAsync(term) <span class="returns">&rarr; Task</span></div><div class="desc">Search visits + reset offset</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchByDateAsync(date?) <span class="returns">&rarr; Task</span></div><div class="desc">Filter by date + reset offset</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadMoreAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load next page (infinite scroll)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddAsync(visit) <span class="returns">&rarr; Task</span></div><div class="desc">Add visit + auto-generate invoice &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateAsync(visit) <span class="returns">&rarr; Task</span></div><div class="desc">Update visit + regenerate invoice &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteAsync(visit) <span class="returns">&rarr; Task</span></div><div class="desc">Delete visit &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetPrescriptionDetailsAsync(visitId) <span class="returns">&rarr; List&lt;PrescriptionDetail&gt;</span></div><div class="desc">Get prescription details for a visit</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SavePrescriptionAsync(visitId, details) <span class="returns">&rarr; Task</span></div><div class="desc">Save prescription + regenerate invoice</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">GetServiceOrdersAsync(visitId) <span class="returns">&rarr; List&lt;ServiceOrder&gt;</span></div><div class="desc">Get service orders for a visit</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SaveServiceOrdersAsync(visitId, orders) <span class="returns">&rarr; Task</span></div><div class="desc">Save service orders + regenerate invoice</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128137; MedicineViewModel
+      <span class="method-count">4 methods</span>
+      <span class="source-path">&#128196; MedicineViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load all medicines</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddAsync(medicine) <span class="returns">&rarr; Task</span></div><div class="desc">Add medicine &rarr; reload list</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateAsync(medicine) <span class="returns">&rarr; Task</span></div><div class="desc">Update medicine &rarr; reload list</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteAsync(medicine) <span class="returns">&rarr; Task</span></div><div class="desc">Delete medicine &rarr; reload list</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128152; ServiceViewModel
+      <span class="method-count">5 methods</span>
+      <span class="source-path">&#128196; ServiceViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load all services</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">SearchAsync(term) <span class="returns">&rarr; Task</span></div><div class="desc">Client-side search (filter in memory)</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddAsync(service) <span class="returns">&rarr; Task</span></div><div class="desc">Add service &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">UpdateAsync(service) <span class="returns">&rarr; Task</span></div><div class="desc">Update service &rarr; reload + DataChanged</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">DeleteAsync(service) <span class="returns">&rarr; Task</span></div><div class="desc">Delete service &rarr; reload + DataChanged</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128176; InvoiceViewModel
+      <span class="method-count">2 methods</span>
+      <span class="source-path">&#128196; InvoiceViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load invoices filtered by status + date</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">AddPaymentAsync(visitId, amount, method) <span class="returns">&rarr; Task</span></div><div class="desc">Add payment &rarr; reload + update selected invoice</div></div></div>
+  </div>
+</div>
+
+<div class="section cat-viewmodel" data-cat="viewmodel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <div class="title">
+      &#128100; PatientDetailViewModel
+      <span class="method-count">3 methods</span>
+      <span class="source-path">&#128196; PatientDetailViewModel.cs</span>
+    </div>
+    <div class="right-group">
+      <button class="bookmark-btn" onclick="toggleBookmark(this)">&#128278;</button>
+      <span class="toggle">&#9660;</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">LoadDataAsync() <span class="returns">&rarr; Task</span></div><div class="desc">Load patient details + visit history</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Close() <span class="returns">&rarr; void</span></div><div class="desc">Close modal</div></div></div>
+    <div class="method"><span class="dot"></span><div class="info"><div class="signature">Edit() <span class="returns">&rarr; void</span></div><div class="desc">Open PatientFormDialog for editing</div></div></div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /container -->
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// Global functions for onclick handlers
+window.toggleSection = function(header) {
+  var section = header.closest('.section');
+  if (section) section.classList.toggle('collapsed');
+};
+
+window.expandAll = function() {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('collapsed'); });
+};
+
+window.collapseAll = function() {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.add('collapsed'); });
+};
+
+window.switchTab = function(cat, btn) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('bookmarkTab').style.display = 'none';
+  document.querySelectorAll('.section').forEach(function(s) {
+    s.style.display = (cat === 'all' || s.getAttribute('data-cat') === cat) ? '' : 'none';
+  });
+  updateCounts();
+};
+
+window.filterMethods = function() {
+  var q = document.getElementById('search').value.toLowerCase().trim();
+  document.querySelectorAll('.method').forEach(function(m) {
+    var sig = m.querySelector('.signature') ? m.querySelector('.signature').textContent.toLowerCase() : '';
+    var desc = m.querySelector('.desc') ? m.querySelector('.desc').textContent.toLowerCase() : '';
+    m.style.display = (!q || sig.indexOf(q) !== -1 || desc.indexOf(q) !== -1) ? '' : 'none';
+  });
+  document.querySelectorAll('.section').forEach(function(s) {
+    if (s.style.display === 'none') return;
+    var vis = Array.from(s.querySelectorAll('.method')).some(function(m) { return m.style.display !== 'none'; });
+    s.style.display = vis ? '' : 'none';
+  });
+  updateCounts();
+};
+
+window.toggleBookmark = function(btn) {
+  var section = btn.closest('.section');
+  if (!section) return;
+  var title = section.querySelector('.title').textContent.trim();
+  var b = getBookmarks();
+  var idx = b.indexOf(title);
+  if (idx !== -1) b.splice(idx, 1);
+  else b.push(title);
+  saveBookmarks(b);
+  updateBookmarkUI();
+};
+
+window.showBookmarks = function() {
+  var b = getBookmarks();
+  if (b.length === 0) return;
+  document.querySelectorAll('.section').forEach(function(s) {
+    var title = s.querySelector('.title').textContent.trim();
+    s.style.display = b.indexOf(title) !== -1 ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('bookmarkTab').classList.add('active');
+  updateCounts();
+};
+
+window.copySignature = function(btn) {
+  var sig = btn.closest('.method').querySelector('.signature');
+  if (!sig) return;
+  var text = sig.textContent.trim();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { toast('Copied: ' + text); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('Copied: ' + text);
+  }
+};
+
+window.toggleDark = function() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('fnTheme', isDark ? 'light' : 'dark');
+};
+
+window.toggleView = function(btn) {
+  var content = document.getElementById('content');
+  content.classList.toggle('view-table');
+  var isTable = content.classList.contains('view-table');
+  btn.innerHTML = isTable ? '&#9776; Cards' : '&#9776; Table';
+};
+
+window.exportCSV = function() {
+  var csv = 'Class,Method,ReturnType,Description\n';
+  document.querySelectorAll('.section').forEach(function(s) {
+    var clsName = s.querySelector('.title').textContent.trim().split('\n')[0].trim();
+    s.querySelectorAll('.method').forEach(function(m) {
+      var sig = m.querySelector('.signature') ? m.querySelector('.signature').textContent : '';
+      var parts = sig.split('\u2192');
+      var methodName = (parts[0] || '').trim();
+      var retType = (parts[1] || '').trim();
+      var desc = m.querySelector('.desc') ? m.querySelector('.desc').textContent.trim() : '';
+      csv += '"' + clsName + '","' + methodName + '","' + retType + '","' + desc + '"\n';
+    });
+  });
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'clinicms-functions.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exported');
+};
+
+// Helper functions
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem('fnBookmarks') || '[]'); } catch(e) { return []; }
+}
+function saveBookmarks(b) { localStorage.setItem('fnBookmarks', JSON.stringify(b)); }
+
+function updateBookmarkUI() {
+  var b = getBookmarks();
+  document.querySelectorAll('.bookmark-btn').forEach(function(btn) {
+    var title = btn.closest('.section').querySelector('.title').textContent.trim();
+    if (b.indexOf(title) !== -1) {
+      btn.innerHTML = '&#128278;';
+      btn.classList.add('bookmarked');
+    } else {
+      btn.innerHTML = '&#128278;';
+      btn.classList.remove('bookmarked');
+    }
+  });
+  var cnt = document.getElementById('bookmarkCount');
+  var stat = document.getElementById('bookmarkStat');
+  var tab = document.getElementById('bookmarkTab');
+  cnt.textContent = b.length;
+  stat.style.display = b.length > 0 ? '' : 'none';
+  tab.style.display = b.length > 0 ? '' : 'none';
+}
+
+function updateCounts() {
+  var visSections = 0, visMethods = 0;
+  document.querySelectorAll('.section').forEach(function(s) {
+    if (s.style.display !== 'none') {
+      var visM = Array.from(s.querySelectorAll('.method')).filter(function(m) { return m.style.display !== 'none'; }).length;
+      if (visM > 0) visSections++;
+      visMethods += visM;
+    }
+  });
+  document.getElementById('totalClasses').textContent = visSections;
+  document.getElementById('totalMethods').textContent = visMethods;
+}
+
+function toast(msg) {
+  var c = document.getElementById('toastContainer');
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function() { t.remove(); }, 2000);
+}
+
+// Init
+updateCounts();
+updateBookmarkUI();
+
+// Add copy buttons to each method
+document.querySelectorAll('.method').forEach(function(m) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.innerHTML = '&#128203;';
+  btn.title = 'Copy signature';
+  btn.setAttribute('onclick', 'copySignature(this)');
+  m.appendChild(btn);
+});
+
+if (localStorage.getItem('fnTheme') === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+// Scroll to top
+window.addEventListener('scroll', function() {
+  document.getElementById('backToTop').classList.toggle('visible', window.scrollY > 400);
+});
+
+// Keyboard shortcut
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+});
+</script>
+</body>
+</html>

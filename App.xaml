@@ -27,6 +27,9 @@
             <sys:Double x:Key="FontSizeLabel">14</sys:Double>
             <sys:Double x:Key="FontSizeHelper">13</sys:Double>
 
+            <!-- DATEPICKER WATERMARK TEXT -->
+            <sys:String x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type DatePicker}, ResourceId=DatePickerWatermarkText}">Chọn ngày...</sys:String>
+
             <!-- 3. CONVERTERS -->
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
             <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>

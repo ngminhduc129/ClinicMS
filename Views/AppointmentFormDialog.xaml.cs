@@ -25,6 +25,8 @@ public partial class AppointmentFormDialog : UserControl
 
     private async void OnLoaded(object s, RoutedEventArgs e)
     {
+        try
+        {
         AnimateOpen();
 
         ApptDatePicker.SelectedDate = DateTime.Today;
@@ -37,9 +39,15 @@ public partial class AppointmentFormDialog : UserControl
 
         if (_vm.DoctorVM.Doctors.Count == 0)
             await _vm.DoctorVM.LoadAsync();
-        DoctorCombo.ItemsSource = _vm.DoctorVM.Doctors
-            .Select(d => d.FullName)
-            .ToList();
+            DoctorCombo.ItemsSource = _vm.DoctorVM.Doctors
+                .Select(d => d.FullName)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in AppointmentFormDialog.OnLoaded");
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi tải form: {ex.Message}", "Lỗi", true));
+        }
     }
 
     private void AnimateOpen()

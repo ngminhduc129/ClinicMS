@@ -39,6 +39,8 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
 
     private async void OnScrollChanged(object sender, ScrollChangedEventArgs e)
     {
+        try
+        {
         if (e.VerticalChange > 0 && e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight - 100)
         {
             if (_vm != null)
@@ -46,11 +48,18 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
                 await _vm.PatientVM.LoadMoreAsync();
             }
         }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in PatientListView.OnScrollChanged");
+        }
     }
 
     private int _searchRequestCount = 0;
     private async void Search_TextChanged(object s, TextChangedEventArgs e)
     {
+        try
+        {
         if (_vm == null) return;
         
         string search = ((TextBox)s).Text.Trim();
@@ -60,6 +69,12 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
         if (currentRequest != _searchRequestCount) return;
 
         await _vm.PatientVM.SearchAsync(search);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in PatientListView.Search_TextChanged");
+            _vm?.Toast.ShowError($"Lỗi tìm kiếm: {ex.Message}");
+        }
     }
 
     private void FilterButton_Click(object s, RoutedEventArgs e)
@@ -74,9 +89,17 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
 
     private async void FilterGender_Click(object s, RoutedEventArgs e)
     {
+        try
+        {
         if (s is MenuItem mi && _vm != null)
         {
             await _vm.PatientVM.SearchAsync(mi.Tag?.ToString() ?? "");
+        }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in PatientListView.FilterGender_Click");
+            _vm?.Toast.ShowError($"Lỗi lọc: {ex.Message}");
         }
     }
 
@@ -88,7 +111,15 @@ public partial class PatientListView : UserControl, INotifyPropertyChanged
 
     private async void RefreshButton_Click(object s, RoutedEventArgs e)
     {
-        if (_vm != null) await _vm.PatientVM.LoadAsync();
+        try
+        {
+            if (_vm != null) await _vm.PatientVM.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in PatientListView.RefreshButton_Click");
+            _vm?.Toast.ShowError($"Lỗi khi làm mới: {ex.Message}");
+        }
     }
 
     private void AddPatient_Click(object s, RoutedEventArgs e)

@@ -25,7 +25,15 @@ public partial class DashboardView : UserControl
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        if (_vm != null) await _vm.DashboardVM.LoadAsync();
+        try
+        {
+            if (_vm != null) await _vm.DashboardVM.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in DashboardView.Refresh_Click");
+            _vm?.Toast.ShowError($"Lỗi khi làm mới: {ex.Message}");
+        }
     }
 
     private void AddAppointment_Click(object sender, RoutedEventArgs e)

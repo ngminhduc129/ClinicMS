@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClinicMS - Full Documentation</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #fff;
+    --surface-hover: #f8f9fc;
+    --text: #1a1a2e;
+    --text-secondary: #555;
+    --text-muted: #888;
+    --border: #e8ecf1;
+    --accent: #4A6CF7;
+    --green: #16A34A;
+    --radius: 14px;
+    --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface-hover: #222240;
+    --text: #e8e8f0;
+    --text-secondary: #aaa;
+    --text-muted: #666;
+    --border: #2a2a44;
+    --accent: #6d8cff;
+    --green: #22c55e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    scroll-behavior: smooth;
+    transition: background var(--transition), color var(--transition);
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, #4A6CF7, #16A34A);
+    z-index: 99999;
+    transition: width 0.1s;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #fff; padding: 32px 36px; border-radius: 18px;
+    margin-bottom: 20px; position: relative; overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    animation: fadeSlideDown 0.6s ease;
+  }
+  .header::before {
+    content: ''; position: absolute; top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(74,108,247,0.15), transparent);
+    border-radius: 50%;
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1; }
+  .header h1 { font-size: 28px; font-weight: 800; }
+  .header h1 small { font-size: 14px; font-weight: 400; opacity: 0.6; margin-left: 12px; }
+  .header .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; opacity: 0.8; position: relative; z-index: 1; }
+  .header .meta span { display: flex; align-items: center; gap: 5px; }
+  .header-actions { display: flex; gap: 8px; position: relative; z-index: 1; }
+
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); font-size: 15px;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.18); }
+
+  /* Search bar */
+  .search-row { margin-bottom: 16px; position: relative; }
+  .search-row input {
+    width: 100%; padding: 10px 14px 10px 40px;
+    border: 2px solid var(--border); border-radius: 10px;
+    font-size: 14px; outline: none; transition: var(--transition);
+    background: var(--surface); color: var(--text);
+  }
+  .search-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,108,247,0.12); }
+  .search-row .icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+
+  /* TOC */
+  .toc {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 18px 22px; margin-bottom: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    transition: background var(--transition);
+  }
+  .toc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .toc h2 { font-size: 15px; color: var(--accent); }
+  .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px; }
+  .toc a {
+    color: var(--text-secondary); text-decoration: none; font-size: 13px;
+    padding: 4px 10px; border-radius: 6px; transition: var(--transition);
+  }
+  .toc a:hover { background: var(--surface-hover); color: var(--accent); }
+  .toc a.active { background: var(--accent); color: #fff; }
+
+  /* Sections */
+  .section {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 16px; overflow: hidden;
+    transition: background var(--transition), box-shadow var(--transition);
+    animation: fadeSlideUp 0.4s ease both;
+  }
+  .section:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  .section-header {
+    padding: 13px 20px;
+    background: linear-gradient(135deg, var(--surface-hover), var(--surface));
+    font-size: 16px; font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none; transition: var(--transition);
+  }
+  .section-header:hover { filter: brightness(0.97); }
+  .section-header .toggle { font-size: 12px; opacity: 0.4; margin-left: auto; transition: var(--transition); }
+  .section.collapsed .section-header .toggle { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 14px 20px; }
+  .section.highlight { box-shadow: 0 0 0 3px var(--accent), 0 4px 24px rgba(74,108,247,0.15); }
+
+  .sub-title {
+    font-size: 14px; font-weight: 700; margin: 14px 0 6px;
+    padding: 5px 10px; background: var(--surface-hover); border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+
+  p { font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 8px; }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px; padding: 1px 5px; border-radius: 4px;
+    background: var(--surface-hover); color: #d63384;
+  }
+  [data-theme="dark"] code { color: #f472b6; }
+
+  pre {
+    background: #1a1a2e; color: #e8e8f0; padding: 14px 16px;
+    border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px; line-height: 1.5; overflow-x: auto;
+    margin-bottom: 10px; position: relative;
+  }
+  .copy-code-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(255,255,255,0.1); border: none; color: #999;
+    width: 28px; height: 28px; border-radius: 6px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); font-size: 13px;
+    opacity: 0;
+  }
+  pre:hover .copy-code-btn { opacity: 1; }
+  .copy-code-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  pre .comment { color: #6a9955; }
+  pre .keyword { color: #569cd6; }
+  pre .string { color: #ce9178; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px;
+  }
+  th {
+    background: var(--surface-hover); text-align: left; padding: 7px 10px;
+    font-weight: 600; border-bottom: 2px solid var(--border);
+  }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+  tr:hover td { background: var(--surface-hover); }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 6px; margin-right: 4px;
+  }
+  .badge-green { background: #DCFCE7; color: #166534; }
+  .badge-blue { background: #DBEAFE; color: #1E40AF; }
+  .badge-purple { background: #EDE9FE; color: #5B21B6; }
+  .badge-orange { background: #FEF3C7; color: #92400E; }
+  .badge-red { background: #FEE2E2; color: #991B1B; }
+  [data-theme="dark"] .badge-green { background: rgba(22,101,52,0.4); color: #86efac; }
+  [data-theme="dark"] .badge-blue { background: rgba(30,64,175,0.4); color: #93c5fd; }
+  [data-theme="dark"] .badge-purple { background: rgba(91,33,182,0.4); color: #c4b5fd; }
+  [data-theme="dark"] .badge-orange { background: rgba(146,64,14,0.4); color: #fdba74; }
+  [data-theme="dark"] .badge-red { background: rgba(153,27,27,0.4); color: #fca5a5; }
+
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin-bottom: 10px; }
+  .feat-card {
+    padding: 10px 12px; border-radius: 10px;
+    background: var(--surface-hover); border: 1px solid var(--border);
+    transition: var(--transition);
+  }
+  .feat-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .feat-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .feat-card p { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+  .er-diagram { font-family: 'Consolas', monospace; font-size: 13px; background: var(--surface-hover); padding: 12px 16px; border-radius: 10px; line-height: 1.6; margin-bottom: 10px; }
+  .flow { font-family: 'Consolas', monospace; font-size: 13px; background: var(--surface-hover); padding: 12px 16px; border-radius: 10px; line-height: 1.6; margin-bottom: 10px; }
+  .flow .step { color: var(--accent); font-weight: 700; display: block; margin-top: 6px; }
+  .flow .step:first-child { margin-top: 0; }
+
+  .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; margin-bottom: 10px; }
+  .pattern-item { padding: 7px 10px; border-radius: 8px; background: var(--surface-hover); border: 1px solid var(--border); font-size: 13px; transition: var(--transition); }
+  .pattern-item:hover { border-color: var(--accent); }
+
+  .back-to-top {
+    position: fixed; bottom: 24px; left: 24px; z-index: 999;
+    width: 42px; height: 42px; border-radius: 12px;
+    background: var(--accent); color: #fff; border: none;
+    cursor: pointer; font-size: 18px;
+    box-shadow: 0 4px 16px rgba(74,108,247,0.3);
+    transition: var(--transition);
+    opacity: 0; transform: translateY(20px); pointer-events: none;
+  }
+  .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .back-to-top:hover { transform: translateY(-3px); }
+
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: #1a1a2e; color: #e8e8f0; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+  .search-count { font-size: 12px; color: var(--text-muted); margin-top: 6px; display: none; }
+  .search-count.visible { display: block; }
+
+  @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .header { padding: 20px; }
+    .header h1 { font-size: 20px; }
+    .header h1 small { display: block; margin-left: 0; margin-top: 4px; }
+    .header-top { flex-direction: column; gap: 10px; }
+    .toc-grid { grid-template-columns: 1fr; }
+    .feat-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="container">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-top">
+    <div>
+      <h1>&#9829; ClinicMS <small>Full Documentation</small></h1>
+      <div class="meta">
+        <span>&#128193; .NET 8.0 WPF</span>
+        <span>&#128296; C# 12</span>
+        <span>&#128187; MVVM</span>
+        <span>&#128451; SQLite</span>
+        <span>&#128196; QuestPDF</span>
+        <span>&#128200; xUnit</span>
+        <span>&#128197; 27/05/2026</span>
+        <span>&#128736; ~7,000+ lines</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleDark()" title="Dark Mode">&#9790;</button>
+      <button class="icon-btn" onclick="expandAll()" title="Expand all">&#9447;</button>
+      <button class="icon-btn" onclick="collapseAll()" title="Collapse all">&#9448;</button>
+    </div>
+  </div>
+</header>
+
+<!-- Search -->
+<div class="search-row">
+  <span class="icon">&#128269;</span>
+  <input type="text" id="searchInput" placeholder="Search across entire documentation..." oninput="searchContent()">
+  <div class="search-count" id="searchCount"></div>
+</div>
+
+<!-- TOC -->
+<div class="toc" id="toc">
+  <div class="toc-header">
+    <h2>&#128214; Mục Lục</h2>
+    <span style="font-size:12px;color:var(--text-muted)">14 sections</span>
+  </div>
+  <div class="toc-grid">
+    <a href="#s0" onclick="scrollToSection('s0')">0. Sơ Đồ Khối Hệ Thống</a>
+    <a href="#s1" onclick="scrollToSection('s1')">1. Tổng Quan Kiến Trúc</a>
+    <a href="#s2" onclick="scrollToSection('s2')">2. Cấu Trúc Thư Mục</a>
+    <a href="#s3" onclick="scrollToSection('s3')">3. Entry Point</a>
+    <a href="#s4" onclick="scrollToSection('s4')">4. Data Layer (DbContext)</a>
+    <a href="#s5" onclick="scrollToSection('s5')">5. Models (15 Entities)</a>
+    <a href="#s6" onclick="scrollToSection('s6')">6. Services (14 files)</a>
+    <a href="#s7" onclick="scrollToSection('s7')">7. ViewModels (11 files)</a>
+    <a href="#s8" onclick="scrollToSection('s8')">8. Views (23 XAML)</a>
+    <a href="#s9" onclick="scrollToSection('s9')">9. Converters (15)</a>
+    <a href="#s10" onclick="scrollToSection('s10')">10. Theme System</a>
+    <a href="#s11" onclick="scrollToSection('s11')">11. Test Project</a>
+    <a href="#s12" onclick="scrollToSection('s12')">12. Database Schema</a>
+    <a href="#s13" onclick="scrollToSection('s13')">13. Luồng Nghiệp Vụ</a>
+    <a href="#s14" onclick="scrollToSection('s14')">14. Kiến Trúc Chi Tiết</a>
+  </div>
+</div>
+
+<!-- ===== SECTIONS ===== -->
+
+<!-- SECTION 0: SYSTEM DESIGN BLOCK DIAGRAM -->
+<div class="section" id="s0">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128202; 0. Sơ Đồ Khối Hệ Thống <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <p>Sơ đồ kiến trúc tổng thể ClinicMS theo mô hình MVVM + DI + EF Core + SQLite.</p>
+    <div style="overflow-x:auto;padding:10px 0;">
+    <svg id="archSvg" viewBox="0 0 1360 1100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:1360px;display:block;">
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#666"/>
+        </marker>
+        <marker id="ahBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#1565c0"/>
+        </marker>
+        <marker id="ahGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#2e7d32"/>
+        </marker>
+        <filter id="sh">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/>
+        </filter>
+        <linearGradient id="gP" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#e3f2fd"/><stop offset="100%" stop-color="#bbdefb"/>
+        </linearGradient>
+        <linearGradient id="gB" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#c8e6c9"/><stop offset="100%" stop-color="#a5d6a7"/>
+        </linearGradient>
+        <linearGradient id="gD" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ffe0b2"/><stop offset="100%" stop-color="#ffcc80"/>
+        </linearGradient>
+        <linearGradient id="gC" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#e1bee7"/><stop offset="100%" stop-color="#ce93d8"/>
+        </linearGradient>
+      </defs>
+
+      <!-- LAYER BGs -->
+      <rect x="20" y="30" width="1320" height="300" rx="10" fill="rgba(21,101,192,0.04)" stroke="rgba(21,101,192,0.15)" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="680" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">PRESENTATION LAYER (View + ViewModel)</text>
+
+      <rect x="20" y="350" width="1320" height="300" rx="10" fill="rgba(46,125,50,0.04)" stroke="rgba(46,125,50,0.15)" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="680" y="372" text-anchor="middle" font-size="13" font-weight="700" fill="#2e7d32">BUSINESS LOGIC LAYER (Services)</text>
+
+      <rect x="20" y="670" width="1320" height="180" rx="10" fill="rgba(230,81,0,0.04)" stroke="rgba(230,81,0,0.15)" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="680" y="692" text-anchor="middle" font-size="13" font-weight="700" fill="#e65100">DATA LAYER (Entity Framework Core + SQLite)</text>
+
+      <rect x="20" y="870" width="1320" height="200" rx="10" fill="rgba(123,31,162,0.04)" stroke="rgba(123,31,162,0.15)" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="680" y="892" text-anchor="middle" font-size="13" font-weight="700" fill="#7b1fa2">CROSS-CUTTING / INFRASTRUCTURE</text>
+
+      <!-- VIEWS -->
+      <rect x="40" y="70" width="180" height="44" rx="6" fill="#1565c0" filter="url(#sh)"/>
+      <text x="130" y="91" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">VIEWS (XAML)</text>
+      <text x="130" y="106" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">23 trang + dialog</text>
+
+      <g font-size="10" text-anchor="middle" font-weight="600">
+        <rect x="45" y="124" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="86" y="140" fill="#0d47a1">MainWindow</text>
+        <rect x="135" y="124" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="176" y="140" fill="#0d47a1">DashboardView</text>
+        <rect x="45" y="154" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="86" y="170" fill="#0d47a1">PatientListView</text>
+        <rect x="135" y="154" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="176" y="170" fill="#0d47a1">DoctorListView</text>
+        <rect x="45" y="184" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="86" y="200" fill="#0d47a1">VisitListView</text>
+        <rect x="135" y="184" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="176" y="200" fill="#0d47a1">MedicineListView</text>
+        <rect x="45" y="214" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="86" y="230" fill="#0d47a1">ServiceListView</text>
+        <rect x="135" y="214" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="176" y="230" fill="#0d47a1">InvoiceListView</text>
+        <rect x="45" y="244" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="86" y="260" fill="#0d47a1">SettingsView</text>
+        <rect x="135" y="244" width="82" height="24" rx="4" fill="url(#gP)" stroke="#1565c0" stroke-width="1"/>
+        <text x="176" y="260" fill="#0d47a1">*Dialog x12</text>
+      </g>
+
+      <!-- VIEWMODELS -->
+      <rect x="280" y="70" width="200" height="44" rx="6" fill="#1976d2" filter="url(#sh)"/>
+      <text x="380" y="91" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">VIEWMODELS</text>
+      <text x="380" y="106" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">10 ViewModels</text>
+
+      <g font-size="10" text-anchor="middle" font-weight="600">
+        <rect x="285" y="124" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="331" y="140" fill="#0d47a1">MainViewModel</text>
+        <rect x="385" y="124" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="431" y="140" fill="#0d47a1">DashboardVM</text>
+        <rect x="285" y="154" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="331" y="170" fill="#0d47a1">PatientVM</text>
+        <rect x="385" y="154" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="431" y="170" fill="#0d47a1">DoctorVM</text>
+        <rect x="285" y="184" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="331" y="200" fill="#0d47a1">VisitVM</text>
+        <rect x="385" y="184" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="431" y="200" fill="#0d47a1">MedicineVM</text>
+        <rect x="285" y="214" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="331" y="230" fill="#0d47a1">ServiceVM</text>
+        <rect x="385" y="214" width="92" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="431" y="230" fill="#0d47a1">InvoiceVM</text>
+        <rect x="325" y="244" width="100" height="24" rx="4" fill="url(#gP)" stroke="#1976d2" stroke-width="1"/>
+        <text x="375" y="260" fill="#0d47a1">PatientDetailVM</text>
+      </g>
+
+      <!-- DataBinding arrow -->
+      <line x1="220" y1="92" x2="278" y2="92" stroke="#1565c0" stroke-width="1.5" marker-end="url(#ahBlue)" fill="none"/>
+      <text x="245" y="85" text-anchor="middle" font-size="9" fill="#1565c0">Data Binding</text>
+
+      <!-- DI CONTAINER -->
+      <rect x="540" y="70" width="180" height="44" rx="6" fill="#455a64" filter="url(#sh)"/>
+      <text x="630" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">DI CONTAINER</text>
+      <text x="630" y="103" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">MS.DependencyInjection</text>
+
+      <line x1="480" y1="92" x2="538" y2="92" stroke="#666" stroke-width="1.5" marker-end="url(#ah)" fill="none"/>
+
+      <!-- DI -> Services -->
+      <line x1="720" y1="92" x2="940" y2="395" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ahGreen)" fill="none"/>
+      <text x="840" y="240" text-anchor="middle" font-size="9" fill="#2e7d32">Inject Transient</text>
+
+      <!-- VM -> Services -->
+      <line x1="400" y1="270" x2="560" y2="395" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ah)" fill="none"/>
+      <text x="470" y="340" text-anchor="middle" font-size="9" fill="#2e7d32">VM g&#7885;i Service</text>
+
+      <!-- CoreDatabaseService -->
+      <rect x="40" y="395" width="170" height="40" rx="6" fill="#1b5e20" filter="url(#sh)"/>
+      <text x="125" y="413" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">CoreDatabaseService</text>
+      <text x="125" y="428" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Factory: t&#7841;o DbContext (Singleton)</text>
+
+      <!-- Legacy DatabaseService -->
+      <rect x="40" y="450" width="170" height="36" rx="6" fill="#43a047" filter="url(#sh)"/>
+      <text x="125" y="470" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">DatabaseService</text>
+      <text x="125" y="481" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Legacy (Singleton)</text>
+
+      <!-- Business Services -->
+      <g>
+        <rect x="250" y="395" width="130" height="36" rx="6" fill="#388e3c" filter="url(#sh)"/>
+        <text x="315" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">PatientService</text>
+        <text x="315" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">CRUD + Search</text>
+
+        <rect x="400" y="395" width="130" height="36" rx="6" fill="#388e3c" filter="url(#sh)"/>
+        <text x="465" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">DoctorService</text>
+        <text x="465" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">CRUD Doctors</text>
+
+        <rect x="550" y="395" width="130" height="36" rx="6" fill="#388e3c" filter="url(#sh)"/>
+        <text x="615" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">VisitService</text>
+        <text x="615" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Transaction + Stock</text>
+
+        <rect x="700" y="395" width="130" height="36" rx="6" fill="#388e3c" filter="url(#sh)"/>
+        <text x="765" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">MedicineService</text>
+        <text x="765" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Stock CRUD</text>
+
+        <rect x="850" y="395" width="140" height="36" rx="6" fill="#388e3c" filter="url(#sh)"/>
+        <text x="920" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">ServiceCatalogSvc</text>
+        <text x="920" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">CRUD Services</text>
+
+        <rect x="1010" y="395" width="150" height="36" rx="6" fill="#388e3c" filter="url(#sh)"/>
+        <text x="1085" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">InvoiceService</text>
+        <text x="1085" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Invoices + Payment</text>
+
+        <rect x="1180" y="395" width="140" height="36" rx="6" fill="#43a047" filter="url(#sh)"/>
+        <text x="1250" y="413" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">DashboardService</text>
+        <text x="1250" y="426" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Charts + Stats</text>
+      </g>
+
+      <!-- Arrows: CoreDB -> business services -->
+      <line x1="210" y1="413" x2="248" y2="413" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#ahGreen)" fill="none"/>
+      <line x1="210" y1="413" x2="248" y2="413" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#ahGreen)" fill="none"/>
+      <line x1="530" y1="413" x2="548" y2="413" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#ahGreen)" fill="none"/>
+      <line x1="680" y1="413" x2="698" y2="413" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#ahGreen)" fill="none"/>
+      <line x1="830" y1="413" x2="848" y2="413" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#ahGreen)" fill="none"/>
+      <line x1="990" y1="413" x2="1008" y2="413" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#ahGreen)" fill="none"/>
+
+      <!-- InvoiceService -> VisitService (stock) -->
+      <line x1="1070" y1="431" x2="680" y2="431" stroke="#2e7d32" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#ahGreen)" fill="none"/>
+      <text x="880" y="445" text-anchor="middle" font-size="8" fill="#2e7d32">Stock deduction</text>
+
+      <!-- DbContext -->
+      <rect x="40" y="700" width="1280" height="130" rx="6" fill="#e65100" filter="url(#sh)"/>
+      <text x="680" y="722" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">ClinicDbContext (Entity Framework Core &mdash; 15 DbSets)</text>
+
+      <g font-size="10" text-anchor="middle" font-weight="600" fill="#fff">
+        <rect x="55" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="107" y="756">Patients</text>
+        <rect x="170" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="222" y="756">Doctors</text>
+        <rect x="285" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="337" y="756">Visits</text>
+        <rect x="400" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="452" y="756">Medicines</text>
+        <rect x="515" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="567" y="756">Services</text>
+        <rect x="630" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="682" y="756">Prescriptions</text>
+        <rect x="745" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="797" y="756">RxDetails</text>
+        <rect x="860" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="912" y="756">ServiceOrders</text>
+        <rect x="975" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="1027" y="756">Invoices</text>
+        <rect x="1090" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="1142" y="756">InvoiceItems</text>
+        <rect x="1205" y="740" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="1257" y="756">Payments</text>
+
+        <rect x="55" y="770" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="107" y="786">Appointments</text>
+        <rect x="170" y="770" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="222" y="786">Contacts</text>
+        <rect x="285" y="770" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="337" y="786">PatientContacts</text>
+        <rect x="400" y="770" width="105" height="24" rx="4" fill="#bf360c"/>
+        <text x="452" y="786">AppSettings</text>
+      </g>
+
+      <!-- SQLite badge -->
+      <rect x="1160" y="700" width="140" height="36" rx="6" fill="#f57c00" stroke="#e65100" stroke-width="1.5"/>
+      <text x="1230" y="723" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">SQLite</text>
+
+      <!-- Service -> DbContext arrows -->
+      <line x1="125" y1="486" x2="125" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+      <line x1="315" y1="431" x2="315" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+      <line x1="465" y1="431" x2="465" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+      <line x1="615" y1="431" x2="615" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+      <line x1="765" y1="431" x2="765" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+      <line x1="920" y1="431" x2="920" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+      <line x1="1085" y1="431" x2="1085" y2="698" stroke="#e65100" stroke-width="1.2" marker-end="url(#ah)" fill="none"/>
+
+      <!-- Cross-cutting -->
+      <rect x="40" y="910" width="180" height="40" rx="6" fill="#7b1fa2" filter="url(#sh)"/>
+      <text x="130" y="928" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">ToastService</text>
+      <text x="130" y="943" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Notifications (Singleton)</text>
+
+      <rect x="250" y="910" width="180" height="40" rx="6" fill="#7b1fa2" filter="url(#sh)"/>
+      <text x="340" y="928" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">ModalService</text>
+      <text x="340" y="943" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Dialog stack (Singleton)</text>
+
+      <rect x="460" y="910" width="180" height="40" rx="6" fill="#7b1fa2" filter="url(#sh)"/>
+      <text x="550" y="928" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">PdfExportService</text>
+      <text x="550" y="943" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">QuestPDF (Singleton)</text>
+
+      <rect x="670" y="910" width="180" height="40" rx="6" fill="#9c27b0" filter="url(#sh)"/>
+      <text x="760" y="928" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">ThemeManager</text>
+      <text x="760" y="943" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Light / Dark (Static)</text>
+
+      <rect x="880" y="910" width="180" height="40" rx="6" fill="#9c27b0" filter="url(#sh)"/>
+      <text x="970" y="928" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">FontScaleManager</text>
+      <text x="970" y="943" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">Font scaling (Static)</text>
+
+      <rect x="1090" y="910" width="160" height="40" rx="6" fill="#9c27b0" filter="url(#sh)"/>
+      <text x="1170" y="928" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">Serilog</text>
+      <text x="1170" y="943" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.8)">File logging</text>
+
+      <!-- Toast -> Views -->
+      <line x1="100" y1="270" x2="130" y2="908" stroke="#7b1fa2" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ah)" fill="none"/>
+      <text x="118" y="600" text-anchor="middle" font-size="8" fill="#7b1fa2">Toast notif</text>
+
+      <!-- Modal -> VM -->
+      <line x1="340" y1="270" x2="340" y2="908" stroke="#7b1fa2" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ah)" fill="none"/>
+      <text x="356" y="600" text-anchor="middle" font-size="8" fill="#7b1fa2">Show dialogs</text>
+    </svg>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:12px;justify-content:center;">
+      <span><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#1565c0;vertical-align:middle;margin-right:4px;"></span> Presentation Layer</span>
+      <span><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#388e3c;vertical-align:middle;margin-right:4px;"></span> Business Logic Layer</span>
+      <span><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e65100;vertical-align:middle;margin-right:4px;"></span> Data Layer</span>
+      <span><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7b1fa2;vertical-align:middle;margin-right:4px;"></span> Cross-cutting</span>
+      <span><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#455a64;vertical-align:middle;margin-right:4px;"></span> DI Container</span>
+    </div>
+
+    <div style="margin-top:12px;padding:12px 16px;background:var(--surface-hover);border-radius:10px;font-size:12px;line-height:1.7;color:var(--text-secondary);">
+      <strong>&#128221; Ch&#xFA; th&#xED;ch:</strong><br>
+      &#8226; <strong>M&#x1ED7;i business service</strong> inject <code>CoreDatabaseService</code> &#x111;&#x1EC3; factory-t&#x1EA1;o DbContext transient (kh&#xF4;ng shared context).<br>
+      &#8226; <strong>MainViewModel</strong> (Singleton) ch&#x1EE9;a t&#x1EA5;t c&#x1EA3; sub-VM singletons, &#x111;i&#x1EC1;u h&#x1B0;&#x1EDB;ng navigation v&#xE0; DataChanged events.<br>
+      &#8226; <strong>Lu&#x1ED3;ng d&#x1EEF; li&#x1EC7;u:</strong> View (XAML) &#x2192; Data Binding &#x2192; ViewModel &#x2192; Service &#x2192; DbContext &#x2192; SQLite.<br>
+      &#8226; <strong>InvoiceService</strong> g&#x1ECD;i <code>VisitService</code> &#x111;&#x1EC3; tr&#x1EEB; t&#x1ED3;n kho khi thanh to&#xE1;n (<code>IsDeducted</code>).<br>
+      &#8226; <strong>PDF Export:</strong> VisitVM &amp; InvoiceVM g&#x1ECD;i <code>PdfExportService</code>, hi&#x1EC3;n th&#x1ECB; qua <code>PdfPreviewView</code> modal.
+    </div>
+  </div>
+</div>
+
+<div class="section" id="s1">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128300; 1. Tổng Quan Kiến Trúc <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">&#128736; Công Nghệ &amp; Framework</div>
+    <div class="feat-grid">
+      <div class="feat-card"><h4>&#128187; Ngôn ngữ</h4><p>C# 12 (.NET 8.0)</p></div>
+      <div class="feat-card"><h4>&#127912; UI Framework</h4><p>WPF</p></div>
+      <div class="feat-card"><h4>&#128202; Kiến trúc</h4><p>MVVM</p></div>
+      <div class="feat-card"><h4>&#128451; Database</h4><p>SQLite</p></div>
+      <div class="feat-card"><h4>&#128220; ORM</h4><p>EF Core 8.0</p></div>
+      <div class="feat-card"><h4>&#128196; PDF</h4><p>QuestPDF</p></div>
+      <div class="feat-card"><h4>&#128200; Logging</h4><p>Serilog</p></div>
+      <div class="feat-card"><h4>&#128736; DI</h4><p>MS.DependencyInjection</p></div>
+      <div class="feat-card"><h4>&#128270; Test</h4><p>xUnit</p></div>
+    </div>
+    <div class="sub-title">&#127959; Kiến Trúc Tổng Thể</div>
+    <pre><button class="copy-code-btn" onclick="copyCode(this)">&#128203;</button>                     ClinicMS App
+  &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+  Views (23 XAML) &#8595; Data Binding
+  ViewModels (11) &#8595; Method calls
+  Services (14 files) &#8595; DbContext
+  Data Layer (EF Core + SQLite) - 15 DbSets</pre>
+    <p><strong>MVVM Pattern</strong>: Tách biệt Model - View - ViewModel</p>
+    <p><strong>Dependency Injection</strong>: Service và ViewModel inject qua constructor</p>
+    <p><strong>Offline-first</strong>: SQLite local, không cần internet</p>
+
+    <div class="sub-title">&#128204; Tính Năng Chính</div>
+    <table>
+      <tr><th>Tính Năng</th><th>Mô Tả</th></tr>
+      <tr><td>Dashboard</td><td>Thống kê tổng quan, biểu đồ 7 ngày, lịch hẹn</td></tr>
+      <tr><td>Bệnh nhân</td><td>CRUD, tìm kiếm, phân trang server-side</td></tr>
+      <tr><td>Bác sĩ</td><td>CRUD, tìm kiếm theo tên/chuyên khoa</td></tr>
+      <tr><td>Hồ sơ khám</td><td>Tạo/Cập nhật, kê đơn, chỉ định dịch vụ, transaction</td></tr>
+      <tr><td>Thuốc</td><td>CRUD, tồn kho, stock badges</td></tr>
+      <tr><td>Dịch vụ</td><td>CRUD danh mục dịch vụ y tế</td></tr>
+      <tr><td>Hóa đơn</td><td>Tự động sinh, ghi nhận thanh toán, xuất PDF</td></tr>
+      <tr><td>PDF</td><td>Đơn thuốc (A5), Bệnh án (A4), Hóa đơn (A5)</td></tr>
+      <tr><td>Settings</td><td>Theme (Light/Dark), Font Size</td></tr>
+      <tr><td>Sao lưu</td><td>Backup DB tự động, giữ 7 phiên bản</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="s2">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128193; 2. Cấu Trúc Thư Mục <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <pre><button class="copy-code-btn" onclick="copyCode(this)">&#128203;</button>E:\ClinicMS\
+&#9500;&#9472;&#9472; ClinicMS.sln
+&#9500;&#9472;&#9472; ClinicMS.csproj          # .NET 8.0 WPF
+&#9500;&#9472;&#9472; App.xaml / App.xaml.cs  # Entry point
+&#9500;&#9472;&#9472; Data/                   # ClinicDbContext (15 DbSets)
+&#9500;&#9472;&#9472; Models/                 # 15 entities
+&#9500;&#9472;&#9472; Services/               # 14 files
+&#9500;&#9472;&#9472; ViewModels/             # 11 files
+&#9500;&#9472;&#9472; Views/                  # 23 XAML + code-behind
+&#9500;&#9472;&#9472; Converters/             # 15 converters
+&#9500;&#9472;&#9472; Resources/Themes/       # 7 theme files
+&#9500;&#9472;&#9472; ClinicMS.Tests/         # xUnit
+&#9492;&#9472;&#9472; *.html                  # Docs</pre>
+  </div>
+</div>
+
+<div class="section" id="s3">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128640; 3. Entry Point <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <p><strong>File</strong>: <code>App.xaml.cs</code> (180 lines)</p>
+    <div class="sub-title">&#9879; Quy Trình Khởi Động</div>
+    <div class="flow">
+      <span class="step">OnStartup()</span>
+      &#9474; QuestPDF Community License
+      &#9474; Serilog Logger
+      &#9474; Auto DB Backup (7 versions)
+      &#9474; DI Container (Singleton + Transient)
+      &#9474; CultureInfo = "vi-VN"
+      &#9474; Show MainWindow
+      &#9492;&#9472; Global Exception Handlers
+    </div>
+  </div>
+</div>
+
+<div class="section" id="s4">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128451; 4. Data Layer <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <p><strong>File</strong>: <code>Data/ClinicDbContext.cs</code> (132 lines)</p>
+    <p><strong>15 DbSets</strong>:
+      <span class="badge badge-green">Patients</span>
+      <span class="badge badge-green">Contacts</span>
+      <span class="badge badge-green">PatientContacts</span>
+      <span class="badge badge-blue">Doctors</span>
+      <span class="badge badge-blue">Visits</span>
+      <span class="badge badge-blue">Appointments</span>
+      <span class="badge badge-purple">Medicines</span>
+      <span class="badge badge-purple">Prescriptions</span>
+      <span class="badge badge-purple">PrescriptionDetails</span>
+      <span class="badge badge-orange">Services</span>
+      <span class="badge badge-orange">ServiceOrders</span>
+      <span class="badge badge-red">Invoices</span>
+      <span class="badge badge-red">InvoiceItems</span>
+      <span class="badge badge-red">Payments</span>
+      <span class="badge badge-blue">AppSettings</span>
+    </p>
+    <p><strong>DB Path</strong>: OverrideDbPath &rarr; Debug &rarr; Project root &rarr; %LOCALAPPDATA%</p>
+    <p><strong>Fluent API</strong>: Lowercase tables, composite PKs, FK relationships</p>
+  </div>
+</div>
+
+<div class="section" id="s5">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128221; 5. Models (15 Entity Classes) <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">Patient</div>
+    <table><tr><th>Column</th><th>Type</th></tr>
+      <tr><td>patient_id</td><td>INTEGER PK AI</td></tr>
+      <tr><td>full_name, date_of_birth, gender, blood_type</td><td>TEXT</td></tr>
+      <tr><td>height_cm, weight_kg</td><td>REAL</td></tr>
+      <tr><td>note, created_at</td><td>TEXT</td></tr>
+    </table>
+    <div class="sub-title">Visit</div>
+    <table><tr><th>Column</th><th>Type</th><th>Default</th></tr>
+      <tr><td>visit_id</td><td>INTEGER PK AI</td><td></td></tr>
+      <tr><td>patient_id / doctor_id</td><td>INTEGER FK</td><td></td></tr>
+      <tr><td>visit_type</td><td>TEXT</td><td>"Walk-in"</td></tr>
+      <tr><td>status</td><td>TEXT</td><td>"Waiting"</td></tr>
+      <tr><td>symptoms / diagnosis / note</td><td>TEXT</td><td></td></tr>
+      <tr><td>pulse / blood_pressure / temperature / weight</td><td>TEXT</td><td></td></tr>
+    </table>
+    <div class="sub-title">Medicine</div>
+    <table><tr><th>Column</th><th>Type</th><th>Default</th></tr>
+      <tr><td>medicine_id</td><td>INTEGER PK AI</td><td></td></tr>
+      <tr><td>medicine_name, unit</td><td>TEXT</td><td>"Viên"</td></tr>
+      <tr><td>price</td><td>REAL</td><td>0</td></tr>
+      <tr><td>stock_quantity, reserved_quantity</td><td>INTEGER</td><td>0</td></tr>
+    </table>
+    <div class="sub-title">Invoice</div>
+    <table><tr><th>Column</th><th>Type</th><th>Default</th></tr>
+      <tr><td>visit_id</td><td>INTEGER PK/FK</td><td></td></tr>
+      <tr><td>total_amount</td><td>REAL</td><td>0</td></tr>
+      <tr><td>status</td><td>TEXT</td><td>"Unpaid"</td></tr>
+      <tr><td>is_deducted</td><td>INTEGER</td><td>0</td></tr>
+    </table>
+    <div class="sub-title">Other Models</div>
+    <table><tr><th>Model</th><th>PK</th><th>Notes</th></tr>
+      <tr><td>Doctor</td><td>doctor_id</td><td>full_name, specialty, phone, email</td></tr>
+      <tr><td>Service</td><td>service_id</td><td>service_name, price</td></tr>
+      <tr><td>InvoiceItem</td><td>(visit_id, item_type, item_id)</td><td>Composite PK</td></tr>
+      <tr><td>Payment</td><td>payment_id</td><td>amount, method (Cash/Transfer)</td></tr>
+      <tr><td>Appointment</td><td>appointment_id</td><td>patient_id, doctor_id, time</td></tr>
+      <tr><td>Prescription</td><td>visit_id</td><td>created_at</td></tr>
+      <tr><td>PrescriptionDetail</td><td>(visit_id, medicine_id)</td><td>quantity, dosage</td></tr>
+      <tr><td>ServiceOrder</td><td>service_order_id</td><td>visit_id, service_id, result</td></tr>
+      <tr><td>Contact</td><td>contact_id</td><td>phone, email, address</td></tr>
+      <tr><td>PatientContact</td><td>(patient_id, contact_id)</td><td>is_primary</td></tr>
+      <tr><td>AppSetting</td><td>Key</td><td>Key-Value store</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="s6">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#9881; 6. Services (14 files) <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">CoreDatabaseService <span class="badge badge-blue">Singleton</span></div>
+    <p><code>Initialize()</code>: Tạo bảng, migration, seed 5 mẫu thuốc | <code>Ctx()</code>: Factory DbContext</p>
+
+    <div class="sub-title">PatientService <span class="badge badge-green">Transient</span> &bull; 213 lines</div>
+    <p>CRUD Patient + Contact. Search JOIN. GetPatientVisitsAsync with includes.</p>
+
+    <div class="sub-title">DoctorService <span class="badge badge-green">Transient</span> &bull; 96 lines</div>
+    <p>CRUD Doctor. Search by name/specialty. Delete cascade visits.</p>
+
+    <div class="sub-title">VisitService <span class="badge badge-green">Transient</span> &bull; 364 lines</div>
+    <p>CRUD with transactions. ReservedQuantity delta. Xóa cũ + thêm mới Prescription/ServiceOrders.</p>
+
+    <div class="sub-title">InvoiceService <span class="badge badge-green">Transient</span> &bull; 202 lines</div>
+    <p>GenerateOrUpdateInvoice. AddPayment (transaction + stock deduction).</p>
+
+    <div class="sub-title">MedicineService / ServiceCatalogService <span class="badge badge-green">Transient</span></div>
+    <p>CRUD cơ bản.</p>
+
+    <div class="sub-title">DashboardService <span class="badge badge-green">Transient</span></div>
+    <p>Lịch hẹn sắp tới + thống kê lượt khám theo ngày.</p>
+
+    <div class="sub-title">ModalService <span class="badge badge-blue">Singleton</span></div>
+    <p>Stack-based modal manager. Hỗ trợ nested modals, dimmer backdrop.</p>
+
+    <div class="sub-title">ToastService <span class="badge badge-blue">Singleton</span></div>
+    <p>Show(message, type). Auto-dismiss 3s.</p>
+
+    <div class="sub-title">ThemeManager / FontScaleManager <span class="badge badge-purple">Static</span></div>
+    <p>ApplyTheme(Light/Dark). FontScale (Small/Medium/Large).</p>
+
+    <div class="sub-title">PdfExportService <span class="badge badge-blue">Singleton</span> &bull; 319 lines</div>
+    <p>QuestPDF: Prescription (A5), MedicalRecord (A4), Invoice (A5). 5 export methods.</p>
+  </div>
+</div>
+
+<div class="section" id="s7">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128187; 7. ViewModels (11 files) <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">BaseViewModel (Abstract)</div>
+    <p>INotifyPropertyChanged + INotifyDataErrorInfo. SetProperty, ValidateProperty. RelayCommand.</p>
+
+    <div class="sub-title">MainViewModel <span class="badge badge-blue">Singleton</span></div>
+    <p>Root VM. Navigation (8 pages). Lookups, settings, DataChanged events.</p>
+
+    <div class="sub-title">DashboardViewModel</div>
+    <p>Stats: TotalPatients, TotalDoctors, VisitsToday, TodayRevenue. Weekly chart.</p>
+
+    <div class="sub-title">PatientViewModel</div>
+    <p>Pagination (50/page). Search + infinite scroll. CRUD + DataChanged.</p>
+
+    <div class="sub-title">DoctorViewModel</div>
+    <p>Load all + search + CRUD + DataChanged.</p>
+
+    <div class="sub-title">VisitViewModel</div>
+    <p>Pagination + date filter + search. Prescription &amp; Service orders. PDF export.</p>
+
+    <div class="sub-title">MedicineViewModel / ServiceViewModel</div>
+    <p>CRUD. ServiceVM có client-side search.</p>
+
+    <div class="sub-title">InvoiceViewModel</div>
+    <p>Status + date filter. Payment + PDF export.</p>
+
+    <div class="sub-title">PatientDetailViewModel</div>
+    <p>Patient info + visit history. Edit command.</p>
+  </div>
+</div>
+
+<div class="section" id="s8">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128065; 8. Views (23 XAML) <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>View</th><th>Mô Tả</th></tr>
+      <tr><td>MainWindow</td><td>260px sidebar + content. Toast + Modal overlay. ScaleTransform</td></tr>
+      <tr><td>DashboardView</td><td>5 stat cards, 7-day chart, appointments, today's visits</td></tr>
+      <tr><td>PatientListView</td><td>Search + DataGrid (500 lines). Pagination. Context menu.</td></tr>
+      <tr><td>VisitListView</td><td>Master-Detail (844+ lines). Grouped by status. Tabs.</td></tr>
+      <tr><td>MedicineListView</td><td>Stock filter tabs + status badges</td></tr>
+      <tr><td>InvoiceListView</td><td>Master-Detail. Status tabs. Payment. PDF export.</td></tr>
+      <tr><td>PdfPreviewView</td><td>WebView2 preview PDF</td></tr>
+      <tr><td>NavButton</td><td>Sidebar nav. Active indicator. Hover animation.</td></tr>
+      <tr><td>PatientFormDialog</td><td>Add/Edit patient form</td></tr>
+      <tr><td>PatientDetailDialog</td><td>Patient info + visit history</td></tr>
+      <tr><td>DoctorListView</td><td>Search + DataGrid + CRUD</td></tr>
+      <tr><td>VisitFormDialog</td><td>Full form: autocomplete, vital signs, prescription, services</td></tr>
+      <tr><td>SettingsView</td><td>Theme + Font size</td></tr>
+      <tr><td>PaymentDialog</td><td>Amount + method (Cash/Transfer)</td></tr>
+      <tr><td>ConfirmDialog / MessageDialog</td><td>Confirm / Message</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="s9">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128290; 9. Converters (15) <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>Converter</th><th>Output</th></tr>
+      <tr><td>BoolToVisibilityConverter</td><td>true&rarr;Visible</td></tr>
+      <tr><td>InverseBoolToVisibilityConverter</td><td>true&rarr;Collapsed</td></tr>
+      <tr><td>NullToVisibilityConverter</td><td>null&rarr;Visible</td></tr>
+      <tr><td>NotNullToVisibilityConverter</td><td>null&rarr;Collapsed</td></tr>
+      <tr><td>PageToBoldConverter</td><td>active&rarr;Bold</td></tr>
+      <tr><td>StatusToBrushConverter</td><td>Amber/Emerald/Blue</td></tr>
+      <tr><td>InvoiceStatusToBrushConverter</td><td>Red/Amber/Emerald</td></tr>
+      <tr><td>ToastTypeToBrushConverter</td><td>Error&rarr;Red, Success&rarr;Green</td></tr>
+      <tr><td>ZeroToVisibilityConverter</td><td>count==0&rarr;Visible</td></tr>
+      <tr><td>IndexConverter</td><td>Row number</td></tr>
+      <tr><td>PercentageToHeightConverter</td><td>Chart column height</td></tr>
+      <tr><td>FontSizeConverter</td><td>Scaled font size</td></tr>
+      <tr><td>InverseStatusToVisConverter</td><td>Paid&rarr;Collapsed</td></tr>
+      <tr><td>StatusToBackgroundConverter</td><td>Light bg</td></tr>
+      <tr><td>InvoiceStatusToBackgroundConverter</td><td>Light bg</td></tr>
+      <tr><td>ToastTypeToForegroundConverter</td><td>Error/Success text</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="s10">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#127912; 10. Theme System <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <p><strong>ClinicTheme.xaml</strong> merges 5 sub-themes:</p>
+    <ul style="margin-left:20px;font-size:14px;color:var(--text-secondary);line-height:1.8;">
+      <li><code>ThemeColors.xaml</code> / <code>ThemeColorsDark.xaml</code></li>
+      <li><code>ThemeTypography.xaml</code> &mdash; 7 sizes, 5 weights</li>
+      <li><code>ThemeControls.xaml</code> &mdash; Button, TextBox, DataGrid</li>
+      <li><code>ThemeContainers.xaml</code> &mdash; Card, StatCard, Badge</li>
+      <li><code>ThemeScrollBar.xaml</code> &mdash; 8px custom</li>
+    </ul>
+    <p><strong>Colors</strong>: Green (#16A34A), Background (#F9FAFB), Text (#111827). Status: Success/Warning/Error/Info.</p>
+  </div>
+</div>
+
+<div class="section" id="s11">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128270; 11. Test Project <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <p><strong>File</strong>: <code>ClinicMS.Tests/DatabaseServiceTests.cs</code> (109 lines)</p>
+    <ol style="margin-left:20px;font-size:14px;color:var(--text-secondary);line-height:1.8;">
+      <li><code>AddUpdateDeletePatient_MaintainsContactIntegrity</code></li>
+      <li><code>DeleteDoctor_RemovesAssociatedVisits</code></li>
+    </ol>
+  </div>
+</div>
+
+<div class="section" id="s12">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128451; 12. Database Schema <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">Entity Relationship</div>
+    <div class="er-diagram">
+patients 1&mdash;M patient_contacts M&mdash;1 contacts<br>
+patients 1&mdash;M visits<br>
+doctors 1&mdash;M visits<br>
+visits 1&mdash;M prescription_details M&mdash;1 medicines<br>
+visits 1&mdash;M service_orders M&mdash;1 services<br>
+visits 1&mdash;1 invoices<br>
+invoices 1&mdash;M invoice_items<br>
+invoices 1&mdash;M payments<br>
+patients 1&mdash;M appointments<br>
+doctors 1&mdash;M appointments
+    </div>
+    <p>See <a href="function.html" style="color:var(--accent)">function.html</a> for full SQL.</p>
+  </div>
+</div>
+
+<div class="section" id="s13">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128204; 13. Luồng Nghiệp Vụ <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">Quy Trình Khám Bệnh (4 bước)</div>
+    <div style="overflow-x:auto;padding:10px 0;">
+    <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:1100px;display:block;">
+      <defs>
+        <marker id="fah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#4A6CF7"/>
+        </marker>
+        <marker id="fahR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#dc2626"/>
+        </marker>
+        <marker id="fahG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#16A34A"/>
+        </marker>
+        <filter id="fsh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/></filter>
+      </defs>
+      <!-- Step 1 -->
+      <rect x="10" y="10" width="200" height="80" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" filter="url(#fsh)"/>
+      <text x="110" y="38" text-anchor="middle" font-size="16" font-weight="800" fill="#1565c0">1. TIẾP NHẬN</text>
+      <text x="110" y="56" text-anchor="middle" font-size="11" fill="#1a1a2e">T&#236;m/Create BN</text>
+      <text x="110" y="72" text-anchor="middle" font-size="11" fill="#1a1a2e">Chọn BS → Tạo hồ sơ</text>
+      <text x="110" y="88" text-anchor="middle" font-size="10" fill="#e65100" font-weight="700">Status: Waiting</text>
+      <line x1="210" y1="50" x2="260" y2="50" stroke="#4A6CF7" stroke-width="2" marker-end="url(#fah)" fill="none"/>
+      
+      <!-- Step 2 -->
+      <rect x="265" y="10" width="230" height="80" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="1.5" filter="url(#fsh)"/>
+      <text x="380" y="38" text-anchor="middle" font-size="16" font-weight="800" fill="#e65100">2. KHÁM BỆNH</text>
+      <text x="380" y="56" text-anchor="middle" font-size="11" fill="#1a1a2e">Triệu chứng → Chẩn đoán</text>
+      <text x="380" y="72" text-anchor="middle" font-size="11" fill="#1a1a2e">Kê đơn + Chỉ định DV</text>
+      <text x="380" y="88" text-anchor="middle" font-size="10" fill="#e65100" font-weight="700">Status: In Progress → Completed</text>
+      <line x1="495" y1="50" x2="545" y2="50" stroke="#4A6CF7" stroke-width="2" marker-end="url(#fah)" fill="none"/>
+
+      <!-- Step 3 -->
+      <rect x="550" y="10" width="200" height="80" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" filter="url(#fsh)"/>
+      <text x="650" y="38" text-anchor="middle" font-size="16" font-weight="800" fill="#2e7d32">3. KẾT THÚC</text>
+      <text x="650" y="58" text-anchor="middle" font-size="11" fill="#1a1a2e">ReservedQuantity += qty</text>
+      <text x="650" y="76" text-anchor="middle" font-size="11" fill="#1a1a2e">Sinh hóa đơn (Unpaid)</text>
+      <line x1="750" y1="50" x2="800" y2="50" stroke="#4A6CF7" stroke-width="2" marker-end="url(#fah)" fill="none"/>
+
+      <!-- Step 4 -->
+      <rect x="805" y="10" width="230" height="80" rx="10" fill="#fce4ec" stroke="#c62828" stroke-width="1.5" filter="url(#fsh)"/>
+      <text x="920" y="38" text-anchor="middle" font-size="16" font-weight="800" fill="#c62828">4. THANH TOÁN</text>
+      <text x="920" y="58" text-anchor="middle" font-size="11" fill="#1a1a2e">Nhập tiền + Phương thức</text>
+      <text x="920" y="76" text-anchor="middle" font-size="11" fill="#1a1a2e">Trừ tồn kho → Xuất PDF</text>
+
+      <!-- Divider + Data flow arrows downward -->
+      <rect x="110" y="130" width="770" height="1" rx="0" fill="none"/>
+      <!-- System actions -->
+      <line x1="110" y1="88" x2="110" y2="155" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#fahR)" fill="none"/>
+      <rect x="40" y="155" width="140" height="36" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+      <text x="110" y="170" text-anchor="middle" font-size="10" font-weight="600" fill="#991b1b">VisitService</text>
+      <text x="110" y="184" text-anchor="middle" font-size="9" fill="#991b1b">AddVisitAsync()</text>
+
+      <line x1="380" y1="88" x2="380" y2="155" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#fahR)" fill="none"/>
+      <rect x="310" y="155" width="140" height="36" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+      <text x="380" y="170" text-anchor="middle" font-size="10" font-weight="600" fill="#991b1b">VisitVM</text>
+      <text x="380" y="184" text-anchor="middle" font-size="9" fill="#991b1b">UpdateVisitAsync()</text>
+
+      <line x1="650" y1="88" x2="650" y2="155" stroke="#16A34A" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#fahG)" fill="none"/>
+      <rect x="580" y="155" width="140" height="36" rx="8" fill="#dcfce7" stroke="#16A34A" stroke-width="1"/>
+      <text x="650" y="170" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">InvoiceService</text>
+      <text x="650" y="184" text-anchor="middle" font-size="9" fill="#166534">GenerateOrUpdate()</text>
+
+      <line x1="920" y1="88" x2="920" y2="155" stroke="#16A34A" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#fahG)" fill="none"/>
+      <rect x="850" y="155" width="140" height="36" rx="8" fill="#dcfce7" stroke="#16A34A" stroke-width="1"/>
+      <text x="920" y="170" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">InvoiceVM</text>
+      <text x="920" y="184" text-anchor="middle" font-size="9" fill="#166534">AddPaymentAsync()</text>
+
+      <!-- Database actions -->
+      <line x1="110" y1="191" x2="110" y2="230" stroke="#e65100" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#fah)" fill="none"/>
+      <line x1="380" y1="191" x2="380" y2="230" stroke="#e65100" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#fah)" fill="none"/>
+      <line x1="650" y1="191" x2="650" y2="230" stroke="#e65100" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#fah)" fill="none"/>
+      <line x1="920" y1="191" x2="920" y2="230" stroke="#e65100" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#fah)" fill="none"/>
+
+      <rect x="40" y="230" width="140" height="36" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
+      <text x="110" y="245" text-anchor="middle" font-size="10" font-weight="600" fill="#92400e">INSERT visit</text>
+      <text x="110" y="259" text-anchor="middle" font-size="9" fill="#92400e">patients table</text>
+
+      <rect x="310" y="230" width="140" height="36" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
+      <text x="380" y="245" text-anchor="middle" font-size="10" font-weight="600" fill="#92400e">UPDATE visit</text>
+      <text x="380" y="259" text-anchor="middle" font-size="9" fill="#92400e">INSERT prescription</text>
+
+      <rect x="580" y="230" width="140" height="36" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
+      <text x="650" y="245" text-anchor="middle" font-size="10" font-weight="600" fill="#92400e">INSERT invoice</text>
+      <text x="650" y="259" text-anchor="middle" font-size="9" fill="#92400e">invoices + items</text>
+
+      <rect x="850" y="230" width="140" height="36" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
+      <text x="920" y="245" text-anchor="middle" font-size="10" font-weight="600" fill="#92400e">INSERT payment</text>
+      <text x="920" y="259" text-anchor="middle" font-size="9" fill="#92400e">UPDATE stock</text>
+
+      <!-- SQLite icon -->
+      <rect x="420" y="290" width="200" height="32" rx="16" fill="#455a64"/>
+      <text x="520" y="311" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">SQLite Database</text>
+      <line x1="110" y1="266" x2="520" y2="290" stroke="#e65100" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fah)" fill="none"/>
+      <line x1="380" y1="266" x2="520" y2="290" stroke="#e65100" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fah)" fill="none"/>
+      <line x1="650" y1="266" x2="520" y2="290" stroke="#e65100" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fah)" fill="none"/>
+      <line x1="920" y1="266" x2="520" y2="290" stroke="#e65100" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fah)" fill="none"/>
+    </svg>
+    </div>
+
+    <div class="sub-title">Quy Trình Tồn Kho Thuốc</div>
+    <div style="overflow-x:auto;padding:10px 0;">
+    <svg viewBox="0 0 1100 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:1100px;display:block;">
+      <defs>
+        <marker id="sah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#4A6CF7"/>
+        </marker>
+        <filter id="ssh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/></filter>
+      </defs>
+      <!-- Step 1: Nhập kho -->
+      <rect x="10" y="30" width="180" height="70" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" filter="url(#ssh)"/>
+      <text x="100" y="55" text-anchor="middle" font-size="14" font-weight="800" fill="#2e7d32">1. NHẬP KHO</text>
+      <text x="100" y="74" text-anchor="middle" font-size="11" fill="#1a1a2e">Stock = x (x &gt; 0)</text>
+      <text x="100" y="90" text-anchor="middle" font-size="10" fill="#555">Tạo/Cập nhật thuốc</text>
+      <line x1="190" y1="65" x2="240" y2="65" stroke="#4A6CF7" stroke-width="2" marker-end="url(#sah)" fill="none"/>
+
+      <!-- Step 2: Kê đơn -->
+      <rect x="245" y="30" width="200" height="70" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="1.5" filter="url(#ssh)"/>
+      <text x="345" y="55" text-anchor="middle" font-size="14" font-weight="800" fill="#e65100">2. KÊ ĐƠN</text>
+      <text x="345" y="74" text-anchor="middle" font-size="11" fill="#1a1a2e">Reserved += qty</text>
+      <text x="345" y="90" text-anchor="middle" font-size="10" fill="#555">Available = Stock - Reserved</text>
+      <line x1="445" y1="65" x2="495" y2="65" stroke="#4A6CF7" stroke-width="2" marker-end="url(#sah)" fill="none"/>
+
+      <!-- Decision: Thanh toán hay Hủy -->
+      <polygon points="545,0 640,65 545,130 450,65" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="1.5" filter="url(#ssh)"/>
+      <text x="545" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#7b1fa2">Thanh</text>
+      <text x="545" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#7b1fa2">toán?</text>
+      <text x="545" y="96" text-anchor="end" font-size="9" fill="#555">Có</text>
+      <text x="545" y="96" text-anchor="start" font-size="9" fill="#555">Không</text>
+
+      <line x1="640" y1="65" x2="690" y2="65" stroke="#16A34A" stroke-width="2" marker-end="url(#sah)" fill="none"/>
+      <line x1="545" y1="130" x2="545" y2="175" stroke="#dc2626" stroke-width="2" marker-end="url(#sah)" fill="none"/>
+
+      <!-- Step 3: Thanh toán -->
+      <rect x="695" y="30" width="200" height="70" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" filter="url(#ssh)"/>
+      <text x="795" y="55" text-anchor="middle" font-size="14" font-weight="800" fill="#2e7d32">3. THANH TOÁN</text>
+      <text x="795" y="74" text-anchor="middle" font-size="11" fill="#1a1a2e">Stock -= qty</text>
+      <text x="795" y="90" text-anchor="middle" font-size="10" fill="#555">Reserved -= qty</text>
+      <line x1="895" y1="65" x2="945" y2="65" stroke="#4A6CF7" stroke-width="2" marker-end="url(#sah)" fill="none"/>
+
+      <!-- Step 4: Hủy -->
+      <rect x="430" y="175" width="200" height="40" rx="10" fill="#fce4ec" stroke="#c62828" stroke-width="1.5" filter="url(#ssh)"/>
+      <text x="530" y="195" text-anchor="middle" font-size="14" font-weight="800" fill="#c62828">4. HỦY ĐƠN</text>
+      <text x="530" y="208" text-anchor="middle" font-size="10" fill="#555">Reserved -= qty</text>
+
+      <!-- Step 5: Xuất PDF -->
+      <rect x="950" y="30" width="140" height="70" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" filter="url(#ssh)"/>
+      <text x="1020" y="55" text-anchor="middle" font-size="13" font-weight="800" fill="#1565c0">XUẤT PDF</text>
+      <text x="1020" y="74" text-anchor="middle" font-size="10" fill="#1a1a2e">Hóa đơn</text>
+      <text x="1020" y="90" text-anchor="middle" font-size="10" fill="#1a1a2e">Đơn thuốc</text>
+    </svg>
+    </div>
+
+    <div class="sub-title">Quy Trình Xử Lý Hóa Đơn</div>
+    <div style="overflow-x:auto;padding:10px 0;">
+    <svg viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:1000px;display:block;">
+      <defs>
+        <marker id="iah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0,8 3,0 6" fill="#4A6CF7"/>
+        </marker>
+        <filter id="ish"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/></filter>
+      </defs>
+      <!-- 1 -->
+      <rect x="10" y="50" width="150" height="60" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" filter="url(#ish)"/>
+      <text x="85" y="75" text-anchor="middle" font-size="11" font-weight="700" fill="#1565c0">Hoàn thành khám</text>
+      <text x="85" y="95" text-anchor="middle" font-size="10" fill="#555">VisitVM.UpdateAsync()</text>
+      <line x1="160" y1="80" x2="210" y2="80" stroke="#4A6CF7" stroke-width="2" marker-end="url(#iah)" fill="none"/>
+      <!-- 2 -->
+      <rect x="215" y="50" width="170" height="60" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="1.5" filter="url(#ish)"/>
+      <text x="300" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#e65100">InvoiceService</text>
+      <text x="300" y="90" text-anchor="middle" font-size="9" fill="#555">GenerateOrUpdateInvoice()</text>
+      <text x="300" y="103" text-anchor="middle" font-size="9" fill="#555">Lấy Prescription + ServiceOrder</text>
+      <line x1="385" y1="80" x2="435" y2="80" stroke="#4A6CF7" stroke-width="2" marker-end="url(#iah)" fill="none"/>
+      <!-- 3 -->
+      <rect x="440" y="50" width="170" height="60" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" filter="url(#ish)"/>
+      <text x="525" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#2e7d32">Sinh hóa đơn</text>
+      <text x="525" y="90" text-anchor="middle" font-size="9" fill="#555">Tính tổng tiền</text>
+      <text x="525" y="103" text-anchor="middle" font-size="9" fill="#555">Batch invoice_items</text>
+      <line x1="610" y1="80" x2="660" y2="80" stroke="#4A6CF7" stroke-width="2" marker-end="url(#iah)" fill="none"/>
+      <!-- 4 -->
+      <rect x="665" y="50" width="160" height="60" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="1.5" filter="url(#ish)"/>
+      <text x="745" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#7b1fa2">InvoiceVM.AddPayment()</text>
+      <text x="745" y="90" text-anchor="middle" font-size="9" fill="#555">Nhập tiền / phương thức</text>
+      <text x="745" y="103" text-anchor="middle" font-size="9" fill="#555">PaymentDialog → DB</text>
+      <line x1="825" y1="80" x2="870" y2="80" stroke="#4A6CF7" stroke-width="2" marker-end="url(#iah)" fill="none"/>
+      <!-- 5 -->
+      <rect x="875" y="50" width="110" height="60" rx="10" fill="#fce4ec" stroke="#c62828" stroke-width="1.5" filter="url(#ish)"/>
+      <text x="930" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#c62828">Xuất PDF</text>
+      <text x="930" y="90" text-anchor="middle" font-size="9" fill="#555">Trừ tồn kho</text>
+      <text x="930" y="103" text-anchor="middle" font-size="9" fill="#555">IsDeducted = true</text>
+    </svg>
+    </div>
+
+    <div style="margin-top:10px;padding:12px 16px;background:var(--surface-hover);border-radius:10px;font-size:12px;line-height:1.7;color:var(--text-secondary);">
+      <strong>&#128221; Ghi chú:</strong><br>
+      &#8226; Quy trình khám bệnh gồm 4 bước tuần tự, mỗi bước gọi service tương ứng.<br>
+      &#8226; <strong>ReservedQuantity</strong> là cơ chế chốt tạm thời: khi kê đơn, số lượng được reserved, khi thanh toán mới trừ stock thật.<br>
+      &#8226; <strong>InvoiceService</strong> tự động tính tổng từ PrescriptionDetails (thuốc) + ServiceOrders (dịch vụ) khi sinh hóa đơn.<br>
+      &#8226; <strong>IsDeducted</strong> flag đảm bảo mỗi hóa đơn chỉ trừ tồn kho một lần.
+    </div>
+  </div>
+</div>
+
+<div class="section" id="s14">
+  <div class="section-header" onclick="toggleSection(this)">
+    &#128736; 14. Kiến Trúc Chi Tiết <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-title">DI Registration</div>
+    <pre><button class="copy-code-btn" onclick="copyCode(this)">&#128203;</button><span class="comment">// Singleton</span>
+services.AddSingleton&lt;CoreDatabaseService&gt;();
+services.AddSingleton&lt;ToastService&gt;();
+services.AddSingleton&lt;ModalService&gt;();
+services.AddSingleton&lt;PdfExportService&gt;();
+services.AddSingleton&lt;MainViewModel&gt;();
+services.AddSingleton&lt;MainWindow&gt;();
+
+<span class="comment">// Transient</span>
+services.AddTransient&lt;PatientService&gt;();
+services.AddTransient&lt;DoctorService&gt;();
+services.AddTransient&lt;VisitService&gt;();
+services.AddTransient&lt;InvoiceService&gt;();
+services.AddTransient&lt;DashboardService&gt;();
+<span class="comment">// ... ViewModels</span></pre>
+    <div class="sub-title">Navigation Flow</div>
+    <div class="flow">
+      MainWindow
+      &#9500;&#9472;&#9472; Dashboard (default)
+      &#9500;&#9472;&#9472; Patients &rarr; Search + DataGrid + CRUD
+      &#9500;&#9472;&#9472; Doctors &rarr; Search + DataGrid + CRUD
+      &#9500;&#9472;&#9472; Visits &rarr; Master-Detail + Tabs + PDF
+      &#9500;&#9472;&#9472; Medicines &rarr; Stock filters + CRUD
+      &#9500;&#9472;&#9472; Services &rarr; Search + CRUD
+      &#9500;&#9472;&#9472; Invoices &rarr; Filters + Payment + PDF
+      &#9492;&#9472;&#9472; Settings &rarr; Theme + Font
+    </div>
+    <div class="sub-title">Design Patterns</div>
+    <div class="pattern-grid">
+      <div class="pattern-item">MVVM</div>
+      <div class="pattern-item">Dependency Injection</div>
+      <div class="pattern-item">Singleton</div>
+      <div class="pattern-item">Factory</div>
+      <div class="pattern-item">Observer</div>
+      <div class="pattern-item">Command</div>
+      <div class="pattern-item">Strategy</div>
+      <div class="pattern-item">Transaction</div>
+      <div class="pattern-item">Stack (Modal)</div>
+      <div class="pattern-item">Template Method</div>
+      <div class="pattern-item">Composite PK</div>
+      <div class="pattern-item">Proxy</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== HELPERS =====
+function toast(msg) {
+  var c = document.getElementById('toastContainer');
+  var t = document.createElement('div'); t.className = 'toast';
+  t.textContent = msg; c.appendChild(t);
+  setTimeout(function() { t.remove(); }, 2000);
+}
+
+// ===== SECTION TOGGLE =====
+function toggleSection(el) {
+  var section = el.closest('.section');
+  if (section) section.classList.toggle('collapsed');
+}
+
+// ===== EXPAND / COLLAPSE ALL =====
+function expandAll() {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('collapsed'); });
+}
+function collapseAll() {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.add('collapsed'); });
+}
+
+// ===== DARK MODE =====
+function toggleDark() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('docTheme', isDark ? 'light' : 'dark');
+  document.querySelector('.icon-btn[onclick*="toggleDark"]').innerHTML = isDark ? '&#9790;' : '&#9728;';
+  document.querySelectorAll('.section-body svg').forEach(function(s) {
+    s.style.filter = isDark ? 'none' : 'invert(0.9) hue-rotate(180deg)';
+  });
+}
+if (localStorage.getItem('docTheme') === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  var tb = document.querySelector('.icon-btn[onclick*="toggleDark"]');
+  if (tb) tb.innerHTML = '&#9728;';
+  document.querySelectorAll('.section-body svg').forEach(function(s) {
+    s.style.filter = 'invert(0.9) hue-rotate(180deg)';
+  });
+}
+
+// ===== SCROLL TO SECTION =====
+function scrollToSection(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== PROGRESS BAR =====
+window.addEventListener('scroll', function() {
+  var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+  var scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var progress = (scrollTop / scrollHeight) * 100;
+  document.getElementById('progressBar').style.width = progress + '%';
+  // Back to top
+  document.getElementById('backToTop').classList.toggle('visible', scrollTop > 400);
+  // TOC active
+  var tocLinks = document.querySelectorAll('.toc a');
+  tocLinks.forEach(function(a) {
+    var sec = document.getElementById(a.getAttribute('href').substring(1));
+    if (sec) {
+      var rect = sec.getBoundingClientRect();
+      a.classList.toggle('active', rect.top < 120 && rect.bottom > 0);
+    }
+  });
+});
+
+// ===== SEARCH =====
+function searchContent() {
+  var q = document.getElementById('searchInput').value.toLowerCase().trim();
+  var count = 0;
+  var sections = document.querySelectorAll('.section');
+  sections.forEach(function(s) {
+    var text = s.textContent.toLowerCase();
+    var match = !q || text.indexOf(q) !== -1;
+    s.style.display = match ? '' : 'none';
+    var header = s.querySelector('.section-header');
+    if (match && q) {
+      s.classList.remove('collapsed');
+      s.classList.add('highlight');
+      setTimeout(function() { s.classList.remove('highlight'); }, 2000);
+      count += s.querySelectorAll('.sub-title, p, td, li').length;
+    }
+  });
+  var sc = document.getElementById('searchCount');
+  if (q) {
+    var visible = document.querySelectorAll('.section[style*="display: block"], .section:not([style*="display: none"])').length;
+    sc.textContent = visible + ' sections match';
+    sc.className = 'search-count visible';
+  } else {
+    sc.className = 'search-count';
+  }
+}
+
+// ===== COPY CODE =====
+function copyCode(btn) {
+  var pre = btn.closest('pre');
+  var text = pre.textContent.replace('&#128203;', '').trim();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { toast('Copied code'); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('Copied code');
+  }
+}
+
+// ===== STAGGERED ANIMATION =====
+document.querySelectorAll('.section').forEach(function(s, i) {
+  s.style.animationDelay = (i * 0.04) + 's';
+});
+</script>
+</body>
+</html>

@@ -30,11 +30,12 @@
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,24">
+        <Grid Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Border Width="46" Height="46" CornerRadius="13" Background="{DynamicResource PrimaryGreenBrush}" Margin="0,0,16,0">
                     <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -59,15 +60,44 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <!-- Date Filter Bar -->
+        <Border Grid.Row="1" Background="#F9FAFB" Padding="16,10" Margin="0,0,0,16"
+                BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="0,0,0,1"
+                CornerRadius="12" Effect="{StaticResource SoftShadow}">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Content="Hôm nay" IsChecked="{Binding InvoiceVM.IsTodayFilter}"
+                             Style="{StaticResource FilterTabStyle}"
+                             Command="{Binding InvoiceVM.ShowTodayCommand}"
+                             Margin="0,0,12,0"/>
+
+                <DatePicker SelectedDateChanged="DatePicker_SelectedDateChanged"
+                            Loaded="DatePicker_Loaded"
+                            Style="{StaticResource ModernDatePickerStyle}"
+                            Width="170"
+                            Margin="0,0,12,0"/>
+
+                <Border CornerRadius="8" Background="#F0FDF4" Padding="12,6" VerticalAlignment="Center"
+                        Visibility="{Binding InvoiceVM.DateFilter, Converter={StaticResource NotNullToVisibility}}"
+                        Margin="0,0,12,0">
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#166534"
+                               Text="{Binding InvoiceVM.Invoices.Count, StringFormat='{}{0} hóa đơn'}"/>
+                </Border>
+
+                <Button Content="✕" Width="36" Height="36" Style="{StaticResource IconButtonStyle}"
+                        Visibility="{Binding InvoiceVM.DateFilter, Converter={StaticResource NotNullToVisibility}}"
+                        Command="{Binding InvoiceVM.ClearDateFilterCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="400"/>
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT: Invoice List -->
-            <Border Grid.Column="0" Background="White" CornerRadius="20" BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
+        <!-- LEFT: Invoice List -->
+        <Border Grid.Column="0" Background="White" CornerRadius="20" BorderBrush="{DynamicResource BackgroundBrushDark}" BorderThickness="1">
                 <Border.Effect><StaticResource ResourceKey="StandardShadow"/></Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions>

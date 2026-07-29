@@ -33,6 +33,8 @@ public partial class PaymentDialog : UserControl
 
     private async void Confirm_Click(object sender, RoutedEventArgs e)
     {
+        try
+        {
         string raw = InputAmount.Text.Replace(".", "").Replace(",", "").Replace(" ", "");
         if (!double.TryParse(raw, out double amount) || amount <= 0)
         {
@@ -44,5 +46,11 @@ public partial class PaymentDialog : UserControl
 
         await _vm.InvoiceVM.AddPaymentAsync(_invoice.VisitId, amount, method);
         _vm.Modal.Close();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in PaymentDialog.Confirm_Click");
+            _vm.Toast.ShowError($"Lỗi khi thanh toán: {ex.Message}");
+        }
     }
 }

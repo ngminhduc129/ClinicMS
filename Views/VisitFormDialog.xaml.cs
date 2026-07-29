@@ -166,6 +166,8 @@ public partial class VisitFormDialog : UserControl
 
     private async void LoadData(Visit v)
     {
+        try
+        {
         _selectedPatientId = v.PatientId;
         _selectedDoctorId = v.DoctorId;
 
@@ -217,6 +219,12 @@ public partial class VisitFormDialog : UserControl
         RbComplete.IsChecked = v.Status == "Completed";
         if (RbProgress.IsChecked == false && RbComplete.IsChecked == false)
             RbWaiting.IsChecked = true;
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in VisitFormDialog.LoadData");
+            _vm.Modal.Show(new MessageDialog(_vm, $"Lỗi khi tải dữ liệu: {ex.Message}", "Lỗi", true));
+        }
     }
 
     private Visit BuildVisit(int patientId, int doctorId)
@@ -732,8 +740,9 @@ public partial class VisitFormDialog : UserControl
             PatientSuggestList.ItemsSource = patients;
             PatientSuggestPopup.IsOpen = patients is { Count: > 0 };
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Error in VisitFormDialog.PatientNameBox_TextChanged");
             PatientSuggestPopup.IsOpen = false;
         }
     }
@@ -753,8 +762,9 @@ public partial class VisitFormDialog : UserControl
             _selectedPatientId = selected.PatientId;
             PatientSuggestPopup.IsOpen = false;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Error in VisitFormDialog.PatientSuggestList_SelectionChanged");
             _isSelectingPatient = false;
             PatientSuggestPopup.IsOpen = false;
         }
@@ -810,8 +820,9 @@ public partial class VisitFormDialog : UserControl
             DoctorSuggestList.ItemsSource = filtered;
             DoctorSuggestPopup.IsOpen = filtered.Count > 0;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Error in VisitFormDialog.DoctorNameBox_TextChanged");
             DoctorSuggestPopup.IsOpen = false;
         }
     }
@@ -865,8 +876,9 @@ public partial class VisitFormDialog : UserControl
             ServiceSuggestList.ItemsSource = filtered;
             ServiceSuggestPopup.IsOpen = filtered.Count > 0;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Error in VisitFormDialog.ServiceNameBox_TextChanged");
             ServiceSuggestPopup.IsOpen = false;
         }
     }
@@ -915,8 +927,9 @@ public partial class VisitFormDialog : UserControl
             MedicineSuggestList.ItemsSource = filtered;
             MedicineSuggestPopup.IsOpen = filtered.Count > 0;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Error in VisitFormDialog.MedicineNameBox_TextChanged");
             MedicineSuggestPopup.IsOpen = false;
         }
     }

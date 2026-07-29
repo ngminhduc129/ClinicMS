@@ -62,6 +62,8 @@ public partial class VisitListView : UserControl
 
     private async void OnDataContextChanged(object s, DependencyPropertyChangedEventArgs e)
     {
+        try
+        {
         if (e.OldValue is MainViewModel oldVm && _visitsChangedHandler != null)
         {
             oldVm.VisitVM.Visits.CollectionChanged -= _visitsChangedHandler;
@@ -96,10 +98,18 @@ public partial class VisitListView : UserControl
             if (_vm.VisitVM.Visits.Count == 0) await _vm.VisitVM.LoadAsync();
             VisitEmptyState.Visibility = _vm.VisitVM.Visits.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in VisitListView.OnDataContextChanged");
+            _vm?.Toast.ShowError($"Lỗi khi tải danh sách khám: {ex.Message}");
+        }
     }
 
     private async void OnScrollChanged(object sender, ScrollChangedEventArgs e)
     {
+        try
+        {
         if (e.VerticalChange > 0 && e.VerticalOffset + e.ViewportHeight >= e.ExtentHeight - 100)
         {
             if (_vm != null)
@@ -107,11 +117,18 @@ public partial class VisitListView : UserControl
                 await _vm.VisitVM.LoadMoreAsync();
             }
         }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in VisitListView.OnScrollChanged");
+        }
     }
 
     private int _searchRequestCount = 0;
     private async void Search_TextChanged(object s, TextChangedEventArgs e)
     {
+        try
+        {
         if (_vm == null) return;
         var term = ((TextBox)s).Text.Trim();
         int currentRequest = ++_searchRequestCount;
@@ -119,6 +136,12 @@ public partial class VisitListView : UserControl
         if (currentRequest == _searchRequestCount)
         {
             await _vm.VisitVM.SearchAsync(term);
+        }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in VisitListView.Search_TextChanged");
+            _vm?.Toast.ShowError($"Lỗi tìm kiếm: {ex.Message}");
         }
     }
 
@@ -139,6 +162,8 @@ public partial class VisitListView : UserControl
 
     private async void ShowDetail(Visit v)
     {
+        try
+        {
         _selectedVisit = v;
         DetailEmpty.Visibility = Visibility.Collapsed;
         DetailLoading.Visibility = Visibility.Collapsed;
@@ -193,6 +218,12 @@ public partial class VisitListView : UserControl
 
             // 5. Tải lịch sử bệnh án của bệnh nhân
             await LoadPatientHistoryAsync(v);
+        }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in VisitListView.ShowDetail");
+            _vm?.Toast.ShowError($"Lỗi khi tải chi tiết: {ex.Message}");
         }
     }
 

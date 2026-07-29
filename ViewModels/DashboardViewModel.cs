@@ -13,6 +13,7 @@ public class DashboardViewModel : BaseViewModel
     private readonly PatientService _patientService;
     private readonly DoctorService _doctorService;
     private readonly VisitService _visitService;
+    private readonly InvoiceService _invoiceService;
     private readonly ToastService _toast;
 
     public ObservableCollection<Visit> TodayVisits { get; } = new();
@@ -23,18 +24,23 @@ public class DashboardViewModel : BaseViewModel
     private int _totalDoctors;  public int TotalDoctors  { get => _totalDoctors;  set => SetProperty(ref _totalDoctors,  value); }        
     private int _totalVisits;   public int TotalVisits   { get => _totalVisits;   set => SetProperty(ref _totalVisits,   value); }        
     private int _visitsToday;   public int VisitsToday   { get => _visitsToday;   set => SetProperty(ref _visitsToday,   value); }        
+    private int _todayInvoices; public int TodayInvoices { get => _todayInvoices; set => SetProperty(ref _todayInvoices, value); }
+    private double _todayRevenue;
+    public string TodayRevenueDisplay => _todayRevenue.ToString("N0") + " ₫";
 
     public DashboardViewModel(
         DashboardService dashboardService, 
         PatientService patientService, 
         DoctorService doctorService, 
         VisitService visitService, 
+        InvoiceService invoiceService,
         ToastService toast)
     {
         _dashboardService = dashboardService;
         _patientService = patientService;
         _doctorService = doctorService;
         _visitService = visitService;
+        _invoiceService = invoiceService;
         _toast = toast;
     }
 
@@ -45,6 +51,11 @@ public class DashboardViewModel : BaseViewModel
             TotalDoctors = await _doctorService.GetDoctorsCountAsync();
             TotalVisits = await _visitService.GetVisitsCountAsync();
             VisitsToday = await _visitService.GetTodayVisitsCountAsync();
+
+            var (invCount, invTotal) = await _invoiceService.GetTodayInvoiceStatsAsync();
+            TodayInvoices = invCount;
+            _todayRevenue = invTotal;
+            OnPropertyChanged(nameof(TodayRevenueDisplay));
 
             var appointments = await _dashboardService.GetUpcomingAppointmentsAsync(5);
             UpcomingAppointments.Clear();

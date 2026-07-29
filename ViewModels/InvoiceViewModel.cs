@@ -32,9 +32,25 @@ public class InvoiceViewModel : BaseViewModel
         set { if (SetProperty(ref _statusFilter, value)) _ = LoadAsync(); }
     }
 
+    private string? _dateFilter;
+    public string? DateFilter
+    {
+        get => _dateFilter;
+        set { if (SetProperty(ref _dateFilter, value)) { IsTodayFilter = value == DateTime.Today.ToString("yyyy-MM-dd"); _ = LoadAsync(); } }
+    }
+
+    private bool _isTodayFilter;
+    public bool IsTodayFilter
+    {
+        get => _isTodayFilter;
+        set => SetProperty(ref _isTodayFilter, value);
+    }
+
     public RelayCommand LoadCommand { get; }
     public RelayCommand PrintMedicineCommand { get; }
     public RelayCommand PrintServiceCommand { get; }
+    public RelayCommand ShowTodayCommand { get; }
+    public RelayCommand ClearDateFilterCommand { get; }
 
     public InvoiceViewModel(InvoiceService invoiceService, PdfExportService pdfService, ToastService toast, ModalService modal)
     {
@@ -46,13 +62,17 @@ public class InvoiceViewModel : BaseViewModel
         LoadCommand = new RelayCommand(async () => await LoadAsync());
         PrintMedicineCommand = new RelayCommand(p => ExportMedicinePdf(p as Invoice));
         PrintServiceCommand = new RelayCommand(p => ExportServicePdf(p as Invoice));
+        ShowTodayCommand = new RelayCommand(() => DateFilter = DateTime.Today.ToString("yyyy-MM-dd"));
+        ClearDateFilterCommand = new RelayCommand(() => DateFilter = null);
+
+        DateFilter = DateTime.Today.ToString("yyyy-MM-dd");
     }
 
     public async Task LoadAsync()
     {
         try
         {
-            var list = await _invoiceService.GetInvoicesAsync();
+            var list = await _invoiceService.GetInvoicesAsync(dateFilter: DateFilter);
             Invoices.Clear();
 
             var filtered = StatusFilter switch

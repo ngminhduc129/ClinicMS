@@ -36,7 +36,7 @@
         <!-- STATS CARDS -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/>
+                <ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20,24" Effect="{StaticResource StandardShadow}">
@@ -76,6 +76,17 @@
                     </Border>
                     <TextBlock Text="{Binding VisitsToday}" FontSize="32" FontWeight="Bold" Foreground="#1F2937"/>
                     <TextBlock Text="Khám Hôm Nay" FontSize="13" FontWeight="Medium" Foreground="#64748B" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Card 5: Today's Revenue -->
+            <Border Grid.Column="8" Background="White" CornerRadius="12" Padding="20,24" Effect="{StaticResource StandardShadow}">
+                <StackPanel>
+                    <Border Width="44" Height="44" CornerRadius="10" Background="#F0FDF4" HorizontalAlignment="Left" Margin="0,0,0,14">
+                        <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#16A34A"/>
+                    </Border>
+                    <TextBlock Text="{Binding TodayRevenueDisplay}" FontSize="28" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="Doanh Thu Hôm Nay" FontSize="13" FontWeight="Medium" Foreground="#64748B" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>

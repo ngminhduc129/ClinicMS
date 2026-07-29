@@ -82,8 +82,9 @@ public partial class PatientFormDialog : UserControl
 
             await ShowSuggestions(NameBox.Text.Trim());
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Error in PatientFormDialog.NameBox_TextChanged");
             SuggestPopup.IsOpen = false;
         }
     }
@@ -115,6 +116,8 @@ public partial class PatientFormDialog : UserControl
 
     private async void SuggestList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        try
+        {
         if (SuggestList.SelectedItem is not Patient selected) return;
 
         _isSelectingPatient = true;
@@ -132,6 +135,13 @@ public partial class PatientFormDialog : UserControl
         await SelectExistingPatient(selected.PatientId);
 
         SuggestPopup.IsOpen = false;
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in PatientFormDialog.SuggestList_SelectionChanged");
+            _isSelectingPatient = false;
+            SuggestPopup.IsOpen = false;
+        }
     }
 
     private async Task SelectExistingPatient(int patientId)

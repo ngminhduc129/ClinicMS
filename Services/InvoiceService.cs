@@ -16,17 +16,41 @@ public class InvoiceService
         _core = core;
     }
 
-    public async Task<List<Invoice>> GetInvoicesAsync(int offset = 0, int limit = 1000)
+    public async Task<List<Invoice>> GetInvoicesAsync(int offset = 0, int limit = 1000, string? dateFilter = null)
     {
         await using var db = _core.Ctx();
-        return await db.Invoices
+        var query = db.Invoices
                        .Include(i => i.Visit).ThenInclude(v => v!.Patient)
                        .Include(i => i.Visit).ThenInclude(v => v!.Doctor)
                        .Include(i => i.Items)
                        .Include(i => i.Payments)
-                       .OrderByDescending(i => i.VisitId)
-                       .Skip(offset).Take(limit)
-                       .ToListAsync();
+                       .AsQueryable();
+
+        if (!string.IsNullOrEmpty(dateFilter))
+            query = query.Where(i => i.CreatedAt != null && i.CreatedAt.StartsWith(dateFilter));
+
+        return await query.OrderByDescending(i => i.VisitId)
+                          .Skip(offset).Take(limit)
+                          .ToListAsync();
+    }
+
+    public async Task<List<Invoice>> GetTodayInvoicesAsync()
+    {
+        var today = DateTime.Today.ToString("yyyy-MM-dd");
+        return await GetInvoicesAsync(0, 1000, today);
+    }
+
+    public async Task<(int count, double total)> GetTodayInvoiceStatsAsync()
+    {
+        await using var db = _core.Ctx();
+        var today = DateTime.Today.ToString("yyyy-MM-dd");
+        var paidInvoices = await db.Invoices
+            .Where(i => i.CreatedAt != null && i.CreatedAt.StartsWith(today) && i.Status == "Paid")
+            .CountAsync();
+        var todayPayments = await db.Payments
+            .Where(p => p.PaymentTime != null && p.PaymentTime.StartsWith(today))
+            .SumAsync(p => p.Amount);
+        return (paidInvoices, todayPayments);
     }
 
     public async Task<Invoice?> GetInvoiceByVisitIdAsync(int visitId)

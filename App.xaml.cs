@@ -44,6 +44,7 @@ public partial class App : Application
 
         // 2. Ép định dạng chuẩn Việt Nam ngay lập tức
         CultureInfo culture = new CultureInfo("vi-VN");
+        culture.DateTimeFormat.AbbreviatedDayNames = new[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
         Thread.CurrentThread.CurrentCulture = culture;
         Thread.CurrentThread.CurrentUICulture = culture;
 

@@ -32,6 +32,8 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
 
     private async void Search_TextChanged(object s, TextChangedEventArgs e)
     {
+        try
+        {
         _search = ((TextBox)s).Text.Trim();
         
         // Debounce: Hủy tác vụ cũ nếu người dùng vẫn đang gõ
@@ -45,6 +47,11 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
             ApplyFilter();
         }
         catch (TaskCanceledException) { /* Bỏ qua nếu bị hủy */ }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in DoctorListView.Search_TextChanged");
+        }
     }
 
     private void FilterButton_Click(object s, RoutedEventArgs e)
@@ -68,6 +75,8 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
 
     private async void ApplyFilter()
     {
+        try
+        {
         if (_vm == null) return;
 
         var search = _search?.Trim() ?? "";
@@ -92,6 +101,12 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
         
         OnPropertyChanged(nameof(FilteredCount));
         OnPropertyChanged(nameof(FilteredDoctors));
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in DoctorListView.ApplyFilter");
+            _vm?.Toast.ShowError($"Lỗi: {ex.Message}");
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -100,7 +115,7 @@ public partial class DoctorListView : UserControl, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    private async void RefreshButton_Click(object s, RoutedEventArgs e) { if (_vm != null) await _vm.DoctorVM.LoadAsync(); }
+    private async void RefreshButton_Click(object s, RoutedEventArgs e) { try { if (_vm != null) await _vm.DoctorVM.LoadAsync(); } catch (Exception ex) { Serilog.Log.Error(ex, "Error in DoctorListView.RefreshButton_Click"); _vm?.Toast.ShowError($"Lỗi khi làm mới: {ex.Message}"); } }
 
     private void AddDoctor_Click(object s, RoutedEventArgs e)
     {

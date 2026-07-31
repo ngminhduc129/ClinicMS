@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
+using System.Windows;
 using ClinicMS.Models;
 using ClinicMS.Services;
 
@@ -21,6 +21,7 @@ public class MainViewModel : BaseViewModel
     public MedicineViewModel MedicineVM { get; }
     public ServiceViewModel ServiceVM { get; }
     public InvoiceViewModel InvoiceVM { get; }
+    public AuditLogListViewModel AuditLogVM { get; }
 
     public Dictionary<string, int> FullPatientNames { get; private set; } = new();
     public Dictionary<string, int> FullDoctorNames { get; private set; } = new();
@@ -70,6 +71,7 @@ public class MainViewModel : BaseViewModel
                 OnPropertyChanged(nameof(IsPageServices));
                 OnPropertyChanged(nameof(IsPageInvoices));
                 OnPropertyChanged(nameof(IsPageSettings));
+                OnPropertyChanged(nameof(IsPageAuditLogs));
 
                 _ = value switch
                 {
@@ -80,6 +82,7 @@ public class MainViewModel : BaseViewModel
                     "services"  => ServiceVM.LoadAsync(),
                     "invoices"  => InvoiceVM.LoadAsync(),
                     "dashboard" => DashboardVM.LoadAsync(),
+                    "auditlogs" => AuditLogVM.LoadAsync(),
                     _           => Task.CompletedTask
                 };
             }
@@ -93,6 +96,7 @@ public class MainViewModel : BaseViewModel
     public bool IsPageServices  => CurrentPage == "services";
     public bool IsPageInvoices  => CurrentPage == "invoices";
     public bool IsPageSettings  => CurrentPage == "settings";
+    public bool IsPageAuditLogs => CurrentPage == "auditlogs";
 
     public RelayCommand NavigateCommand { get; }
 
@@ -107,7 +111,9 @@ public class MainViewModel : BaseViewModel
         VisitViewModel visitVM,
         MedicineViewModel medicineVM,
         ServiceViewModel serviceVM,
-        InvoiceViewModel invoiceVM)
+        InvoiceViewModel invoiceVM,
+        AuditLogListViewModel auditLogVM,
+        SignalRClientService signalR)
     {
         Db = db;
         _coreDb = coreDb;
@@ -120,11 +126,35 @@ public class MainViewModel : BaseViewModel
         MedicineVM = medicineVM;
         ServiceVM = serviceVM;
         InvoiceVM = invoiceVM;
+        AuditLogVM = auditLogVM;
 
         PatientVM.DataChanged += async () => { try { await LoadLookupsAsync(); await DashboardVM.LoadAsync(); } catch { } };
         DoctorVM.DataChanged  += async () => { try { await LoadLookupsAsync(); await DashboardVM.LoadAsync(); } catch { } };
+        MedicineVM.DataChanged  += async () => { try { await DashboardVM.LoadAsync(); } catch { } };
         VisitVM.DataChanged   += async () => { try { await DashboardVM.LoadAsync(); } catch { } };
         ServiceVM.DataChanged += async () => { try { await DashboardVM.LoadAsync(); } catch { } };
+
+        signalR.OnDataChanged += entityType =>
+        {
+            Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                try
+                {
+                    switch (entityType)
+                    {
+                        case "patients":   await PatientVM.LoadAsync(); break;
+                        case "doctors":    await DoctorVM.LoadAsync(); break;
+                        case "medicines":  await MedicineVM.LoadAsync(); break;
+                        case "services":   await ServiceVM.LoadAsync(); break;
+                        case "visits":     await VisitVM.LoadAsync(); break;
+                        case "invoices":   await InvoiceVM.LoadAsync(); break;
+                    }
+                    await LoadLookupsAsync();
+                    await DashboardVM.LoadAsync();
+                }
+                catch { }
+            });
+        };
 
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "dashboard");
         

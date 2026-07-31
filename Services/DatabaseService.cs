@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ClinicMS.Data;
 using ClinicMS.Models;
-using System.Data;
 
 namespace ClinicMS.Services;
 
@@ -24,7 +23,7 @@ public class DatabaseService
     {
         await using var db = Ctx();
         var startDate = DateTime.Today.AddDays(-daysBack + 1).ToString("yyyy-MM-dd");
-        
+
         var list = await db.Visits
                            .Where(v => v.PatientId > 0 && v.VisitTime != null && v.VisitTime.CompareTo(startDate) >= 0)
                            .ToListAsync();
@@ -37,70 +36,7 @@ public class DatabaseService
     public static void Initialize()
     {
         using var db = new ClinicDbContext();
-        // Chỉ tạo table nếu DB chưa có — không xóa dữ liệu cũ
-        db.Database.EnsureCreated();
-        
-        // Bổ sung bảng settings nếu DB đã tồn tại
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS AppSettings (Key TEXT PRIMARY KEY, Value TEXT)");
-
-        // Bổ sung các bảng có thể thiếu trên DB cũ (tránh lỗi "no such table")
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS prescription_details (" +
-            "visit_id INTEGER NOT NULL, " +
-            "medicine_id INTEGER NOT NULL, " +
-            "quantity REAL DEFAULT 0, " +
-            "dosage TEXT, " +
-            "PRIMARY KEY (visit_id, medicine_id))");
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS prescriptions (" +
-            "visit_id INTEGER PRIMARY KEY, " +
-            "created_at TEXT)");
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS service_orders (" +
-            "service_order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "visit_id INTEGER NOT NULL, " +
-            "service_id INTEGER NOT NULL, " +
-            "result TEXT)");
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS invoice_items (" +
-            "visit_id INTEGER NOT NULL, " +
-            "item_type TEXT NOT NULL, " +
-            "item_id INTEGER NOT NULL, " +
-            "quantity INTEGER NOT NULL DEFAULT 0, " +
-            "unit_price REAL NOT NULL DEFAULT 0, " +
-            "PRIMARY KEY (visit_id, item_type, item_id))");
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS invoices (" +
-            "visit_id INTEGER PRIMARY KEY, " +
-            "total_amount REAL NOT NULL DEFAULT 0, " +
-            "status TEXT NOT NULL DEFAULT 'Unpaid', " +
-            "created_at TEXT)");
-        db.Database.ExecuteSqlRaw(
-            "CREATE TABLE IF NOT EXISTS payments (" +
-            "payment_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "visit_id INTEGER NOT NULL, " +
-            "amount REAL NOT NULL DEFAULT 0, " +
-            "payment_method TEXT, " +
-            "payment_time TEXT)");
-
-        // ═══════════════════════════════════════════════
-        //  DATABASE SCHEMA UPDATES & SAMPLE DATA
-        // ═══════════════════════════════════════════════
-        
-        // Thêm thuốc mẫu nếu bảng trống
-        if (!db.Medicines.Any())
-        {
-            db.Medicines.AddRange(new List<Medicine>
-            {
-                new Medicine { MedicineName = "Paracetamol 500mg", Unit = "Viên", Price = 2000, StockQuantity = 100, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
-                new Medicine { MedicineName = "Amoxicillin 500mg", Unit = "Viên", Price = 5000, StockQuantity = 50, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
-                new Medicine { MedicineName = "Siro Ho Prospan", Unit = "Chai", Price = 75000, StockQuantity = 20, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
-                new Medicine { MedicineName = "Vitamin C 1000mg", Unit = "Viên sủi", Price = 5000, StockQuantity = 30, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },
-                new Medicine { MedicineName = "Hapacol 250mg", Unit = "Gói", Price = 3000, StockQuantity = 0, CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") }
-            });
-            db.SaveChanges();
-        }
+        db.Database.Migrate();
     }
 
     private static ClinicDbContext Ctx() => new();
@@ -159,7 +95,7 @@ public class DatabaseService
             .Select(p => new { p.PatientId, p.FullName })
             .OrderBy(p => p.FullName)
             .ToListAsync();
-            
+
         var dict = new Dictionary<string, int>();
         foreach (var p in list)
         {
@@ -176,7 +112,7 @@ public class DatabaseService
             .Select(d => new { d.DoctorId, d.FullName })
             .OrderBy(d => d.FullName)
             .ToListAsync();
-            
+
         var dict = new Dictionary<string, int>();
         foreach (var d in list)
         {
@@ -222,7 +158,7 @@ public class DatabaseService
                     from subPc in contacts.DefaultIfEmpty()
                     join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
                     from subC in finalContacts.DefaultIfEmpty()
-                    where string.IsNullOrEmpty(searchTerm) || 
+                    where string.IsNullOrEmpty(searchTerm) ||
                           p.FullName.ToLower().Contains(searchTerm.ToLower()) ||
                           (subC != null && subC.Phone != null && subC.Phone.Contains(searchTerm))
                     orderby p.FullName
@@ -248,7 +184,7 @@ public class DatabaseService
                       from subPc in contacts.DefaultIfEmpty()
                       join c in db.Contacts on (subPc != null ? subPc.ContactId : -1) equals c.ContactId into finalContacts
                       from subC in finalContacts.DefaultIfEmpty()
-                      where string.IsNullOrEmpty(term) || 
+                      where string.IsNullOrEmpty(term) ||
                             p.FullName.ToLower().Contains(term) ||
                             (subC != null && subC.Phone != null && subC.Phone.Contains(term))
                       select p).CountAsync();
@@ -265,7 +201,7 @@ public class DatabaseService
         await using var db = Ctx();
         var term = (searchTerm ?? "").ToLower();
         return await db.Doctors
-            .Where(d => string.IsNullOrEmpty(term) || 
+            .Where(d => string.IsNullOrEmpty(term) ||
                        (d.FullName != null && d.FullName.ToLower().Contains(term)) ||
                        (d.Phone != null && d.Phone.ToLower().Contains(term)))
             .OrderBy(d => d.FullName)
@@ -288,17 +224,16 @@ public class DatabaseService
     public async Task<Patient> AddPatientAsync(Patient p)
     {
         await using var db = Ctx();
-        // Tạo contact trống đi kèm
         var contact = new Contact
         {
-            Phone   = p.Phone,
-            Email   = p.Email,
+            Phone = p.Phone,
+            Email = p.Email,
             Address = p.Address
         };
         db.Contacts.Add(contact);
         await db.SaveChangesAsync();
 
-        p.Phone = null; p.Email = null; p.Address = null; // stored in contacts
+        p.Phone = null; p.Email = null; p.Address = null;
         if (string.IsNullOrEmpty(p.CreatedAt)) p.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         db.Patients.Add(p);
         await db.SaveChangesAsync();
@@ -317,7 +252,6 @@ public class DatabaseService
     {
         await using var db = Ctx();
         db.Patients.Update(p);
-        // Update liên kết contact nếu có
         var pc = await db.PatientContacts
                          .FirstOrDefaultAsync(x => x.PatientId == p.PatientId && x.IsPrimary == 1);
         if (pc != null)
@@ -325,8 +259,8 @@ public class DatabaseService
             var c = await db.Contacts.FindAsync(pc.ContactId);
             if (c != null)
             {
-                c.Phone   = p.Phone;
-                c.Email   = p.Email;
+                c.Phone = p.Phone;
+                c.Email = p.Email;
                 c.Address = p.Address;
                 db.Contacts.Update(c);
             }
@@ -339,8 +273,8 @@ public class DatabaseService
         await using var db = Ctx();
         var p = await db.Patients.FindAsync(id);
         if (p == null) return;
-        var pcs   = db.PatientContacts.Where(x => x.PatientId == id);
-        var cids  = await pcs.Select(x => x.ContactId).ToListAsync();
+        var pcs = db.PatientContacts.Where(x => x.PatientId == id);
+        var cids = await pcs.Select(x => x.ContactId).ToListAsync();
         db.PatientContacts.RemoveRange(pcs);
         await db.SaveChangesAsync();
         var visitIds = await db.Visits.Where(v => v.PatientId == id).Select(v => v.VisitId).ToListAsync();
@@ -353,11 +287,10 @@ public class DatabaseService
         await db.SaveChangesAsync();
     }
 
-    // Lấy patient kèm contact
     public async Task<(Patient? patient, Contact? contact)> GetPatientWithContactAsync(int id)
     {
         await using var db = Ctx();
-        var p  = await db.Patients.FindAsync(id);
+        var p = await db.Patients.FindAsync(id);
         var pc = await db.PatientContacts
                          .FirstOrDefaultAsync(x => x.PatientId == id && x.IsPrimary == 1);
         Contact? c = pc != null ? await db.Contacts.FindAsync(pc.ContactId) : null;
@@ -387,13 +320,11 @@ public class DatabaseService
     public async Task SavePrescriptionDetailsAsync(int visitId, List<PrescriptionDetail> items)
     {
         await using var db = Ctx();
-        
-        // Xóa đơn cũ
+
         var old = await db.PrescriptionDetails.Where(pd => pd.VisitId == visitId).ToListAsync();
         if (old.Any()) db.PrescriptionDetails.RemoveRange(old);
         await db.SaveChangesAsync();
-        
-        // Thêm mới
+
         foreach (var item in items)
         {
             var detail = new PrescriptionDetail
@@ -405,7 +336,7 @@ public class DatabaseService
             };
             db.PrescriptionDetails.Add(detail);
         }
-        
+
         await db.SaveChangesAsync();
     }
 
@@ -445,7 +376,6 @@ public class DatabaseService
         var d = await db.Doctors.FindAsync(id);
         if (d != null)
         {
-            // Xóa tất cả các lượt khám liên quan đến bác sĩ này trước
             var visitIds = await db.Visits.Where(v => v.DoctorId == id).Select(v => v.VisitId).ToListAsync();
             await DeleteVisitRelatedDataAsync(db, visitIds);
             var visits = db.Visits.Where(v => v.DoctorId == id);
@@ -574,7 +504,6 @@ public class DatabaseService
             if (string.IsNullOrEmpty(v.VisitTime))
                 v.VisitTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            // Tách đơn thuốc để tránh tracking conflict
             var details = v.PrescriptionDetails?.ToList() ?? new List<PrescriptionDetail>();
             v.PrescriptionDetails = new List<PrescriptionDetail>();
 
@@ -612,21 +541,18 @@ public class DatabaseService
         await using var transaction = await db.Database.BeginTransactionAsync();
         try
         {
-            // 1. Tìm bản ghi gốc trong DB
             var existingVisit = await db.Visits
                 .FirstOrDefaultAsync(x => x.VisitId == v.VisitId);
 
             if (existingVisit == null)
                 throw new Exception($"Không tìm thấy hồ sơ khám ID: {v.VisitId}");
 
-            // 2. Cập nhật các trường thông tin cơ bản
             db.Entry(existingVisit).CurrentValues.SetValues(v);
 
-            // 3. Xử lý đơn thuốc: Xóa cũ, thêm mới
             var oldDetails = await db.PrescriptionDetails
                 .Where(pd => pd.VisitId == v.VisitId)
                 .ToListAsync();
-            
+
             if (oldDetails.Any())
                 db.PrescriptionDetails.RemoveRange(oldDetails);
 
@@ -760,7 +686,6 @@ public class DatabaseService
         if (string.IsNullOrEmpty(pay.PaymentTime))
             pay.PaymentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         db.Payments.Add(pay);
-        // Tự động đánh dấu Paid nếu đủ tiền
         var inv = await db.Invoices.FindAsync(pay.VisitId);
         if (inv != null)
         {
@@ -778,64 +703,24 @@ public class DatabaseService
     {
         if (visitIds.Count == 0) return;
 
-        if (await TableExistsAsync(db, "payments"))
-        {
-            var payments = db.Payments.Where(p => visitIds.Contains(p.VisitId));
-            db.Payments.RemoveRange(payments);
-        }
+        var payments = db.Payments.Where(p => visitIds.Contains(p.VisitId));
+        db.Payments.RemoveRange(payments);
 
-        if (await TableExistsAsync(db, "invoice_items"))
-        {
-            var invoiceItems = db.InvoiceItems.Where(ii => visitIds.Contains(ii.VisitId));
-            db.InvoiceItems.RemoveRange(invoiceItems);
-        }
+        var invoiceItems = db.InvoiceItems.Where(ii => visitIds.Contains(ii.VisitId));
+        db.InvoiceItems.RemoveRange(invoiceItems);
 
-        if (await TableExistsAsync(db, "invoices"))
-        {
-            var invoices = db.Invoices.Where(i => visitIds.Contains(i.VisitId));
-            db.Invoices.RemoveRange(invoices);
-        }
+        var invoices = db.Invoices.Where(i => visitIds.Contains(i.VisitId));
+        db.Invoices.RemoveRange(invoices);
 
-        if (await TableExistsAsync(db, "PrescriptionDetails"))
-        {
-            var prescriptionDetails = db.PrescriptionDetails.Where(pd => visitIds.Contains(pd.VisitId));
-            db.PrescriptionDetails.RemoveRange(prescriptionDetails);
-        }
+        var prescriptionDetails = db.PrescriptionDetails.Where(pd => visitIds.Contains(pd.VisitId));
+        db.PrescriptionDetails.RemoveRange(prescriptionDetails);
 
-        if (await TableExistsAsync(db, "prescriptions"))
-        {
-            var prescriptions = db.Prescriptions.Where(p => visitIds.Contains(p.VisitId));
-            db.Prescriptions.RemoveRange(prescriptions);
-        }
+        var prescriptions = db.Prescriptions.Where(p => visitIds.Contains(p.VisitId));
+        db.Prescriptions.RemoveRange(prescriptions);
 
-        if (await TableExistsAsync(db, "service_orders"))
-        {
-            var serviceOrders = db.ServiceOrders.Where(so => visitIds.Contains(so.VisitId));
-            db.ServiceOrders.RemoveRange(serviceOrders);
-        }
+        var serviceOrders = db.ServiceOrders.Where(so => visitIds.Contains(so.VisitId));
+        db.ServiceOrders.RemoveRange(serviceOrders);
 
         await db.SaveChangesAsync();
-    }
-
-    private static async Task<bool> TableExistsAsync(ClinicDbContext db, string tableName)
-    {
-        var conn = db.Database.GetDbConnection();
-        var closeAfter = conn.State != ConnectionState.Open;
-        if (closeAfter) await conn.OpenAsync();
-        try
-        {
-            await using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT 1 FROM sqlite_master WHERE type='table' AND name = $name LIMIT 1";
-            var p = cmd.CreateParameter();
-            p.ParameterName = "$name";
-            p.Value = tableName;
-            cmd.Parameters.Add(p);
-            var result = await cmd.ExecuteScalarAsync();
-            return result != null && result != DBNull.Value;
-        }
-        finally
-        {
-            if (closeAfter) await conn.CloseAsync();
-        }
     }
 }

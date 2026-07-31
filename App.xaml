@@ -44,6 +44,8 @@
             <conv:IndexConverter x:Key="IndexConverter"/>
             <conv:PercentageToHeightConverter x:Key="PercentageToHeightConverter"/>
             <conv:FontSizeConverter x:Key="FontSizeConverter"/>
+            <conv:AuditActionToForegroundConverter x:Key="AuditActionToForeground"/>
+            <conv:AuditActionToBackgroundConverter x:Key="AuditActionToBackground"/>
 
             <!-- 4. GLOBAL ELEMENT STYLES -->
             
@@ -52,7 +54,7 @@
                 <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="FontSize" Value="{Binding FontScale, Converter={StaticResource FontSizeConverter}, ConverterParameter=15, FallbackValue=15}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
-                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
                 <Setter Property="UseLayoutRounding" Value="True"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -62,7 +64,7 @@
             <Style TargetType="TextBlock">
                 <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextBrushPrimary}"/>
-                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
 

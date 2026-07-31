@@ -1,72 +1,55 @@
 using Microsoft.EntityFrameworkCore;
 using ClinicMS.Models;
-using System.IO;
 
 namespace ClinicMS.Data;
 
 public class ClinicDbContext : DbContext
 {
-    public DbSet<Patient>            Patients            { get; set; } = null!;
-    public DbSet<Contact>            Contacts            { get; set; } = null!;
-    public DbSet<PatientContact>     PatientContacts     { get; set; } = null!;
-    public DbSet<Doctor>             Doctors             { get; set; } = null!;
-    public DbSet<Visit>              Visits              { get; set; } = null!;
-    public DbSet<Appointment>        Appointments        { get; set; } = null!;
-    public DbSet<Medicine>           Medicines           { get; set; } = null!;
-    public DbSet<Prescription>       Prescriptions       { get; set; } = null!;
+    public DbSet<Patient> Patients { get; set; } = null!;
+    public DbSet<Contact> Contacts { get; set; } = null!;
+    public DbSet<PatientContact> PatientContacts { get; set; } = null!;
+    public DbSet<Doctor> Doctors { get; set; } = null!;
+    public DbSet<Visit> Visits { get; set; } = null!;
+    public DbSet<Appointment> Appointments { get; set; } = null!;
+    public DbSet<Medicine> Medicines { get; set; } = null!;
+    public DbSet<Prescription> Prescriptions { get; set; } = null!;
     public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; } = null!;
-    public DbSet<Service>            Services            { get; set; } = null!;
-    public DbSet<ServiceOrder>       ServiceOrders       { get; set; } = null!;
-    public DbSet<Invoice>            Invoices            { get; set; } = null!;
-    public DbSet<InvoiceItem>        InvoiceItems        { get; set; } = null!;
-    public DbSet<Payment>            Payments            { get; set; } = null!;
-    public DbSet<AppSetting>         AppSettings         { get; set; } = null!;
+    public DbSet<Service> Services { get; set; } = null!;
+    public DbSet<ServiceOrder> ServiceOrders { get; set; } = null!;
+    public DbSet<Invoice> Invoices { get; set; } = null!;
+    public DbSet<InvoiceItem> InvoiceItems { get; set; } = null!;
+    public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<AppSetting> AppSettings { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
-    public static string? OverrideDbPath { get; set; }
+    public static string? OverrideConnectionString { get; set; }
 
-    // Dùng đúng file DB của người dùng
-    public static string DbPath
+    private static string _defaultConnectionString = "";
+
+    public static void SetDefaultConnectionString(string connStr)
     {
-        get
-        {
-            if (!string.IsNullOrEmpty(OverrideDbPath)) return OverrideDbPath;
-
-            // 1. CHẾ ĐỘ PHÁT TRIỂN (DEBUG): Dùng file ngay trong thư mục chạy ứng dụng
-            string debugPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "clinic_database.db");
-            if (File.Exists(debugPath)) return debugPath;
-
-            // Phụ trợ: Nếu không thấy trong bin, thử tìm ở thư mục gốc dự án (khi chạy từ VS/dotnet run)
-            string rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "clinic_database.db");
-            if (File.Exists(rootPath)) return rootPath;
-
-            // 2. CHẾ ĐỘ ĐÃ PUBLISH (RELEASE): Dùng AppData để không bao giờ bị ghi đè
-            var appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClinicMS");
-            if (!Directory.Exists(appDataFolder)) Directory.CreateDirectory(appDataFolder);
-            var appDataDb = Path.Combine(appDataFolder, "clinic_database.db");
-
-            // Nếu AppData đã có file thì dùng luôn (Dữ liệu người dùng nhập)
-            if (File.Exists(appDataDb)) return appDataDb;
-
-            // Nếu AppData chưa có, copy file mặc định đi kèm bản Publish vào AppData
-            var exeDir = AppContext.BaseDirectory;
-            var shipDb = Path.Combine(exeDir, "clinic_database.db");
-            if (File.Exists(shipDb))
-            {
-                try { File.Copy(shipDb, appDataDb, false); } catch { }
-            }
-
-            return appDataDb;
-        }
+        _defaultConnectionString = connStr;
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+    public ClinicDbContext() { }
+
+    public ClinicDbContext(DbContextOptions<ClinicDbContext> options) : base(options) { }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connStr = OverrideConnectionString ?? _defaultConnectionString;
+            if (string.IsNullOrEmpty(connStr))
+                throw new InvalidOperationException("Connection string not configured. Call ClinicDbContext.SetDefaultConnectionString() or set OverrideConnectionString.");
+            optionsBuilder.UseSqlServer(connStr);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
         base.OnModelCreating(mb);
 
-        // Ép tên bảng về viết thường để khớp với script seed data
         mb.Entity<Patient>().ToTable("patients");
         mb.Entity<Doctor>().ToTable("doctors");
         mb.Entity<Visit>().ToTable("visits");
@@ -81,14 +64,10 @@ public class ClinicDbContext : DbContext
         mb.Entity<AppSetting>().ToTable("AppSettings");
         mb.Entity<PrescriptionDetail>().ToTable("prescription_details");
 
-        // Composite PKs
         mb.Entity<PatientContact>().HasKey(pc => new { pc.PatientId, pc.ContactId });
         mb.Entity<InvoiceItem>().HasKey(ii => new { ii.VisitId, ii.ItemType, ii.ItemId });
         mb.Entity<PrescriptionDetail>().HasKey(pd => new { pd.VisitId, pd.MedicineId });
-        
-        // ... rest of relationships
 
-        // FK relationships
         mb.Entity<Visit>()
             .HasOne(v => v.Patient).WithMany(p => p.Visits).HasForeignKey(v => v.PatientId);
         mb.Entity<Visit>()
@@ -101,7 +80,7 @@ public class ClinicDbContext : DbContext
 
         mb.Entity<PrescriptionDetail>()
             .HasKey(pd => new { pd.VisitId, pd.MedicineId });
-        
+
         mb.Entity<PrescriptionDetail>()
             .HasOne(pd => pd.Visit)
             .WithMany(v => v.PrescriptionDetails)
@@ -128,5 +107,11 @@ public class ClinicDbContext : DbContext
             .HasKey(s => s.Key);
         mb.Entity<AppSetting>()
             .ToTable("AppSettings");
+
+        mb.Entity<AuditLog>().ToTable("audit_logs");
+        mb.Entity<AuditLog>().HasKey(a => a.LogId);
+        mb.Entity<AuditLog>().HasIndex(a => a.Timestamp);
+        mb.Entity<AuditLog>().HasIndex(a => a.EntityName);
+        mb.Entity<AuditLog>().HasIndex(a => a.Action);
     }
 }

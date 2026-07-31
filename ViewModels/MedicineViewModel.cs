@@ -9,16 +9,18 @@ public class MedicineViewModel : BaseViewModel
 {
     private readonly MedicineService _medicineService;
     private readonly ToastService _toast;
+    private readonly SignalRClientService _signalR;
 
     public ObservableCollection<Medicine> Medicines { get; } = new();
 
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
-    public MedicineViewModel(MedicineService medicineService, ToastService toast)
+    public MedicineViewModel(MedicineService medicineService, ToastService toast, SignalRClientService signalR)
     {
         _medicineService = medicineService;
         _toast = toast;
+        _signalR = signalR;
     }
 
     public async Task LoadAsync()
@@ -36,7 +38,9 @@ public class MedicineViewModel : BaseViewModel
         finally { Loading = false; }
     }
 
-    public async Task<bool> AddAsync(Medicine m) { try { await _medicineService.AddMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }
-    public async Task<bool> UpdateAsync(Medicine m) { try { await _medicineService.UpdateMedicineAsync(m); await LoadAsync(); return true; } catch { return false; } }
-    public async Task<bool> DeleteAsync(Medicine m) { try { await _medicineService.DeleteMedicineAsync(m.MedicineId); await LoadAsync(); return true; } catch { return false; } }
+    public event Action? DataChanged;
+
+    public async Task<bool> AddAsync(Medicine m) { try { await _medicineService.AddMedicineAsync(m); await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("medicines"); return true; } catch { return false; } }
+    public async Task<bool> UpdateAsync(Medicine m) { try { await _medicineService.UpdateMedicineAsync(m); await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("medicines"); return true; } catch { return false; } }
+    public async Task<bool> DeleteAsync(Medicine m) { try { await _medicineService.DeleteMedicineAsync(m.MedicineId); await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("medicines"); return true; } catch { return false; } }
 }

@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              Width="1024" Height="600"
              UseLayoutRounding="True"
-             TextOptions.TextFormattingMode="Display">
+             TextOptions.TextFormattingMode="Ideal">
 
     <UserControl.Resources>
 

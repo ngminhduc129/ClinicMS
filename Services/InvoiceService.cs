@@ -10,10 +10,12 @@ namespace ClinicMS.Services;
 public class InvoiceService
 {
     private readonly CoreDatabaseService _core;
+    private readonly AuditLogService _auditLog;
 
-    public InvoiceService(CoreDatabaseService core)
+    public InvoiceService(CoreDatabaseService core, AuditLogService auditLog)
     {
         _core = core;
+        _auditLog = auditLog;
     }
 
     public async Task<List<Invoice>> GetInvoicesAsync(int offset = 0, int limit = 1000, string? dateFilter = null)
@@ -147,6 +149,11 @@ public class InvoiceService
         await db.SaveChangesAsync();
         db.InvoiceItems.AddRange(newItems);
         await db.SaveChangesAsync();
+
+        _auditLog.Log(db, "Invoice", visitId.ToString(), isNew ? "InvoiceCreated" : "InvoiceUpdated",
+            newValues: AuditLogService.Serialize(new { visitId, invoice.TotalAmount, invoice.Status }),
+            details: $"{(isNew ? "Tạo" : "Cập nhật")} hóa đơn cho hồ sơ khám #{visitId} - {invoice.TotalAmount:N0}₫");
+        await db.SaveChangesAsync();
     }
 
     public async Task UpdateInvoiceStatusAsync(int visitId, string status)
@@ -194,6 +201,10 @@ public class InvoiceService
                 
                 db.Invoices.Update(inv);
             }
+
+            _auditLog.Log(db, "Payment", pay.PaymentId.ToString(), "PaymentAdded",
+                newValues: AuditLogService.Serialize(new { pay.VisitId, pay.Amount, pay.PaymentMethod, inv?.Status }),
+                details: $"Thanh toán {pay.Amount:N0}₫ - {pay.PaymentMethod} cho hóa đơn #{pay.VisitId}");
             await db.SaveChangesAsync();
             await trans.CommitAsync();
         }

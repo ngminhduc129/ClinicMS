@@ -9,16 +9,18 @@ public class DoctorViewModel : BaseViewModel
 {
     private readonly DoctorService _doctorService;
     private readonly ToastService _toast;
+    private readonly SignalRClientService _signalR;
 
     public ObservableCollection<Doctor> Doctors { get; } = new();
 
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
-    public DoctorViewModel(DoctorService doctorService, ToastService toast)
+    public DoctorViewModel(DoctorService doctorService, ToastService toast, SignalRClientService signalR)
     {
         _doctorService = doctorService;
         _toast = toast;
+        _signalR = signalR;
     }
 
     public async Task LoadAsync()
@@ -54,7 +56,7 @@ public class DoctorViewModel : BaseViewModel
 
     public event Action? DataChanged;
 
-    public async Task<bool> AddAsync(Doctor d) { try { await _doctorService.AddDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
-    public async Task<bool> UpdateAsync(Doctor d) { try { await _doctorService.UpdateDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
-    public async Task<bool> DeleteAsync(Doctor d) { try { await _doctorService.DeleteDoctorAsync(d.DoctorId); await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; } }
+    public async Task<bool> AddAsync(Doctor d) { try { await _doctorService.AddDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("doctors"); return true; } catch { return false; } }
+    public async Task<bool> UpdateAsync(Doctor d) { try { await _doctorService.UpdateDoctorAsync(d); await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("doctors"); return true; } catch { return false; } }
+    public async Task<bool> DeleteAsync(Doctor d) { try { await _doctorService.DeleteDoctorAsync(d.DoctorId); await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("doctors"); return true; } catch { return false; } }
 }

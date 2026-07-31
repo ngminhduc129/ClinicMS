@@ -11,10 +11,12 @@ namespace ClinicMS.Services;
 public class VisitService
 {
     private readonly CoreDatabaseService _core;
+    private readonly AuditLogService _auditLog;
 
-    public VisitService(CoreDatabaseService core)
+    public VisitService(CoreDatabaseService core, AuditLogService auditLog)
     {
         _core = core;
+        _auditLog = auditLog;
     }
 
     public async Task<List<Visit>> GetTodayVisitsAsync()
@@ -161,6 +163,11 @@ public class VisitService
             }
             await db.SaveChangesAsync();
 
+            _auditLog.Log(db, "Visit", v.VisitId.ToString(), "Create",
+                newValues: AuditLogService.Serialize(new { v.PatientId, v.DoctorId, v.Status, v.Symptoms, v.Diagnosis }),
+                details: $"Thêm hồ sơ khám #{v.VisitId}");
+            await db.SaveChangesAsync();
+
             await trans.CommitAsync();
             return v;
         }
@@ -215,6 +222,8 @@ public class VisitService
                 }
             }
 
+            _auditLog.Log(db, "Visit", v.VisitId.ToString(), "Update",
+                details: $"Cập nhật hồ sơ khám #{v.VisitId} - {v.Status}");
             await db.SaveChangesAsync();
             await trans.CommitAsync();
         }
@@ -229,6 +238,10 @@ public class VisitService
         {
             await DeleteVisitRelatedDataAsync(db, new List<int> { id });
             db.Visits.Remove(v);
+            await db.SaveChangesAsync();
+
+            _auditLog.Log(db, "Visit", id.ToString(), "Delete",
+                details: $"Xóa hồ sơ khám #{id}");
             await db.SaveChangesAsync();
         }
     }
@@ -270,6 +283,8 @@ public class VisitService
                 });
             }
 
+            _auditLog.Log(db, "ServiceOrder", visitId.ToString(), "Update",
+                details: $"Cập nhật dịch vụ chỉ định cho hồ sơ khám #{visitId}");
             await db.SaveChangesAsync();
             await trans.CommitAsync();
         }
@@ -319,6 +334,8 @@ public class VisitService
                 });
             }
 
+            _auditLog.Log(db, "PrescriptionDetail", visitId.ToString(), "Update",
+                details: $"Cập nhật đơn thuốc cho hồ sơ khám #{visitId}");
             await db.SaveChangesAsync();
             await trans.CommitAsync();
         }

@@ -15,6 +15,7 @@ public class InvoiceViewModel : BaseViewModel
     private readonly PdfExportService _pdfService;
     private readonly ToastService _toast;
     private readonly ModalService _modal;
+    private readonly SignalRClientService _signalR;
 
     public ObservableCollection<Invoice> Invoices { get; } = new();
 
@@ -52,12 +53,13 @@ public class InvoiceViewModel : BaseViewModel
     public RelayCommand ShowTodayCommand { get; }
     public RelayCommand ClearDateFilterCommand { get; }
 
-    public InvoiceViewModel(InvoiceService invoiceService, PdfExportService pdfService, ToastService toast, ModalService modal)
+    public InvoiceViewModel(InvoiceService invoiceService, PdfExportService pdfService, ToastService toast, ModalService modal, SignalRClientService signalR)
     {
         _invoiceService = invoiceService;
         _pdfService = pdfService;
         _toast = toast;
         _modal = modal;
+        _signalR = signalR;
 
         LoadCommand = new RelayCommand(async () => await LoadAsync());
         PrintMedicineCommand = new RelayCommand(p => ExportMedicinePdf(p as Invoice));
@@ -139,6 +141,7 @@ public class InvoiceViewModel : BaseViewModel
             {
                 SelectedInvoice = await _invoiceService.GetInvoiceByVisitIdAsync(visitId);
             }
+            await _signalR.NotifyDataChangedAsync("invoices");
             _toast.Show("Đã ghi nhận thanh toán");
         }
         catch (Exception ex)

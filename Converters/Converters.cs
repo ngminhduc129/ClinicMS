@@ -183,6 +183,40 @@ public class PercentageToHeightConverter : IMultiValueConverter
     public object[] ConvertBack(object v, Type[] t, object p, CultureInfo c) => throw new NotImplementedException();
 }
 
+/// <summary>Audit action → foreground brush color</summary>
+public class AuditActionToForegroundConverter : IValueConverter
+{
+    public object Convert(object value, Type t, object p, CultureInfo c)
+    {
+        return value?.ToString() switch
+        {
+            "Create" or "InvoiceCreated" => new SolidColorBrush(Color.FromRgb(5, 150, 105)),
+            "Update" or "InvoiceUpdated" => new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+            "Delete" => new SolidColorBrush(Color.FromRgb(220, 38, 38)),
+            "PaymentAdded" => new SolidColorBrush(Color.FromRgb(217, 119, 6)),
+            _ => new SolidColorBrush(Color.FromRgb(107, 114, 128))
+        };
+    }
+    public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
+}
+
+/// <summary>Audit action → background brush color</summary>
+public class AuditActionToBackgroundConverter : IValueConverter
+{
+    public object Convert(object value, Type t, object p, CultureInfo c)
+    {
+        return value?.ToString() switch
+        {
+            "Create" or "InvoiceCreated" => new SolidColorBrush(Color.FromRgb(209, 250, 229)),
+            "Update" or "InvoiceUpdated" => new SolidColorBrush(Color.FromRgb(219, 234, 254)),
+            "Delete" => new SolidColorBrush(Color.FromRgb(254, 226, 226)),
+            "PaymentAdded" => new SolidColorBrush(Color.FromRgb(254, 243, 199)),
+            _ => new SolidColorBrush(Color.FromRgb(243, 244, 246))
+        };
+    }
+    public object ConvertBack(object value, Type t, object p, CultureInfo c) => DependencyProperty.UnsetValue;
+}
+
 /// <summary>Nhân cỡ chữ gốc với hệ số FontScale (để scale cả các cỡ chữ cứng)</summary>
 public class FontSizeConverter : IValueConverter
 {

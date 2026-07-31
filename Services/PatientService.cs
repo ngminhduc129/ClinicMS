@@ -9,10 +9,12 @@ namespace ClinicMS.Services;
 public class PatientService
 {
     private readonly CoreDatabaseService _core;
+    private readonly AuditLogService _auditLog;
 
-    public PatientService(CoreDatabaseService core)
+    public PatientService(CoreDatabaseService core, AuditLogService auditLog)
     {
         _core = core;
+        _auditLog = auditLog;
     }
 
     public async Task<int> GetPatientsCountAsync()
@@ -133,12 +135,22 @@ public class PatientService
             IsPrimary = 1
         });
         await db.SaveChangesAsync();
+
+        _auditLog.Log(db, "Patient", p.PatientId.ToString(), "Create",
+            newValues: AuditLogService.Serialize(new { p.FullName, p.DateOfBirth, p.Gender, p.Phone, p.Email }),
+            details: $"Thêm bệnh nhân #{p.PatientId} - {p.FullName}");
+        await db.SaveChangesAsync();
         return p;
     }
 
     public async Task UpdatePatientAsync(Patient p)
     {
         await using var db = _core.Ctx();
+        var existing = await db.Patients.AsNoTracking().FirstOrDefaultAsync(x => x.PatientId == p.PatientId);
+        var oldValues = existing != null
+            ? AuditLogService.Serialize(new { existing.FullName, existing.DateOfBirth, existing.Gender, existing.BloodType, existing.HeightCm, existing.WeightKg, existing.Note })
+            : null;
+
         db.Patients.Update(p);
 
         var pc = await db.PatientContacts
@@ -166,6 +178,20 @@ public class PatientService
             });
         }
         await db.SaveChangesAsync();
+
+        var changedFields = new List<string>();
+        if (existing != null)
+        {
+            if (existing.FullName != p.FullName) changedFields.Add("full_name");
+            if (existing.DateOfBirth != p.DateOfBirth) changedFields.Add("date_of_birth");
+            if (existing.Gender != p.Gender) changedFields.Add("gender");
+        }
+        _auditLog.Log(db, "Patient", p.PatientId.ToString(), "Update",
+            changedFields: changedFields.Count > 0 ? AuditLogService.Serialize(changedFields) : null,
+            oldValues: oldValues,
+            newValues: AuditLogService.Serialize(new { p.FullName, p.DateOfBirth, p.Gender }),
+            details: $"Cập nhật bệnh nhân #{p.PatientId} - {p.FullName}");
+        await db.SaveChangesAsync();
     }
 
     public async Task DeletePatientAsync(int id)
@@ -174,6 +200,8 @@ public class PatientService
         var p = await db.Patients.FindAsync(id);
         if (p != null)
         {
+            var oldValues = AuditLogService.Serialize(new { p.FullName, p.DateOfBirth, p.Gender });
+
             var pcs = db.PatientContacts.Where(x => x.PatientId == id);
             db.PatientContacts.RemoveRange(pcs);
 
@@ -181,6 +209,11 @@ public class PatientService
             db.Visits.RemoveRange(visits);
 
             db.Patients.Remove(p);
+            await db.SaveChangesAsync();
+
+            _auditLog.Log(db, "Patient", id.ToString(), "Delete",
+                oldValues: oldValues,
+                details: $"Xóa bệnh nhân #{id} - {p.FullName}");
             await db.SaveChangesAsync();
         }
     }

@@ -10,6 +10,7 @@ public class PatientViewModel : BaseViewModel
 {
     private readonly PatientService _patientService;
     private readonly ToastService _toast;
+    private readonly SignalRClientService _signalR;
 
     public ObservableCollection<Patient> Patients { get; } = new();
     
@@ -28,10 +29,11 @@ public class PatientViewModel : BaseViewModel
 
     private const int PageSize = 50;
 
-    public PatientViewModel(PatientService patientService, ToastService toast)
+    public PatientViewModel(PatientService patientService, ToastService toast, SignalRClientService signalR)
     {
         _patientService = patientService;
         _toast = toast;
+        _signalR = signalR;
     }
 
     public async Task LoadAsync()
@@ -40,12 +42,10 @@ public class PatientViewModel : BaseViewModel
         Loading = true;
         try 
         {
-            if (_offset == 0)
-            {
-                Patients.Clear();
-                _totalCount = await _patientService.GetPatientsSearchCountAsync(SearchTerm);
-                OnPropertyChanged(nameof(TotalPatientsCount));
-            }
+            _offset = 0;
+            Patients.Clear();
+            _totalCount = await _patientService.GetPatientsSearchCountAsync(SearchTerm);
+            OnPropertyChanged(nameof(TotalPatientsCount));
 
             var results = await _patientService.SearchPatientsAsync(SearchTerm, _offset, PageSize);
             foreach (var p in results) Patients.Add(p);
@@ -60,6 +60,21 @@ public class PatientViewModel : BaseViewModel
         finally { Loading = false; }
     }
 
+    public async Task LoadMoreAsync()
+    {
+        if (Loading || !HasMore) return;
+        Loading = true;
+        try
+        {
+            var results = await _patientService.SearchPatientsAsync(SearchTerm, _offset, PageSize);
+            foreach (var p in results) Patients.Add(p);
+            _offset += results.Count;
+            HasMore = Patients.Count < _totalCount;
+        }
+        catch { }
+        finally { Loading = false; }
+    }
+
     public async Task SearchAsync(string term)
     {
         SearchTerm = term;
@@ -67,27 +82,23 @@ public class PatientViewModel : BaseViewModel
         await LoadAsync();
     }
 
-    public async Task LoadMoreAsync()
-    {
-        if (Loading || !HasMore) return;
-        await LoadAsync();
-    }
+
 
     public event Action? DataChanged;
 
     public async Task<bool> AddAsync(Patient p)
     {
-        try { await _patientService.AddPatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
+        try { await _patientService.AddPatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("patients"); return true; } catch { return false; }
     }
 
     public async Task<bool> UpdateAsync(Patient p)
     {
-        try { await _patientService.UpdatePatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
+        try { await _patientService.UpdatePatientAsync(p); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("patients"); return true; } catch { return false; }
     }
 
     public async Task<bool> DeleteAsync(Patient p)
     {
-        try { await _patientService.DeletePatientAsync(p.PatientId); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); return true; } catch { return false; }
+        try { await _patientService.DeletePatientAsync(p.PatientId); _offset = 0; await LoadAsync(); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("patients"); return true; } catch { return false; }
     }
 
     public async Task<(Patient? p, Contact? contact)> GetPatientWithContactAsync(int id) => await _patientService.GetPatientWithContactAsync(id);

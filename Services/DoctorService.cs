@@ -9,10 +9,12 @@ namespace ClinicMS.Services;
 public class DoctorService
 {
     private readonly CoreDatabaseService _core;
+    private readonly AuditLogService _auditLog;
 
-    public DoctorService(CoreDatabaseService core)
+    public DoctorService(CoreDatabaseService core, AuditLogService auditLog)
     {
         _core = core;
+        _auditLog = auditLog;
     }
 
     public async Task<int> GetDoctorsCountAsync()
@@ -70,13 +72,38 @@ public class DoctorService
         await using var db = _core.Ctx();
         db.Doctors.Add(d);
         await db.SaveChangesAsync();
+
+        _auditLog.Log(db, "Doctor", d.DoctorId.ToString(), "Create",
+            newValues: AuditLogService.Serialize(new { d.FullName, d.Specialty, d.Phone, d.Email }),
+            details: $"Thêm bác sĩ #{d.DoctorId} - {d.FullName}");
+        await db.SaveChangesAsync();
         return d;
     }
 
     public async Task UpdateDoctorAsync(Doctor d)
     {
         await using var db = _core.Ctx();
+        var existing = await db.Doctors.AsNoTracking().FirstOrDefaultAsync(x => x.DoctorId == d.DoctorId);
+        var oldValues = existing != null
+            ? AuditLogService.Serialize(new { existing.FullName, existing.Specialty, existing.Phone, existing.Email })
+            : null;
+
         db.Doctors.Update(d);
+        await db.SaveChangesAsync();
+
+        var changedFields = new List<string>();
+        if (existing != null)
+        {
+            if (existing.FullName != d.FullName) changedFields.Add("full_name");
+            if (existing.Specialty != d.Specialty) changedFields.Add("specialty");
+            if (existing.Phone != d.Phone) changedFields.Add("phone");
+            if (existing.Email != d.Email) changedFields.Add("email");
+        }
+        _auditLog.Log(db, "Doctor", d.DoctorId.ToString(), "Update",
+            changedFields: changedFields.Count > 0 ? AuditLogService.Serialize(changedFields) : null,
+            oldValues: oldValues,
+            newValues: AuditLogService.Serialize(new { d.FullName, d.Specialty, d.Phone, d.Email }),
+            details: $"Cập nhật bác sĩ #{d.DoctorId} - {d.FullName}");
         await db.SaveChangesAsync();
     }
 
@@ -86,10 +113,16 @@ public class DoctorService
         var d = await db.Doctors.FindAsync(id);
         if (d != null)
         {
-            // Note: Cascade deletion logic might be needed if not handled by EF Core
+            var oldValues = AuditLogService.Serialize(new { d.FullName, d.Specialty, d.Phone, d.Email });
+
             var visits = db.Visits.Where(v => v.DoctorId == id);
             db.Visits.RemoveRange(visits);
             db.Doctors.Remove(d);
+            await db.SaveChangesAsync();
+
+            _auditLog.Log(db, "Doctor", id.ToString(), "Delete",
+                oldValues: oldValues,
+                details: $"Xóa bác sĩ #{id} - {d.FullName}");
             await db.SaveChangesAsync();
         }
     }

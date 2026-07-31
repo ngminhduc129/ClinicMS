@@ -55,6 +55,9 @@
                     <!-- Invoices: Receipt icon (Hóa đơn) -->
                     <views:NavButton Label="Hóa Đơn" PageKey="invoices" Icon="&#xE8C7;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="invoices"/>
                     
+                    <!-- Audit Log: Clock icon -->
+                    <views:NavButton Label="Nhật Ký" PageKey="auditlogs" Icon="&#xE7C1;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="auditlogs"/>
+
                     <!-- Settings: Settings icon -->
                     <views:NavButton Label="Cài Đặt" PageKey="settings" Icon="&#xE713;" Margin="0,0,0,4" CurrentPage="{Binding CurrentPage}" Command="{Binding NavigateCommand}" CommandParameter="settings"/>
                 </StackPanel>
@@ -76,6 +79,7 @@
             <views:ServiceListView Visibility="{Binding IsPageServices, Converter={StaticResource BoolToVisibility}}"/>
             <views:InvoiceListView Visibility="{Binding IsPageInvoices, Converter={StaticResource BoolToVisibility}}"/>
             <views:SettingsView Visibility="{Binding IsPageSettings, Converter={StaticResource BoolToVisibility}}"/>
+            <views:AuditLogListView Visibility="{Binding IsPageAuditLogs, Converter={StaticResource BoolToVisibility}}"/>
 
         </Grid>
 

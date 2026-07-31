@@ -11,6 +11,7 @@ public class ServiceViewModel : BaseViewModel
 {
     private readonly ServiceCatalogService _serviceService;
     private readonly ToastService _toast;
+    private readonly SignalRClientService _signalR;
 
     public ObservableCollection<Service> Services { get; } = new();
     
@@ -19,10 +20,11 @@ public class ServiceViewModel : BaseViewModel
     private bool _loading;
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
 
-    public ServiceViewModel(ServiceCatalogService serviceService, ToastService toast)
+    public ServiceViewModel(ServiceCatalogService serviceService, ToastService toast, SignalRClientService signalR)
     {
         _serviceService = serviceService;
         _toast = toast;
+        _signalR = signalR;
     }
 
     public async Task LoadAsync()
@@ -69,6 +71,7 @@ public class ServiceViewModel : BaseViewModel
             await _serviceService.AddServiceAsync(s); 
             await LoadAsync(); 
             DataChanged?.Invoke();
+            await _signalR.NotifyDataChangedAsync("services");
             return true; 
         } 
         catch (Exception ex) 
@@ -85,6 +88,7 @@ public class ServiceViewModel : BaseViewModel
             await _serviceService.UpdateServiceAsync(s); 
             await LoadAsync(); 
             DataChanged?.Invoke();
+            await _signalR.NotifyDataChangedAsync("services");
             return true; 
         } 
         catch (Exception ex) 
@@ -101,6 +105,7 @@ public class ServiceViewModel : BaseViewModel
             await _serviceService.DeleteServiceAsync(s.ServiceId); 
             await LoadAsync(); 
             DataChanged?.Invoke();
+            await _signalR.NotifyDataChangedAsync("services");
             return true; 
         } 
         catch (Exception ex) 

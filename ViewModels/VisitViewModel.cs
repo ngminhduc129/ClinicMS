@@ -16,6 +16,7 @@ public class VisitViewModel : BaseViewModel
     private readonly ToastService _toast;
     private readonly PdfExportService _pdf;
     private readonly ModalService _modal;
+    private readonly SignalRClientService _signalR;
 
     public ObservableCollection<Visit> Visits { get; } = new();
     
@@ -39,13 +40,14 @@ public class VisitViewModel : BaseViewModel
     public RelayCommand ExportPrescriptionCommand { get; }
     public RelayCommand ExportMedicalRecordCommand { get; }
 
-    public VisitViewModel(VisitService visitService, InvoiceService invoiceService, ToastService toast, PdfExportService pdf, ModalService modal)
+    public VisitViewModel(VisitService visitService, InvoiceService invoiceService, ToastService toast, PdfExportService pdf, ModalService modal, SignalRClientService signalR)
     {
         _visitService = visitService;
         _invoiceService = invoiceService;
         _toast = toast;
         _pdf = pdf;
         _modal = modal;
+        _signalR = signalR;
 
         ExportPrescriptionCommand = new RelayCommand(async p => await DoExportPdf(p, "prescription"));
         ExportMedicalRecordCommand = new RelayCommand(async p => await DoExportPdf(p, "medical_record"));
@@ -108,11 +110,9 @@ public class VisitViewModel : BaseViewModel
         Loading = true;
         try 
         {
-            if (_offset == 0)
-            {
-                Visits.Clear();
-                _totalCount = await _visitService.GetVisitsSearchCountAsync(SearchTerm, DateFilter);
-            }
+            _offset = 0;
+            Visits.Clear();
+            _totalCount = await _visitService.GetVisitsSearchCountAsync(SearchTerm, DateFilter);
 
             var results = await _visitService.SearchVisitsAsync(SearchTerm, _offset, PageSize, DateFilter);
             foreach (var v in results) Visits.Add(v);
@@ -144,7 +144,16 @@ public class VisitViewModel : BaseViewModel
     public async Task LoadMoreAsync()
     {
         if (Loading || !HasMore) return;
-        await LoadAsync();
+        Loading = true;
+        try
+        {
+            var results = await _visitService.SearchVisitsAsync(SearchTerm, _offset, PageSize, DateFilter);
+            foreach (var v in results) Visits.Add(v);
+            _offset += results.Count;
+            HasMore = Visits.Count < _totalCount;
+        }
+        catch { }
+        finally { Loading = false; }
     }
 
     public event Action? DataChanged;
@@ -155,7 +164,7 @@ public class VisitViewModel : BaseViewModel
         { 
             await _visitService.AddVisitAsync(v); 
             await _invoiceService.GenerateOrUpdateInvoiceAsync(v.VisitId);
-            _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); DataChanged?.Invoke(); return true; 
+            _offset = 0; await LoadAsync(); _toast.Show("Thêm hồ sơ thành công"); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("visits"); return true; 
         }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
@@ -166,14 +175,14 @@ public class VisitViewModel : BaseViewModel
         { 
             await _visitService.UpdateVisitAsync(v); 
             await _invoiceService.GenerateOrUpdateInvoiceAsync(v.VisitId);
-            _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); DataChanged?.Invoke(); return true; 
+            _offset = 0; await LoadAsync(); _toast.Show("Cập nhật thành công"); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("visits"); return true; 
         }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 
     public async Task<bool> DeleteAsync(Visit v)
     {
-        try { await _visitService.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); DataChanged?.Invoke(); return true; }
+        try { await _visitService.DeleteVisitAsync(v.VisitId); _offset = 0; await LoadAsync(); _toast.Show("Đã xóa hồ sơ"); DataChanged?.Invoke(); await _signalR.NotifyDataChangedAsync("visits"); return true; }
         catch (Exception ex) { _toast.ShowError(ex.Message); return false; }
     }
 }
